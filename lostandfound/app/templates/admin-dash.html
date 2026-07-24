@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard — Lost &amp; Found AI Recovery Network</title>
+    
+    <!-- Google Fonts: Inter, Space Grotesk, & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        /* ==================== ROOT VARIABLES & RESET ==================== */
+        :root {
+            --stone-bg: #EAE6E1;
+            --stone-light: #F3F0EC;
+            --stone-dark: #1A1A1A;
+            --stone-muted: #6B6864;
+            --stone-border: #D2CDC7;
+            --accent-dark: #111827;
+            --emerald-accent: #047857;
+            --amber-accent: #d97706;
+            --red-accent: #dc2626;
+            --font-sans: 'Inter', 'Plus Jakarta Sans', sans-serif;
+            --font-display: 'Space Grotesk', sans-serif;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        html, body {
+            width: 100%;
+            min-height: 100vh;
+            background-color: var(--stone-bg);
+            color: var(--stone-dark);
+            font-family: var(--font-sans);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        a { color: inherit; text-decoration: none; }
+        button, input, select, textarea { font-family: inherit; }
+        button { cursor: pointer; border: none; background: none; }
+        .hidden { display: none !important; }
+
+        .container {
+            max-width: 80rem;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        @media (min-width: 1024px) {
+            .container { padding: 0 3rem; }
+        }
+
+        /* ==================== LIGHT GLASS NAVBAR ==================== */
+        .navbar {
+            position: fixed;
+            top: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 50;
+            width: 92%;
+            max-width: 64rem;
+            background: rgba(243, 240, 236, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            border-radius: 9999px;
+            padding: 0.65rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .nav-links {
+            display: none;
+            align-items: center;
+            gap: 2rem;
+            font-weight: 600;
+            color: rgba(26, 26, 26, 0.8);
+        }
+
+        @media (min-width: 768px) {
+            .nav-links { display: flex; }
+        }
+
+        .admin-nav-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-left: auto;
+        }
+
+        .admin-avatar-sm {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            background-color: var(--stone-dark);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.75rem;
+        }
+
+        /* ==================== PAGE HEADER ==================== */
+        .dashboard-header {
+            padding-top: 7rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid rgba(210, 205, 199, 0.8);
+        }
+
+        .page-title {
+            font-size: clamp(1.75rem, 4vw, 2.75rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+
+        /* NEUMORPHIC COMPONENTS */
+        .neu-card {
+            background: var(--stone-bg);
+            border-radius: 12px;
+            box-shadow: 8px 8px 18px #c7c4bf, -8px -8px 18px #ffffff;
+        }
+
+        .neu-input {
+            background: var(--stone-bg);
+            box-shadow: inset 3px 3px 6px #c7c4bf, inset -3px -3px 6px #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-size: 0.75rem;
+            color: var(--stone-dark);
+        }
+
+        .neu-input:focus {
+            outline: none;
+            box-shadow: inset 4px 4px 8px #bebbb6, inset -4px -4px 8px #ffffff;
+            border-color: var(--stone-dark);
+        }
+
+        .neu-button {
+            background: var(--stone-bg);
+            box-shadow: 4px 4px 10px #c7c4bf, -4px -4px 10px #ffffff;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+            padding: 0.65rem 1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            color: var(--stone-dark);
+        }
+
+        .neu-button:hover {
+            box-shadow: 2px 2px 6px #c7c4bf, -2px -2px 6px #ffffff;
+            transform: translateY(1px);
+        }
+
+        .neu-button-dark {
+            background: var(--stone-dark);
+            color: #ffffff;
+            box-shadow: 4px 4px 10px #c7c4bf, -4px -4px 10px #ffffff;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+            padding: 0.65rem 1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+        }
+
+        .neu-button-dark:hover {
+            background: #000000;
+            box-shadow: 2px 2px 6px #c7c4bf, -2px -2px 6px #ffffff;
+            transform: translateY(1px);
+        }
+
+        .neu-button-emerald {
+            background: var(--emerald-accent);
+            color: #ffffff;
+            border-radius: 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+            padding: 0.65rem 1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            box-shadow: 3px 3px 8px #c7c4bf;
+        }
+
+        .neu-button-danger {
+            background: var(--red-accent);
+            color: #ffffff;
+            border-radius: 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+            padding: 0.65rem 1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            box-shadow: 3px 3px 8px #c7c4bf;
+        }
+
+        /* ==================== DASHBOARD METRICS GRID ==================== */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        @media (min-width: 640px) {
+            .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (min-width: 1024px) {
+            .metrics-grid { grid-template-columns: repeat(6, 1fr); }
+        }
+
+        .stat-card {
+            background: var(--stone-light);
+            border: 1px solid rgba(210, 205, 199, 0.8);
+            border-radius: 8px;
+            padding: 1.1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .stat-number {
+            font-size: 1.85rem;
+            font-weight: 800;
+            margin-top: 0.25rem;
+        }
+
+        /* ==================== STICKY TAB NAVIGATION ==================== */
+        .tab-bar-section {
+            position:static;
+            top: 5rem;
+            z-index: 40;
+            background: rgba(234, 230, 225, 0.95);
+            backdrop-filter: blur(8px);
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(210, 205, 199, 0.8);
+        }
+
+        .tab-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            overflow-x: auto;
+            white-space: nowrap;
+            padding-bottom: 0.25rem;
+        }
+
+        .dash-tab-btn {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.6rem 1.1rem;
+            border-radius: 9999px;
+            color: var(--stone-muted);
+            background: var(--stone-light);
+            border: 1px solid rgba(210, 205, 199, 0.8);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .dash-tab-btn:hover {
+            background-color: var(--stone-dark);
+            color: #ffffff;
+            border-color: var(--stone-dark);
+        }
+
+        /* ==================== TABLES & CARDS ==================== */
+        .dashboard-content-section {
+            padding: 2.5rem 0 4rem 0;
+        }
+
+        .dash-panel {
+            margin-bottom: 4rem;
+            scroll-margin-top: 10rem;
+        }
+
+        .card-box {
+            background-color: var(--stone-light);
+            padding: 1.25rem;
+            border-radius: 8px;
+            border: 1px solid rgba(210, 205, 199, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+            text-align: left;
+        }
+
+        .custom-table th {
+            padding: 0.75rem;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--stone-muted);
+            border-bottom: 1px solid var(--stone-border);
+            background: var(--stone-bg);
+        }
+
+        .custom-table td {
+            padding: 0.85rem 0.75rem;
+            border-bottom: 1px solid rgba(210, 205, 199, 0.6);
+            vertical-align: middle;
+        }
+
+        .custom-table tr:hover {
+            background-color: rgba(234, 230, 225, 0.5);
+        }
+
+        .badge-tag {
+            font-size: 0.60rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            color: #fff;
+            letter-spacing: 0.05em;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .bg-red { background-color: var(--red-accent); }
+        .bg-amber { background-color: var(--amber-accent); }
+        .bg-emerald { background-color: var(--emerald-accent); }
+
+        /* Chart Bar Styling */
+        .chart-bar-bg {
+            width: 100%;
+            height: 1.5rem;
+            background-color: var(--stone-bg);
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+            margin-top: 0.5rem;
+        }
+
+        .chart-bar-fill {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .grid-2 { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .grid-3 { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        .border-t-line { border-top: 1px solid rgba(210, 205, 199, 0.8); }
+        .border-b-line { border-bottom: 1px solid rgba(210, 205, 199, 0.8); }
+        .font-display { font-family: var(--font-display); }
+
+        /* ==================== MODALS ==================== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(6px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-body {
+            width: 100%;
+            max-width: 28rem;
+            padding: 2rem;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-body.lg {
+            max-width: 36rem;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 1.25rem;
+            right: 1.25rem;
+            font-size: 1.25rem;
+            color: var(--stone-muted);
+        }
+
+        .close-btn:hover { color: var(--stone-dark); }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: var(--stone-bg); }
+        ::-webkit-scrollbar-thumb { background: var(--stone-dark); }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== LIGHT GLASS NAVBAR ==================== -->
+    <header class="navbar">
+        <nav class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="cases.html">Latest Cases</a>
+            <a href="detectives.html">Detectives</a>
+        </nav>
+
+        <div class="admin-nav-badge">
+            <div class="admin-avatar-sm">A</div>
+            <div>
+                <div style="font-size: 0.75rem; font-weight: 700; line-height: 1.1;">System Administrator</div>
+                <span style="font-size: 0.6rem; color: var(--amber-accent); font-weight: 600; text-transform: uppercase;">Master Credentials</span>
+            </div>
+        </div>
+    </header>
+
+
+    <!-- ==================== DASHBOARD HEADER & STATS ==================== -->
+    <header class="dashboard-header">
+        <div class="container">
+            <div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
+                    <span class="badge-tag bg-amber"><i class="fa-regular fa-folder-open"></i> MASTER ADMIN PANEL</span>
+                    <span style="font-size: 0.65rem; font-family: monospace; color: var(--stone-muted);">STATUS: ALL SYSTEMS OPERATIONAL</span>
+                </div>
+                <h1 class="page-title font-display">SYSTEM GOVERNANCE &amp; CONTROL</h1>
+                <p style="font-size: 0.85rem; color: var(--stone-muted); font-weight: 300; margin-top: 0.2rem;">
+                    Moderate user profiles, vet private detective applications, manage platform cases, blogs, and feedback reviews.
+                </p>
+            </div>
+
+            <!-- DASHBOARD STATISTICS (6 METRICS) -->
+            <div class="metrics-grid">
+                <div class="stat-card">
+                    <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-user"></i> Total Users</span>
+                    <div class="stat-number font-display">1,248</div>
+                    <span style="font-size: 0.6rem; color: var(--emerald-accent); font-weight: 600;">+24 This Week</span>
+                </div>
+
+                <div class="stat-card">
+                    <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-id-badge"></i> Total Detectives</span>
+                    <div class="stat-number font-display">42</div>
+                    <span style="font-size: 0.6rem; color: var(--stone-dark); font-weight: 600;">Licensed &amp; Vetted</span>
+                </div>
+
+                <div class="stat-card">
+                    <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-bell"></i> Lost Cases</span>
+                    <div class="stat-number font-display">342</div>
+                    <span style="font-size: 0.6rem; color: var(--amber-accent); font-weight: 600;">Monitored active</span>
+                </div>
+
+                <div class="stat-card">
+                    <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-circle-check"></i> Solved Cases</span>
+                    <div class="stat-number font-display">412</div>
+                    <span style="font-size: 0.6rem; color: var(--emerald-accent); font-weight: 600;">Reunited Safely</span>
+                </div>
+
+                <div class="stat-card">
+                    <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-newspaper"></i> Articles</span>
+                    <div class="stat-number font-display">12</div>
+                    <span style="font-size: 0.6rem; color: var(--emerald-accent); font-weight: 600;">Published Blogs</span>
+                </div>
+
+                <div class="stat-card">
+                    <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-clock"></i> Pending Vetting</span>
+                    <div class="stat-number font-display" style="color: var(--amber-accent);">5</div>
+                    <span style="font-size: 0.6rem; color: var(--amber-accent); font-weight: 600;">Requires Approval</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+
+    <!-- ==================== STICKY TAB NAVIGATION ==================== -->
+    <section class="tab-bar-section">
+        <div class="container">
+            <div class="tab-container">
+                <a class="dash-tab-btn" href="#panel-analytics">
+                    <i class="fa-regular fa-chart-bar"></i> Analytics &amp; Metrics
+                </a>
+                <a class="dash-tab-btn" href="#panel-users">
+                    <i class="fa-regular fa-user"></i> User Management
+                </a>
+                <a class="dash-tab-btn" href="#panel-vetting">
+                    <i class="fa-regular fa-id-badge"></i> Detective Vetting (5)
+                </a>
+                <a class="dash-tab-btn" href="#panel-cases">
+                    <i class="fa-regular fa-folder-open"></i> Case Database
+                </a>
+                <a class="dash-tab-btn" href="#panel-assignment">
+                    <i class="fa-regular fa-compass"></i> Detective Requests &amp; Approvals (2)
+                </a>
+                <a class="dash-tab-btn" href="#panel-blog">
+                    <i class="fa-regular fa-newspaper"></i> Blog Management
+                </a>
+                <a class="dash-tab-btn" href="#panel-feedback">
+                    <i class="fa-regular fa-comment-dots"></i> Feedback Moderation (3)
+                </a>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ==================== MAIN CONTENT PANELS ==================== -->
+    <main class="dashboard-content-section">
+        <div class="container">
+
+            <!-- 1. ANALYTICS & METRICS -->
+            <div id="panel-analytics" class="dash-panel">
+                <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;" class="border-b-line pb-3">PLATFORM RECOVERY ANALYTICS</h2>
+
+                <div class="grid-2">
+                    <!-- Case Volume Breakdown Chart -->
+                    <div class="card-box">
+                        <h3 class="font-display border-b-line pb-2" style="font-size: 1rem; font-weight: 700;">CASE VOLUME RATIOS</h3>
+                        
+                        <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 600;">
+                                    <span>Solved &amp; Reunited Cases (412)</span>
+                                    <span style="color: var(--emerald-accent);">43.7%</span>
+                                </div>
+                                <div class="chart-bar-bg">
+                                    <div class="chart-bar-fill" style="width: 43.7%; background-color: var(--emerald-accent);">412</div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 600;">
+                                    <span>Active Lost Cases (342)</span>
+                                    <span style="color: var(--amber-accent);">36.3%</span>
+                                </div>
+                                <div class="chart-bar-bg">
+                                    <div class="chart-bar-fill" style="width: 36.3%; background-color: var(--amber-accent);">342</div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 600;">
+                                    <span>Active Found Reports (189)</span>
+                                    <span style="color: var(--stone-dark);">20.0%</span>
+                                </div>
+                                <div class="chart-bar-bg">
+                                    <div class="chart-bar-fill" style="width: 20%; background-color: var(--stone-dark);">189</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detective Performance Leaderboard -->
+                    <div class="card-box">
+                        <h3 class="font-display border-b-line pb-2" style="font-size: 1rem; font-weight: 700;">TOP DETECTIVE RECOVERY PERFORMANCE</h3>
+
+                        <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.85rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--stone-bg); padding: 0.6rem 0.85rem; border-radius: 6px;">
+                                <div>
+                                    <h4 class="font-display" style="font-size: 0.85rem; font-weight: 700;">Marcus Thorne (London)</h4>
+                                    <p style="font-size: 0.65rem; color: var(--stone-muted);">K9 Lead Handler</p>
+                                </div>
+                                <span style="font-size: 0.8rem; font-weight: 800; color: var(--emerald-accent);">210 Solved</span>
+                            </div>
+
+                            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--stone-bg); padding: 0.6rem 0.85rem; border-radius: 6px;">
+                                <div>
+                                    <h4 class="font-display" style="font-size: 0.85rem; font-weight: 700;">Sarah Vance (Kyoto)</h4>
+                                    <p style="font-size: 0.65rem; color: var(--stone-muted);">Urban Missing Lead</p>
+                                </div>
+                                <span style="font-size: 0.8rem; font-weight: 800; color: var(--emerald-accent);">142 Solved</span>
+                            </div>
+
+                            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--stone-bg); padding: 0.6rem 0.85rem; border-radius: 6px;">
+                                <div>
+                                    <h4 class="font-display" style="font-size: 0.85rem; font-weight: 700;">Kenji Sato (Tokyo)</h4>
+                                    <p style="font-size: 0.65rem; color: var(--stone-muted);">AI Vision Forensic Specialist</p>
+                                </div>
+                                <span style="font-size: 0.8rem; font-weight: 800; color: var(--emerald-accent);">98 Solved</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- 2. USER MANAGEMENT -->
+            <div id="panel-users" class="dash-panel">
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.25rem;" class="border-b-line pb-3">
+                    <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800;">USER ACCOUNTS DIRECTORY</h2>
+                    
+                    <input type="text" id="user-search" placeholder="Search user by name, username, email..." class="neu-input" style="padding: 0.65rem 1rem; width: 18rem;" oninput="filterUsers()">
+                </div>
+
+                <div class="card-box" style="padding: 0.5rem; overflow-x: auto;">
+                    <table class="custom-table" id="users-table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Daisuke Tanaka</strong></td>
+                                <td>daisuketanaka</td>
+                                <td>daisuke@example.jp</td>
+                                <td>Citizen</td>
+                                <td><span class="badge-tag bg-emerald">Active</span></td>
+                                <td style="display: flex; gap: 0.3rem;">
+                                    <button onclick="openModal('modal-view-user')" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Profile</button>
+                                    <button onclick="alert('User account disabled.');" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Disable</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Emma Jensen</strong></td>
+                                <td>emmajensen</td>
+                                <td>emma@copenhagen.dk</td>
+                                <td>Citizen</td>
+                                <td><span class="badge-tag bg-emerald">Active</span></td>
+                                <td style="display: flex; gap: 0.3rem;">
+                                    <button onclick="openModal('modal-view-user')" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Profile</button>
+                                    <button onclick="alert('User account disabled.');" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Disable</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Liam Wilson</strong></td>
+                                <td>liamwilson</td>
+                                <td>liam@melbourne.au</td>
+                                <td>Citizen</td>
+                                <td><span class="badge-tag bg-red">Disabled</span></td>
+                                <td style="display: flex; gap: 0.3rem;">
+                                    <button onclick="openModal('modal-view-user')" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Profile</button>
+                                    <button onclick="alert('User account enabled.');" class="neu-button-emerald" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Enable</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+            <!-- 3. DETECTIVE VETTING -->
+            <div id="panel-vetting" class="dash-panel">
+                <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;" class="border-b-line pb-3">PENDING DETECTIVE APPLICATIONS (5)</h2>
+
+                <div class="grid-2">
+                    <!-- Applicant 1 -->
+                    <div class="card-box">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;" class="border-b-line pb-2">
+                                <div>
+                                    <h3 class="font-display" style="font-size: 1rem; font-weight: 700;">Investigator Hiroshi Sato</h3>
+                                    <p style="font-size: 0.65rem; color: var(--stone-muted); font-family: monospace;">Lic. #PD-90124 • Osaka, Japan</p>
+                                </div>
+                                <span class="badge-tag bg-amber"><i class="fa-regular fa-clock"></i> PENDING VETTING</span>
+                            </div>
+                            <p style="font-size: 0.75rem; color: var(--stone-dark); margin-top: 0.75rem; font-weight: 300;">
+                                10 years experience in missing pet forensic tracking and local shelter liaison operations.
+                            </p>
+                        </div>
+                        <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.75rem; display: flex; gap: 0.5rem;">
+                            <button onclick="openModal('modal-view-detective-app')" class="neu-button" style="flex: 1;">View Info</button>
+                            <button onclick="alert('Detective application Approved!');" class="neu-button-emerald" style="flex: 1;"><i class="fa-regular fa-circle-check"></i> Approve</button>
+                            <button onclick="alert('Application Rejected.');" class="neu-button-danger" style="flex: 1;">Reject</button>
+                        </div>
+                    </div>
+
+                    <!-- Applicant 2 -->
+                    <div class="card-box">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;" class="border-b-line pb-2">
+                                <div>
+                                    <h3 class="font-display" style="font-size: 1rem; font-weight: 700;">Private Detective Claire Dubois</h3>
+                                    <p style="font-size: 0.65rem; color: var(--stone-muted); font-family: monospace;">Lic. #PD-33019 • Paris, France</p>
+                                </div>
+                                <span class="badge-tag bg-amber"><i class="fa-regular fa-clock"></i> PENDING VETTING</span>
+                            </div>
+                            <p style="font-size: 0.75rem; color: var(--stone-dark); margin-top: 0.75rem; font-weight: 300;">
+                                Specializes in urban missing persons, facial recognition indexing, and transit hub tracking.
+                            </p>
+                        </div>
+                        <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.75rem; display: flex; gap: 0.5rem;">
+                            <button onclick="openModal('modal-view-detective-app')" class="neu-button" style="flex: 1;">View Info</button>
+                            <button onclick="alert('Detective application Approved!');" class="neu-button-emerald" style="flex: 1;"><i class="fa-regular fa-circle-check"></i> Approve</button>
+                            <button onclick="alert('Application Rejected.');" class="neu-button-danger" style="flex: 1;">Reject</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- 4. CASE DATABASE -->
+            <div id="panel-cases" class="dash-panel">
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.25rem;" class="border-b-line pb-3">
+                    <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800;">CASE DATABASE CONTROL</h2>
+
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="case-search" placeholder="Search case title or city..." class="neu-input" style="padding: 0.6rem 0.85rem;" oninput="filterCases()">
+                        <select id="case-category-filter" class="neu-input" style="padding: 0.6rem 0.85rem;" onchange="filterCases()">
+                            <option value="all">All Statuses</option>
+                            <option value="lost">Lost Only</option>
+                            <option value="found">Found Only</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card-box" style="padding: 0.5rem; overflow-x: auto;">
+                    <table class="custom-table" id="cases-admin-table">
+                        <thead>
+                            <tr>
+                                <th>Case ID</th>
+                                <th>Subject</th>
+                                <th>Type</th>
+                                <th>Location</th>
+                                <th>Reward</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr data-type="lost">
+                                <td><code>#LF-883912</code></td>
+                                <td><strong>Golden Retriever 'Leo'</strong></td>
+                                <td><span class="badge-tag bg-red">Lost Pet</span></td>
+                                <td>Kyoto, Japan</td>
+                                <td>$1,500</td>
+                                <td><span class="badge-tag bg-amber">Active</span></td>
+                                <td style="display: flex; gap: 0.3rem;">
+                                    <a href="case-details.html" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Inspect</a>
+                                    <button onclick="alert('Case marked as Solved.');" class="neu-button-emerald" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Mark Solved</button>
+                                    <button onclick="alert('Case deleted.');" class="neu-button-danger" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Delete</button>
+                                </td>
+                            </tr>
+                            <tr data-type="lost">
+                                <td><code>#LF-401928</code></td>
+                                <td><strong>Arthur Jensen (Senior)</strong></td>
+                                <td><span class="badge-tag bg-red">Missing Person</span></td>
+                                <td>Copenhagen, DK</td>
+                                <td>None</td>
+                                <td><span class="badge-tag bg-amber">Active</span></td>
+                                <td style="display: flex; gap: 0.3rem;">
+                                    <a href="case-details.html" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Inspect</a>
+                                    <button onclick="alert('Case marked as Solved.');" class="neu-button-emerald" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Mark Solved</button>
+                                    <button onclick="alert('Case deleted.');" class="neu-button-danger" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Delete</button>
+                                </td>
+                            </tr>
+                            <tr data-type="found">
+                                <td><code>#LF-102938</code></td>
+                                <td><strong>Siamese Cat (Unclaimed)</strong></td>
+                                <td><span class="badge-tag bg-emerald">Found Pet</span></td>
+                                <td>Melbourne, AU</td>
+                                <td>None</td>
+                                <td><span class="badge-tag bg-emerald">Unclaimed</span></td>
+                                <td style="display: flex; gap: 0.3rem;">
+                                    <a href="case-details.html" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Inspect</a>
+                                    <button onclick="alert('Case marked as Reunited.');" class="neu-button-emerald" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Mark Solved</button>
+                                    <button onclick="alert('Case deleted.');" class="neu-button-danger" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Delete</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+            <!-- 5. DETECTIVE REQUESTS & DISPATCH APPROVALS -->
+            <div id="panel-assignment" class="dash-panel">
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.5rem;" class="border-b-line pb-3">
+                    <div>
+                        <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800;">USER DETECTIVE REQUESTS &amp; APPROVALS</h2>
+                        <p style="font-size: 0.75rem; color: var(--stone-muted);">Review user dispatch requests. Approve to assign detective or decline with a reason sent to the user.</p>
+                    </div>
+                    <span class="badge-tag bg-amber"><i class="fa-regular fa-clock"></i> 2 PENDING DISPATCH REQUESTS</span>
+                </div>
+
+                <div class="grid-2">
+                    <!-- Request 1 -->
+                    <div class="card-box">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;" class="border-b-line pb-2">
+                                <div>
+                                    <span class="badge-tag bg-red">URGENT DISPATCH</span>
+                                    <h3 class="font-display" style="font-size: 1.05rem; font-weight: 700; margin-top: 0.35rem;">Case #LF-883912 — Golden Retriever 'Leo'</h3>
+                                </div>
+                                <span style="font-size: 0.85rem; font-weight: 800; color: var(--amber-accent);">$1,500 Reward</span>
+                            </div>
+
+                            <div style="margin-top: 0.85rem; font-size: 0.75rem; display: flex; flex-direction: column; gap: 0.4rem;">
+                                <p><strong>Requested By User:</strong> Daisuke Tanaka (daisuketanaka)</p>
+                                <p><strong>Target Detective:</strong> Detective Sarah Vance (#PD-88219)</p>
+                                <p style="color: var(--stone-muted); font-style: italic; background: var(--stone-bg); padding: 0.5rem; border-radius: 4px; border: 1px solid var(--stone-border); margin-top: 0.2rem;">
+                                    "Please dispatch Detective Vance, she is a local Kyoto specialist and has handled similar cases."
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.75rem; display: flex; gap: 0.5rem;">
+                            <button onclick="alert('Request Approved! Case #LF-883912 has been assigned to Detective Sarah Vance.');" class="neu-button-emerald" style="flex: 1;">
+                                <i class="fa-regular fa-circle-check"></i> Approve &amp; Dispatch
+                            </button>
+                            <button onclick="openDeclineModal('Case #LF-883912 — Golden Retriever Leo', 'Daisuke Tanaka')" class="neu-button-danger" style="flex: 1;">
+                                <i class="fa-regular fa-circle-xmark"></i> Decline Request
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Request 2 -->
+                    <div class="card-box">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;" class="border-b-line pb-2">
+                                <div>
+                                    <span class="badge-tag bg-amber">SEARCHING</span>
+                                    <h3 class="font-display" style="font-size: 1.05rem; font-weight: 700; margin-top: 0.35rem;">Case #LF-501928 — Tabby Cat 'Milo'</h3>
+                                </div>
+                                <span style="font-size: 0.85rem; font-weight: 800; color: var(--stone-dark);">$200 Reward</span>
+                            </div>
+
+                            <div style="margin-top: 0.85rem; font-size: 0.75rem; display: flex; flex-direction: column; gap: 0.4rem;">
+                                <p><strong>Requested By User:</strong> Emma Jensen (emmajensen)</p>
+                                <p><strong>Target Detective:</strong> Any Available Osaka Detective (Kenji Sato Recommended)</p>
+                                <p style="color: var(--stone-muted); font-style: italic; background: var(--stone-bg); padding: 0.5rem; border-radius: 4px; border: 1px solid var(--stone-border); margin-top: 0.2rem;">
+                                    "Need a licensed investigator in Osaka equipped with night-vision gear."
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.75rem; display: flex; gap: 0.5rem;">
+                            <button onclick="alert('Request Approved! Case #LF-501928 has been assigned to Investigator Kenji Sato.');" class="neu-button-emerald" style="flex: 1;">
+                                <i class="fa-regular fa-circle-check"></i> Approve &amp; Dispatch
+                            </button>
+                            <button onclick="openDeclineModal('Case #LF-501928 — Tabby Cat Milo', 'Emma Jensen')" class="neu-button-danger" style="flex: 1;">
+                                <i class="fa-regular fa-circle-xmark"></i> Decline Request
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- 6. BLOG MANAGEMENT PANEL -->
+            <div id="panel-blog" class="dash-panel">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;" class="border-b-line pb-3">
+                    <div>
+                        <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800;">PLATFORM BLOG &amp; GUIDES CONTROL</h2>
+                        <p style="font-size: 0.75rem; color: var(--stone-muted);">Publish recovery protocols, AI technical articles, and investigation guides.</p>
+                    </div>
+                    <button onclick="openModal('modal-create-blog')" class="neu-button-dark" style="padding: 0.65rem 1.1rem; font-size: 0.7rem;">+ Create New Article</button>
+                </div>
+
+                <div class="card-box" style="padding: 0.5rem; overflow-x: auto;">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Article Title</th>
+                                <th>Category</th>
+                                <th>Author</th>
+                                <th>Read Time</th>
+                                <th>Published Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>The Critical First 2 Hours Guide</strong></td>
+                                <td><span class="badge-tag bg-emerald">PROTOCOL GUIDE</span></td>
+                                <td>Sarah Vance</td>
+                                <td>5 Mins</td>
+                                <td>July 20, 2026</td>
+                                <td style="display: flex; gap: 0.3rem;">
+                                    <button onclick="alert('Editing article...');" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Edit</button>
+                                    <button onclick="alert('Article deleted.');" class="neu-button-danger" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Delete</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Demystifying Vector Matching &amp; FAISS Indexing</strong></td>
+                                <td><span class="badge-tag bg-amber">AI EXPLAINED</span></td>
+                                <td>System AI Unit</td>
+                                <td>7 Mins</td>
+                                <td>July 18, 2026</td>
+                                <td style="display: flex; gap: 0.3rem;">
+                                    <button onclick="alert('Editing article...');" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Edit</button>
+                                    <button onclick="alert('Article deleted.');" class="neu-button-danger" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Delete</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+            <!-- 7. FEEDBACK MODERATION PANEL -->
+            <div id="panel-feedback" class="dash-panel">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;" class="border-b-line pb-3">
+                    <div>
+                        <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800;">FEEDBACK &amp; TESTIMONIAL MODERATION (3)</h2>
+                        <p style="font-size: 0.75rem; color: var(--stone-muted);">Approve user recovery stories to feature on the platform homepage.</p>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card-box">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;" class="border-b-line pb-2">
+                                <div>
+                                    <h3 class="font-display" style="font-size: 1rem; font-weight: 700;">Daisuke Tanaka</h3>
+                                    <p style="font-size: 0.65rem; color: var(--stone-muted);">Reunited Pet Owner • Kyoto, Japan</p>
+                                </div>
+                                <span class="badge-tag bg-amber">PENDING REVIEW</span>
+                            </div>
+                            <p style="font-size: 0.75rem; color: var(--stone-dark); margin-top: 0.75rem; font-style: italic;">
+                                "Within 30 minutes of uploading Leo's photo, the AI vector search matched a camera feed 2 miles away. Detective Sarah had him safely home by evening!"
+                            </p>
+                        </div>
+                        <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.75rem; display: flex; gap: 0.5rem;">
+                            <button onclick="alert('Feedback Approved & Published to Homepage!');" class="neu-button-emerald" style="flex: 1;"><i class="fa-regular fa-circle-check"></i> Approve for Homepage</button>
+                            <button onclick="alert('Feedback rejected.');" class="neu-button-danger" style="flex: 1;">Reject</button>
+                        </div>
+                    </div>
+
+                    <div class="card-box">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;" class="border-b-line pb-2">
+                                <div>
+                                    <h3 class="font-display" style="font-size: 1rem; font-weight: 700;">Emma Jensen</h3>
+                                    <p style="font-size: 0.65rem; color: var(--stone-muted);">Family Member • Copenhagen, DK</p>
+                                </div>
+                                <span class="badge-tag bg-amber">PENDING REVIEW</span>
+                            </div>
+                            <p style="font-size: 0.75rem; color: var(--stone-dark); margin-top: 0.75rem; font-style: italic;">
+                                "Through LOST &amp; FOUND, structured real-time logs kept our family calm until Private Investigator Marcus brought my father home safely."
+                            </p>
+                        </div>
+                        <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.75rem; display: flex; gap: 0.5rem;">
+                            <button onclick="alert('Feedback Approved & Published to Homepage!');" class="neu-button-emerald" style="flex: 1;"><i class="fa-regular fa-circle-check"></i> Approve for Homepage</button>
+                            <button onclick="alert('Feedback rejected.');" class="neu-button-danger" style="flex: 1;">Reject</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer style="padding: 3rem 0; border-top: 1px solid rgba(210, 205, 199, 0.8);">
+        <div class="container">
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1.5rem;">
+                <div>
+                    <h2 class="font-display" style="font-size: 1.5rem; font-weight: 800; text-transform: uppercase;">LOST &amp; FOUND</h2>
+                    <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.2rem;">AI-Powered Recovery Network</p>
+                </div>
+                <div style="display: flex; gap: 1.5rem; font-size: 0.65rem; text-transform: uppercase; font-weight: 600; color: var(--stone-muted);">
+                    <a href="index.html" style="text-decoration: underline;">Home</a>
+                    <a href="cases.html" style="text-decoration: underline;">All Cases</a>
+                    <a href="#" style="text-decoration: underline;">Privacy Policy</a>
+                </div>
+            </div>
+            <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(210, 205, 199, 0.4); text-align: center; font-size: 0.65rem; color: var(--stone-muted);">
+                ALL RIGHTS RESERVED &copy; 2026 LOST &amp; FOUND PLATFORM
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- ==================== ALL MODALS ==================== -->
+    <div id="modal-overlay" class="modal-overlay">
+        
+        <!-- 1. VIEW USER MODAL -->
+        <div id="modal-view-user" class="neu-card modal-body hidden">
+            <button onclick="closeModals()" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
+
+            <div style="margin-bottom: 1rem;">
+                <span class="badge-tag bg-emerald"><i class="fa-regular fa-user"></i> USER PROFILE</span>
+                <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700; margin-top: 0.35rem;">Daisuke Tanaka</h3>
+                <p style="font-size: 0.72rem; color: var(--stone-muted);">Registered Citizen • Joined June 2026</p>
+            </div>
+
+            <ul style="font-size: 0.75rem; color: var(--stone-dark); list-style: none; display: flex; flex-direction: column; gap: 0.5rem;" class="border-t-line pt-3">
+                <li><strong>Username:</strong> daisuketanaka</li>
+                <li><strong>Email:</strong> daisuke@example.jp</li>
+                <li><strong>Phone:</strong> +81 90-1234-5678</li>
+                <li><strong>Active Posts:</strong> 2 Lost, 1 Found</li>
+            </ul>
+
+            <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem;">
+                <button onclick="alert('User Disabled.'); closeModals();" class="neu-button" style="flex: 1;">Disable User</button>
+                <button onclick="closeModals()" class="neu-button-dark" style="flex: 1;">Close</button>
+            </div>
+        </div>
+
+
+        <!-- 2. VIEW DETECTIVE APPLICATION MODAL -->
+        <div id="modal-view-detective-app" class="neu-card modal-body lg hidden">
+            <button onclick="closeModals()" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
+
+            <div style="margin-bottom: 1rem;">
+                <span class="badge-tag bg-amber"><i class="fa-regular fa-id-badge"></i> VETTING INFO</span>
+                <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700; margin-top: 0.35rem;">Investigator Hiroshi Sato</h3>
+                <p style="font-size: 0.72rem; color: var(--stone-muted);">Osaka Guild • License #PD-90124</p>
+            </div>
+
+            <div style="font-size: 0.75rem; line-height: 1.5;" class="border-t-line pt-3">
+                <p><strong>Years Experience:</strong> 10 Years</p>
+                <p><strong>Specialization:</strong> Pet Scent Tracking &amp; Forensic Imagery</p>
+                <p style="margin-top: 0.5rem;"><strong>Background Check:</strong> Cleared by National Licensing Board</p>
+            </div>
+
+            <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem;">
+                <button onclick="alert('Detective Approved!'); closeModals();" class="neu-button-emerald" style="flex: 1;">Approve Detective</button>
+                <button onclick="alert('Application Rejected.'); closeModals();" class="neu-button-danger" style="flex: 1;">Reject</button>
+            </div>
+        </div>
+
+
+        <!-- 3. DECLINE DETECTIVE REQUEST MODAL -->
+        <div id="modal-decline-request" class="neu-card modal-body lg hidden">
+            <button onclick="closeModals()" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
+
+            <div style="margin-bottom: 1rem;">
+                <span class="badge-tag bg-red"><i class="fa-regular fa-circle-xmark"></i> DECLINE DISPATCH REQUEST</span>
+                <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700; margin-top: 0.35rem;">Decline Detective Request</h3>
+                <p style="font-size: 0.72rem; color: var(--stone-muted);">Target Case: <span id="decline-case-info" style="font-weight: 700; color: var(--stone-dark);"></span></p>
+                <p style="font-size: 0.72rem; color: var(--stone-muted);">Requested By: <span id="decline-user-name" style="font-weight: 700; color: var(--stone-dark);"></span></p>
+            </div>
+
+            <form onsubmit="event.preventDefault(); alert('Request declined. Reason sent to user.'); closeModals();" style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.75rem;">
+                <div>
+                    <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Reason for Declining (Sent to Requested User)</label>
+                    <textarea rows="4" placeholder="Explain why this request cannot be approved (e.g. Requested detective is unavailable in this region, insufficient case details provided, bounty threshold not met)..." required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;"></textarea>
+                </div>
+
+                <button type="submit" class="neu-button-danger" style="padding: 0.75rem; margin-top: 0.25rem;">SEND DECLINE NOTICE TO USER</button>
+            </form>
+        </div>
+
+
+        <!-- 4. CREATE BLOG MODAL -->
+        <div id="modal-create-blog" class="neu-card modal-body lg hidden">
+            <button onclick="closeModals()" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
+
+            <div style="margin-bottom: 1rem;">
+                <span class="badge-tag bg-emerald"><i class="fa-regular fa-newspaper"></i> NEW ARTICLE</span>
+                <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700; margin-top: 0.35rem;">Publish Blog / Recovery Guide</h3>
+            </div>
+
+            <form onsubmit="event.preventDefault(); alert('Blog article created successfully!'); closeModals();" style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.75rem;">
+                <div>
+                    <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Article Title</label>
+                    <input type="text" placeholder="e.g. Tactical Action Guide for Missing Persons" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                </div>
+
+                <div class="grid-2">
+                    <div>
+                        <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Category</label>
+                        <select class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                            <option value="protocol">PROTOCOL GUIDE</option>
+                            <option value="ai">AI EXPLAINED</option>
+                            <option value="field">FIELD WORK</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Read Time (Minutes)</label>
+                        <input type="number" placeholder="5" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                    </div>
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Featured Image URL</label>
+                    <input type="text" placeholder="https://images.unsplash.com/..." required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Article Body / Content</label>
+                    <textarea rows="5" placeholder="Write full article text here..." required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;"></textarea>
+                </div>
+
+                <button type="submit" class="neu-button-dark" style="padding: 0.75rem;">PUBLISH ARTICLE NOW</button>
+            </form>
+        </div>
+
+    </div>
+
+
+    <!-- ==================== JAVASCRIPT CONTROLLERS ==================== -->
+    <script>
+        // Live User Table Filter
+        function filterUsers() {
+            const query = document.getElementById('user-search').value.toLowerCase();
+            const rows = document.querySelectorAll('#users-table tbody tr');
+
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        }
+
+        // Live Case Filter
+        function filterCases() {
+            const query = document.getElementById('case-search').value.toLowerCase();
+            const cat = document.getElementById('case-category-filter').value;
+            const rows = document.querySelectorAll('#cases-admin-table tbody tr');
+
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                const type = row.getAttribute('data-type');
+
+                const matchesQuery = text.includes(query);
+                const matchesType = (cat === 'all') || (type === cat);
+
+                row.style.display = (matchesQuery && matchesType) ? '' : 'none';
+            });
+        }
+
+        // Open Decline Modal with Context Data
+        function openDeclineModal(caseInfo, userName) {
+            document.getElementById('decline-case-info').textContent = caseInfo;
+            document.getElementById('decline-user-name').textContent = userName;
+            openModal('modal-decline-request');
+        }
+
+        // Modal Handlers (Prevents overlapping modals)
+        const modalOverlay = document.getElementById('modal-overlay');
+
+        function openModal(modalId) {
+            const modalBodies = document.querySelectorAll('.modal-body');
+            modalBodies.forEach(body => body.classList.add('hidden'));
+
+            const target = document.getElementById(modalId);
+            if (target) {
+                target.classList.remove('hidden');
+            }
+
+            modalOverlay.classList.add('active');
+        }
+
+        function closeModals() {
+            modalOverlay.classList.remove('active');
+            const modalBodies = document.querySelectorAll('.modal-body');
+            modalBodies.forEach(body => body.classList.add('hidden'));
+        }
+
+        if (modalOverlay) {
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) closeModals();
+            });
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModals();
+        });
+    </script>
+</body>
+</html>
