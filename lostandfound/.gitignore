@@ -1,0 +1,37 @@
+# Environment variables & secrets (NEVER COMMIT TO GIT)
+.env
+.env.local
+*.env
+*.key
+*.pem
+
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# SQLite Database
+*.sqlite3
+db.sqlite3
+
+# User Uploaded Media Files
+media/
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.venv/
+
+# Antigravity IDE & temporary artifacts
+.antigravity/
+.gemini/
+
+# IDE & OS files
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
