@@ -15,6 +15,21 @@ try:
 except ImportError:
     HAS_FAISS = False
 
+def _load_env_file():
+    env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env')
+    if os.path.exists(env_path):
+        try:
+            with open(env_path, 'r') as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith('#') and '=' in line:
+                        k, v = line.split('=', 1)
+                        os.environ[k.strip()] = v.strip()
+        except Exception:
+            pass
+
+_load_env_file()
+
 def load_clip_model():
     global clip_model, clip_processor, HAS_CLIP
     if HAS_CLIP and clip_model is not None:
@@ -22,12 +37,20 @@ def load_clip_model():
     try:
         import torch
         from transformers import CLIPProcessor, CLIPModel
-        clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
-        clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+
+        os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
+        hf_token = os.environ.get("HF_TOKEN")
+
+        kwargs = {}
+        if hf_token:
+            kwargs["token"] = hf_token
+
+        clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32", **kwargs)
+        clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32", **kwargs)
         clip_model.eval()
         HAS_CLIP = True
         return True
-    except Exception:
+    except Exception as e:
         HAS_CLIP = False
         return False
 
