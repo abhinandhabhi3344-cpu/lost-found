@@ -62,8 +62,10 @@
         .nav-links a:hover, .nav-links a.active { color: #000000; border-bottom: 2px solid var(--stone-dark); padding-bottom: 2px; }
 
         .nav-actions { display: flex; align-items: center; gap: 0.75rem; margin-left: auto; }
-        .btn-login { font-size: 0.75rem; font-weight: 600; color: var(--stone-dark); padding: 0.5rem 1rem; border: 1px solid rgba(26, 26, 26, 0.2); border-radius: 9999px; }
-        .btn-signup { background-color: var(--stone-dark); color: #ffffff; font-weight: 800; padding: 0.6rem 1.25rem; border-radius: 9999px; font-size: 0.75rem; text-transform: uppercase; display: flex; align-items: center; gap: 0.5rem; }
+        .btn-login { font-size: 0.75rem; font-weight: 600; color: var(--stone-dark); padding: 0.5rem 1rem; border: 1px solid rgba(26, 26, 26, 0.2); border-radius: 9999px; transition: background-color 0.2s ease, color 0.2s ease; display: inline-flex; align-items: center; justify-content: center; }
+        .btn-login:hover { background-color: var(--stone-light); color: #000; }
+        .btn-signup { position: relative; background-color: var(--stone-dark); color: #ffffff; font-weight: 800; padding: 0.6rem 1.25rem; border-radius: 9999px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; transition: transform 0.2s ease, box-shadow 0.2s ease; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); display: flex; align-items: center; gap: 0.5rem; }
+        .btn-signup:hover { transform: scale(1.03); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25); }
         
         .user-nav-badge { display: flex; align-items: center; gap: 0.6rem; margin-left: auto; }
         .user-avatar-sm { width: 2rem; height: 2rem; border-radius: 50%; background-color: var(--stone-dark); color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem; overflow: hidden; }
@@ -95,16 +97,13 @@
         @media (min-width: 640px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } }
         @media (min-width: 1024px) { .grid-4 { grid-template-columns: repeat(4, 1fr); } }
 
-        .card-box { background-color: var(--stone-light); padding: 1.25rem; border-radius: 6px; border: 1px solid rgba(210, 205, 199, 0.8); display: flex; flex-direction: column; justify-content: space-between; }
+        .card-box { background-color: var(--stone-light); padding: 1.25rem; border-radius: 6px; border: 1px solid rgba(210, 205, 199, 0.8); display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s ease; }
         .img-container { aspect-ratio: 4/3; border-radius: 4px; overflow: hidden; position: relative; background-color: #ddd; }
         .img-container img { width: 100%; height: 100%; object-fit: cover; }
 
         .badge-tag { position: absolute; top: 0.5rem; left: 0.5rem; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; padding: 0.25rem 0.55rem; border-radius: 2px; color: #fff; }
-        .badge-cat { position: absolute; top: 0.5rem; right: 0.5rem; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; padding: 0.25rem 0.55rem; border-radius: 2px; background: rgba(26, 26, 26, 0.85); backdrop-filter: blur(4px); color: #fff; }
+        .badge-cat { position: absolute; top: 0.5rem; right: 0.5rem; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; padding: 0.25rem 0.55rem; border-radius: 2px; background: rgba(26, 26, 26, 0.85); backdrop-filter: blur(4px); color: #fff; transition: all 0.3s ease; }
         .reward-pill { position: absolute; bottom: 0.5rem; right: 0.5rem; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(4px); color: #fbbf24; font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 3px; border: 1px solid rgba(251, 191, 36, 0.4); }
-
-        .ai-match-badge { display: none; align-items: center; gap: 0.3rem; background-color: #065f46; color: #ffffff; font-size: 0.65rem; font-weight: 700; padding: 0.25rem 0.5rem; border-radius: 3px; }
-        .ai-match-badge.visible { display: inline-flex; }
 
         .bg-red { background-color: var(--red-accent); }
         .bg-amber { background-color: var(--amber-accent); }
@@ -113,8 +112,6 @@
         .font-display { font-family: var(--font-display); }
 
         .pagination-bar { padding: 2rem 0 4rem 0; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(210, 205, 199, 0.8); }
-        .page-num-btn { width: 2.25rem; height: 2.25rem; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; font-size: 0.75rem; font-weight: 700; color: var(--stone-dark); border: 1px solid rgba(210, 205, 199, 0.8); background: var(--stone-light); }
-        .page-num-btn:hover, .page-num-btn.active { background: var(--stone-dark); color: #ffffff; border-color: var(--stone-dark); }
 
         .modal-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; padding: 1rem; }
         .modal-overlay.active { display: flex; }
@@ -156,7 +153,7 @@
                         {% if user_profile and user_profile.avatar %}
                             <img src="{{ user_profile.avatar.url }}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;">
                         {% else %}
-                            {{ user.first_name|first|upper|default:"U" }}
+                            {{ user.first_name|first|upper|default:user.username|first|upper }}
                         {% endif %}
                     </div>
                     <span style="font-size: 0.75rem; font-weight: 700;">{{ user_profile.full_name|default:user.username }}</span>
@@ -171,10 +168,7 @@
                 <a href="{% url 'logout' %}" class="btn-login">Logout</a>
             {% else %}
                 <button onclick="openModal('modal-login')" class="btn-login">LOG IN</button>
-                <button onclick="openModal('modal-signup')" class="btn-signup">
-                    <span>SIGN UP</span>
-                    <i class="fas fa-arrow-right"></i>
-                </button>
+                <button onclick="openModal('modal-signup')" class="btn-signup">SIGN UP <i class="fas fa-arrow-right"></i></button>
             {% endif %}
         </div>
     </header>
@@ -186,13 +180,13 @@
                 <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--stone-muted);">GLOBAL DATABASE</span>
                 <h1 class="page-title font-display">CASES DIRECTORY &amp; AI MATCH</h1>
                 <p style="font-size: 0.85rem; color: var(--stone-muted); font-weight: 300; max-width: 42rem; line-height: 1.5;">
-                    Browse active missing persons, lost pets, and community found reports. Upload an image below to execute a visual similarity match across active cases.
+                    Browse active missing persons, lost pets, and community found reports. Upload single or multiple images below to execute a real CLIP vector visual match.
                 </p>
             </div>
 
             <!-- AI Image Search Dropzone Panel -->
             <div class="ai-dropzone-panel" id="ai-dropzone">
-                <input type="file" id="ai-file-input" accept="image/*" style="display: none;" onchange="handleAiImageUpload(event)">
+                <input type="file" id="ai-file-input" accept="image/*" multiple style="display: none;" onchange="handleAiImageUpload(event)">
                 
                 <div id="dropzone-content" style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; cursor: pointer;" onclick="document.getElementById('ai-file-input').click();">
                     <div style="width: 3rem; height: 3rem; border-radius: 50%; background: var(--stone-light); display: flex; align-items: center; justify-content: center; box-shadow: 3px 3px 8px #c7c4bf, -3px -3px 8px #ffffff;">
@@ -201,17 +195,17 @@
                     <div>
                         <h4 class="font-display" style="font-size: 0.95rem; font-weight: 700;">RUN AI VISUAL VECTOR SEARCH</h4>
                         <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.1rem;">
-                            Drag and drop a clear photo here, or <span style="text-decoration: underline; font-weight: 600; color: var(--stone-dark);">browse image file</span>
+                            Drag and drop single/multiple clear photos here, or <span style="text-decoration: underline; font-weight: 600; color: var(--stone-dark);">browse image files</span>
                         </p>
                     </div>
                     <span style="font-size: 0.65rem; color: var(--emerald-accent); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; background: #d1fae5; padding: 0.2rem 0.6rem; border-radius: 9999px; margin-top: 0.25rem;">
-                        <i class="fa-regular fa-compass"></i> CLIP Vector Match Active
+                        <i class="fa-regular fa-compass"></i> Real CLIP &amp; FAISS Vector Engine Active
                     </span>
                 </div>
 
                 <div id="dropzone-loading" style="display: none; flex-direction: column; align-items: center; gap: 0.75rem;">
                     <i class="fa-regular fa-compass fa-spin" style="font-size: 2rem; color: var(--emerald-accent);"></i>
-                    <p style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Extracting visual vector embeddings &amp; querying cases index...</p>
+                    <p id="loading-text" style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Extracting visual vector embeddings &amp; querying cases index...</p>
                 </div>
             </div>
         </div>
@@ -277,7 +271,7 @@
             <div class="ai-status-banner" id="ai-banner">
                 <span style="display: flex; align-items: center; gap: 0.5rem;">
                     <i class="fa-regular fa-circle-check" style="font-size: 1rem;"></i>
-                    <span>AI Image Visual Match Active — Cards ranked by visual feature similarity.</span>
+                    <span id="ai-status-msg">AI Image Visual Match Active — Cards ranked by visual feature similarity.</span>
                 </span>
                 <button onclick="clearAiSearch()" style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; text-decoration: underline; color: #065f46;">Clear AI Search</button>
             </div>
@@ -289,7 +283,7 @@
         <div class="container">
             <div class="grid-4" id="cases-container">
                 {% for case in cases %}
-                <div class="card-box" data-ai="88.4">
+                <div class="card-box" data-case-id="{{ case.pk }}" data-order="{{ forloop.counter }}">
                     <div>
                         <div class="img-container">
                             {% with primary=case.images.all|first %}
@@ -306,7 +300,11 @@
                             <span class="badge-tag bg-emerald">FOUND</span>
                             {% endif %}
 
-                            <span class="badge-cat"><i class="fa-regular fa-tag"></i> {{ case.get_category_display }}</span>
+                            <!-- TOP RIGHT BADGE (CATEGORY DEFAULT, REPLACED BY MATCH % DURING AI SEARCH) -->
+                            <span class="badge-cat" id="badge-cat-{{ case.pk }}" data-original-text="{{ case.get_category_display }}">
+                                <i class="fa-regular fa-tag"></i> {{ case.get_category_display }}
+                            </span>
+
                             {% if case.reward > 0 %}
                             <span class="reward-pill">${{ case.reward|floatformat:0|intcomma }} Reward</span>
                             {% endif %}
@@ -325,7 +323,6 @@
                     </div>
 
                     <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
-                        <span class="ai-match-badge"><i class="fa-regular fa-compass"></i> <span class="match-val">94.2%</span> Match</span>
                         <span style="font-size: 0.65rem; font-weight: 600; color: var(--amber-accent);">
                             {% if case.assigned_detective %}
                             <i class="fa-regular fa-id-badge"></i> Det. Assigned
@@ -348,15 +345,21 @@
             {% if cases.has_other_pages %}
             <div class="pagination-bar">
                 <span style="font-size: 0.75rem; color: var(--stone-muted);">Page {{ cases.number }} of {{ cases.paginator.num_pages }}</span>
-                <div style="display: flex; gap: 0.35rem;">
+                <div style="display: flex; gap: 0.5rem;">
                     {% if cases.has_previous %}
-                    <a href="?page={{ cases.previous_page_number }}" class="page-num-btn">&laquo;</a>
+                    <a href="?page={{ cases.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="page-num-btn">&laquo;</a>
                     {% endif %}
-                    {% for page in cases.paginator.page_range %}
-                    <a href="?page={{ page }}" class="page-num-btn {% if cases.number == page %}active{% endif %}">{{ page }}</a>
+
+                    {% for page_num in cases.paginator.page_range %}
+                        {% if cases.number == page_num %}
+                        <span class="page-num-btn active">{{ page_num }}</span>
+                        {% else %}
+                        <a href="?page={{ page_num }}{% if search_query %}&q={{ search_query }}{% endif %}" class="page-num-btn">{{ page_num }}</a>
+                        {% endif %}
                     {% endfor %}
+
                     {% if cases.has_next %}
-                    <a href="?page={{ cases.next_page_number }}" class="page-num-btn">&raquo;</a>
+                    <a href="?page={{ cases.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="page-num-btn">&raquo;</a>
                     {% endif %}
                 </div>
             </div>
@@ -382,7 +385,7 @@
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Password</label>
                     <input type="password" name="password" required class="neu-input" style="width: 100%; padding: 0.75rem 1rem;">
                 </div>
-                <button type="submit" class="neu-button-dark" style="padding: 0.85rem; font-size: 0.75rem;">LOG IN TO PLATFORM</button>
+                <button type="submit" class="neu-button-dark" style="padding: 0.85rem; font-size: 0.75rem; margin-top: 0.5rem;">LOG IN</button>
             </form>
         </div>
 
@@ -392,7 +395,7 @@
             <div style="text-align: center; margin-bottom: 1rem;">
                 <h3 class="font-display" style="font-size: 1.5rem; font-weight: 700;">Create Account</h3>
             </div>
-            <form action="{% url 'signup' %}" method="POST" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
+            <form action="{% url 'signup' %}" method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
                 {% csrf_token %}
                 <div class="grid-2">
                     <div>
@@ -432,6 +435,7 @@
         </div>
     </div>
 
+    <!-- AI VECTOR SEARCH CONTROLLER -->
     <script>
         const modalOverlay = document.getElementById('modal-overlay');
         function openModal(id) {
@@ -445,26 +449,150 @@
             document.querySelectorAll('.modal-body').forEach(b => b.classList.add('hidden'));
         }
 
-        function handleAiImageUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+        async function handleAiImageUpload(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
             const dropzoneContent = document.getElementById('dropzone-content');
             const dropzoneLoading = document.getElementById('dropzone-loading');
+            const loadingText = document.getElementById('loading-text');
 
             dropzoneContent.style.display = 'none';
             dropzoneLoading.style.display = 'flex';
+            loadingText.textContent = `Extracting visual vector embeddings from ${files.length} image file(s) & querying CLIP index...`;
 
-            setTimeout(() => {
+            const formData = new FormData();
+            for (let i = 0; i < files.length; i++) {
+                formData.append('images', files[i]);
+            }
+
+            try {
+                const response = await fetch('/ai-vector-search/', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const data = await response.json();
+
                 dropzoneLoading.style.display = 'none';
                 dropzoneContent.style.display = 'flex';
-                document.getElementById('ai-banner').classList.add('active');
-                document.querySelectorAll('.ai-match-badge').forEach(badge => badge.classList.add('visible'));
-            }, 1200);
+
+                if (!data.success) {
+                    alert('AI Search Error: ' + (data.error || 'Failed to process images'));
+                    return;
+                }
+
+                // Remove existing empty state message if any
+                const existingEmptyMsg = document.getElementById('ai-empty-msg');
+                if (existingEmptyMsg) existingEmptyMsg.remove();
+
+                const container = document.getElementById('cases-container');
+                const cards = Array.from(container.querySelectorAll('.card-box[data-case-id]'));
+                const aiBanner = document.getElementById('ai-banner');
+                const aiStatusMsg = document.getElementById('ai-status-msg');
+
+                aiBanner.classList.add('active');
+
+                if (!data.results || data.results.length === 0) {
+                    // ZERO matches above 95% threshold (e.g. nature picture / unrelated object uploaded)
+                    aiStatusMsg.innerHTML = `<i class="fa-regular fa-circle-xmark" style="font-size: 1rem; color: var(--red-accent);"></i> <strong>NO SIMILARITY MATCHES FOUND:</strong> Uploaded photo does not match any active cases in database (0 Cases &ge; 95% Similarity Threshold).`;
+
+                    cards.forEach(card => {
+                        card.style.display = 'none';
+                    });
+
+                    const emptyNotice = document.createElement('div');
+                    emptyNotice.id = 'ai-empty-msg';
+                    emptyNotice.className = 'card-box';
+                    emptyNotice.style.cssText = 'grid-column: 1 / -1; text-align: center; padding: 3rem;';
+                    emptyNotice.innerHTML = `
+                        <div style="font-size: 2.25rem; color: var(--amber-accent); margin-bottom: 0.5rem;"><i class="fa-regular fa-image"></i></div>
+                        <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700;">No Visual Similarity Matches Found (95% - 100% Threshold)</h3>
+                        <p style="font-size: 0.8rem; color: var(--stone-muted); margin-top: 0.5rem; max-width: 32rem; margin-left: auto; margin-right: auto; line-height: 1.5;">
+                            The uploaded image (nature, background, or unrelated object) does not match any active missing person, pet, or found report with 95% - 100% similarity.
+                        </p>
+                    `;
+                    container.appendChild(emptyNotice);
+                    return;
+                }
+
+                // HIGH MATCHES (95% - 100%) FOUND
+                const resultMap = {};
+                let topScore = 0;
+                data.results.forEach(r => {
+                    resultMap[r.case_id] = r;
+                    if (r.match_score > topScore) topScore = r.match_score;
+                });
+
+                aiStatusMsg.innerHTML = `<i class="fa-regular fa-circle-check" style="font-size: 1rem; color: var(--emerald-accent);"></i> <strong>HIGH SIMILARITY MATCHES FOUND:</strong> ${data.results.length} case(s) match uploaded photo with <strong>${topScore}% SIMILARITY FOUND</strong>.`;
+
+                cards.forEach(card => {
+                    const caseId = card.getAttribute('data-case-id');
+                    const matchData = resultMap[caseId];
+                    const badgeCat = document.getElementById(`badge-cat-${caseId}`);
+
+                    if (matchData && badgeCat) {
+                        const score = matchData.match_score;
+                        card.setAttribute('data-ai-score', score);
+                        card.style.display = '';
+
+                        badgeCat.style.backgroundColor = 'var(--emerald-accent)';
+                        badgeCat.style.color = '#ffffff';
+                        badgeCat.innerHTML = `<i class="fa-regular fa-compass"></i> ${score}% SIMILARITY FOUND`;
+                    } else {
+                        // Hide non-matching cases
+                        card.style.display = 'none';
+                        card.removeAttribute('data-ai-score');
+                    }
+                });
+
+                // Sort DOM cards descending by score
+                cards.sort((a, b) => {
+                    const scoreA = parseFloat(a.getAttribute('data-ai-score') || 0);
+                    const scoreB = parseFloat(b.getAttribute('data-ai-score') || 0);
+                    return scoreB - scoreA;
+                });
+
+                cards.forEach(card => container.appendChild(card));
+
+            } catch (err) {
+                dropzoneLoading.style.display = 'none';
+                dropzoneContent.style.display = 'flex';
+                alert('AI Vector Search request failed. Please try again.');
+            }
         }
 
         function clearAiSearch() {
-            document.getElementById('ai-banner').classList.remove('active');
-            document.querySelectorAll('.ai-match-badge').forEach(badge => badge.classList.remove('visible'));
+            const aiBanner = document.getElementById('ai-banner');
+            aiBanner.classList.remove('active');
+
+            const existingEmptyMsg = document.getElementById('ai-empty-msg');
+            if (existingEmptyMsg) existingEmptyMsg.remove();
+
+            const container = document.getElementById('cases-container');
+            const cards = Array.from(container.querySelectorAll('.card-box[data-case-id]'));
+
+            cards.forEach(card => {
+                card.style.display = '';
+                const caseId = card.getAttribute('data-case-id');
+                const badgeCat = document.getElementById(`badge-cat-${caseId}`);
+                if (badgeCat) {
+                    const origText = badgeCat.getAttribute('data-original-text');
+                    badgeCat.style.backgroundColor = 'rgba(26, 26, 26, 0.85)';
+                    badgeCat.style.color = '#ffffff';
+                    badgeCat.innerHTML = `<i class="fa-regular fa-tag"></i> ${origText}`;
+                }
+                card.removeAttribute('data-ai-score');
+            });
+
+            // Re-sort by original order
+            cards.sort((a, b) => {
+                const orderA = parseInt(a.getAttribute('data-order') || 0);
+                const orderB = parseInt(b.getAttribute('data-order') || 0);
+                return orderA - orderB;
+            });
+
+            cards.forEach(card => container.appendChild(card));
             document.getElementById('ai-file-input').value = '';
         }
     </script>
