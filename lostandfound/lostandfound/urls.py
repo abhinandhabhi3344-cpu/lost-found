@@ -23,6 +23,7 @@ urlpatterns = [
     path('case/<int:pk>/edit/', views.case_edit, name='case_edit'),
     path('case/<int:pk>/delete/', views.case_delete, name='case_delete'),
     path('case/<int:pk>/resolve/', views.case_mark_resolved, name='case_mark_resolved'),
+    path('ai-vector-search/', views.ai_vector_search_api, name='ai_vector_search_api'),
 
     # User Dashboard
     path('dashboard/', views.user_dashboard, name='user_dashboard'),

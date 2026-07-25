@@ -940,3 +940,46 @@ def sighting_create(request, case_pk):
 
     messages.success(request, 'Sighting report submitted!')
     return redirect('case_detail', pk=case_pk)
+
+
+# ============================================================
+# REAL AI VECTOR SEARCH API (CLIP & FAISS)
+# ============================================================
+
+from django.views.decorators.csrf import csrf_exempt
+from .ai_engine import search_cases_with_ai
+
+@csrf_exempt
+def ai_vector_search_api(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'POST method required.'}, status=405)
+
+    files = request.FILES.getlist('images') or request.FILES.getlist('image')
+    if not files and 'file' in request.FILES:
+        files = [request.FILES['file']]
+
+    if not files:
+        return JsonResponse({'success': False, 'error': 'No query image file uploaded.'}, status=400)
+
+    try:
+        cases = Case.objects.select_related('owner').prefetch_related('images').all()
+        results = search_cases_with_ai(files, cases)
+
+        data = []
+        for r in results:
+            data.append({
+                'case_id': r['case'].pk,
+                'case_number': r['case'].case_number,
+                'title': r['case'].title,
+                'match_score': r['match_score'],
+                'is_high_match': r['is_high_match'],
+            })
+
+        return JsonResponse({
+            'success': True,
+            'total_analyzed': len(results),
+            'results': data
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
