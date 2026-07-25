@@ -1,3 +1,5 @@
+{% load static %}
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -214,6 +216,10 @@
             box-shadow: 3px 3px 8px #c7c4bf;
         }
 
+        .neu-button-emerald:hover {
+            background: #065f46;
+        }
+
         .neu-button-danger {
             background: var(--red-accent);
             color: #ffffff;
@@ -228,6 +234,10 @@
             justify-content: center;
             gap: 0.4rem;
             box-shadow: 3px 3px 8px #c7c4bf;
+        }
+
+        .neu-button-danger:hover {
+            background: #991b1b;
         }
 
         /* ==================== DASHBOARD METRICS GRID ==================== */
@@ -264,7 +274,7 @@
 
         /* ==================== STICKY TAB NAVIGATION ==================== */
         .tab-bar-section {
-            position:static;
+            position: sticky;
             top: 5rem;
             z-index: 40;
             background: rgba(234, 230, 225, 0.95);
@@ -304,7 +314,7 @@
             border-color: var(--stone-dark);
         }
 
-        /* ==================== TABLES & CARDS ==================== */
+        /* ==================== MAIN CONTENT PANELS ==================== */
         .dashboard-content-section {
             padding: 2.5rem 0 4rem 0;
         }
@@ -312,6 +322,16 @@
         .dash-panel {
             margin-bottom: 4rem;
             scroll-margin-top: 10rem;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .grid-2 { grid-template-columns: repeat(2, 1fr); }
         }
 
         .card-box {
@@ -348,8 +368,25 @@
             vertical-align: middle;
         }
 
-        .custom-table tr:hover {
-            background-color: rgba(234, 230, 225, 0.5);
+        .chart-bar-bg {
+            height: 1rem;
+            background: var(--stone-bg);
+            border-radius: 9999px;
+            overflow: hidden;
+            border: 1px solid var(--stone-border);
+            margin-top: 0.35rem;
+        }
+
+        .chart-bar-fill {
+            height: 100%;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 0.5rem;
+            font-size: 0.6rem;
+            font-weight: 800;
+            color: #fff;
         }
 
         .badge-tag {
@@ -369,90 +406,41 @@
         .bg-amber { background-color: var(--amber-accent); }
         .bg-emerald { background-color: var(--emerald-accent); }
 
-        /* Chart Bar Styling */
-        .chart-bar-bg {
-            width: 100%;
-            height: 1.5rem;
-            background-color: var(--stone-bg);
-            border-radius: 4px;
-            overflow: hidden;
-            display: flex;
-            margin-top: 0.5rem;
-        }
-
-        .chart-bar-fill {
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.65rem;
-            font-weight: 700;
-            color: #fff;
-        }
-
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-        }
-
-        @media (min-width: 768px) {
-            .grid-2 { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        .grid-3 {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-        }
-
-        @media (min-width: 768px) {
-            .grid-3 { grid-template-columns: repeat(3, 1fr); }
-        }
-
         .border-t-line { border-top: 1px solid rgba(210, 205, 199, 0.8); }
         .border-b-line { border-bottom: 1px solid rgba(210, 205, 199, 0.8); }
         .font-display { font-family: var(--font-display); }
 
         /* ==================== MODALS ==================== */
         .modal-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 100;
-            background: rgba(0, 0, 0, 0.55);
-            backdrop-filter: blur(6px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
+            position: fixed; inset: 0; z-index: 100;
+            background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(6px);
+            display: none; align-items: center; justify-content: center; padding: 1rem;
         }
 
-        .modal-overlay.active {
-            display: flex;
-        }
+        .modal-overlay.active { display: flex; }
 
         .modal-body {
-            width: 100%;
-            max-width: 28rem;
-            padding: 2rem;
-            position: relative;
-            max-height: 90vh;
-            overflow-y: auto;
+            width: 100%; max-width: 28rem; padding: 2rem;
+            position: relative; max-height: 90vh; overflow-y: auto;
         }
 
-        .modal-body.lg {
-            max-width: 36rem;
-        }
-
-        .close-btn {
-            position: absolute;
-            top: 1.25rem;
-            right: 1.25rem;
-            font-size: 1.25rem;
-            color: var(--stone-muted);
-        }
-
+        .modal-body.lg { max-width: 36rem; }
+        .close-btn { position: absolute; top: 1.25rem; right: 1.25rem; font-size: 1.25rem; color: var(--stone-muted); }
         .close-btn:hover { color: var(--stone-dark); }
+
+        /* FLASH MESSAGES */
+        .flash-messages {
+            position: fixed; top: 0.75rem; left: 50%; transform: translateX(-50%);
+            z-index: 200; display: flex; flex-direction: column; gap: 0.5rem; width: 90%; max-width: 32rem;
+        }
+
+        .flash-msg {
+            padding: 0.75rem 1.25rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .flash-msg.success { background: #d1fae5; color: #065f46; border: 1px solid #10b981; }
+        .flash-msg.error { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
 
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 4px; }
@@ -462,12 +450,23 @@
 </head>
 <body>
 
-    <!-- ==================== LIGHT GLASS NAVBAR ==================== -->
+    {% if messages %}
+    <div class="flash-messages">
+        {% for message in messages %}
+        <div class="flash-msg {{ message.tags }}" onclick="this.remove()">
+            <span>{{ message }}</span>
+            <button onclick="this.parentElement.remove()" style="font-size: 1rem; color: inherit;">&times;</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- LIGHT GLASS NAVBAR -->
     <header class="navbar">
         <nav class="nav-links">
-            <a href="index.html">Home</a>
-            <a href="cases.html">Latest Cases</a>
-            <a href="detectives.html">Detectives</a>
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'case_list' %}">Latest Cases</a>
+            <a href="{% url 'detective_list' %}">Detectives</a>
         </nav>
 
         <div class="admin-nav-badge">
@@ -476,11 +475,12 @@
                 <div style="font-size: 0.75rem; font-weight: 700; line-height: 1.1;">System Administrator</div>
                 <span style="font-size: 0.6rem; color: var(--amber-accent); font-weight: 600; text-transform: uppercase;">Master Credentials</span>
             </div>
+            <a href="{% url 'logout' %}" class="neu-button" style="padding: 0.35rem 0.65rem; font-size: 0.6rem; margin-left: 0.5rem;">Logout</a>
         </div>
     </header>
 
 
-    <!-- ==================== DASHBOARD HEADER & STATS ==================== -->
+    <!-- DASHBOARD HEADER & STATS -->
     <header class="dashboard-header">
         <div class="container">
             <div>
@@ -498,37 +498,37 @@
             <div class="metrics-grid">
                 <div class="stat-card">
                     <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-user"></i> Total Users</span>
-                    <div class="stat-number font-display">1,248</div>
-                    <span style="font-size: 0.6rem; color: var(--emerald-accent); font-weight: 600;">+24 This Week</span>
+                    <div class="stat-number font-display">{{ total_users }}</div>
+                    <span style="font-size: 0.6rem; color: var(--emerald-accent); font-weight: 600;">Registered Members</span>
                 </div>
 
                 <div class="stat-card">
                     <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-id-badge"></i> Total Detectives</span>
-                    <div class="stat-number font-display">42</div>
+                    <div class="stat-number font-display">{{ total_detectives }}</div>
                     <span style="font-size: 0.6rem; color: var(--stone-dark); font-weight: 600;">Licensed &amp; Vetted</span>
                 </div>
 
                 <div class="stat-card">
                     <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-bell"></i> Lost Cases</span>
-                    <div class="stat-number font-display">342</div>
+                    <div class="stat-number font-display">{{ total_lost }}</div>
                     <span style="font-size: 0.6rem; color: var(--amber-accent); font-weight: 600;">Monitored active</span>
                 </div>
 
                 <div class="stat-card">
                     <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-circle-check"></i> Solved Cases</span>
-                    <div class="stat-number font-display">412</div>
+                    <div class="stat-number font-display">{{ solved_cases }}</div>
                     <span style="font-size: 0.6rem; color: var(--emerald-accent); font-weight: 600;">Reunited Safely</span>
                 </div>
 
                 <div class="stat-card">
                     <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-newspaper"></i> Articles</span>
-                    <div class="stat-number font-display">12</div>
+                    <div class="stat-number font-display">{{ total_blogs }}</div>
                     <span style="font-size: 0.6rem; color: var(--emerald-accent); font-weight: 600;">Published Blogs</span>
                 </div>
 
                 <div class="stat-card">
                     <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-clock"></i> Pending Vetting</span>
-                    <div class="stat-number font-display" style="color: var(--amber-accent);">5</div>
+                    <div class="stat-number font-display" style="color: var(--amber-accent);">{{ pending_detectives }}</div>
                     <span style="font-size: 0.6rem; color: var(--amber-accent); font-weight: 600;">Requires Approval</span>
                 </div>
             </div>
@@ -536,7 +536,7 @@
     </header>
 
 
-    <!-- ==================== STICKY TAB NAVIGATION ==================== -->
+    <!-- STICKY TAB NAVIGATION -->
     <section class="tab-bar-section">
         <div class="container">
             <div class="tab-container">
@@ -547,26 +547,26 @@
                     <i class="fa-regular fa-user"></i> User Management
                 </a>
                 <a class="dash-tab-btn" href="#panel-vetting">
-                    <i class="fa-regular fa-id-badge"></i> Detective Vetting (5)
+                    <i class="fa-regular fa-id-badge"></i> Detective Vetting ({{ pending_detectives }})
                 </a>
                 <a class="dash-tab-btn" href="#panel-cases">
                     <i class="fa-regular fa-folder-open"></i> Case Database
                 </a>
                 <a class="dash-tab-btn" href="#panel-assignment">
-                    <i class="fa-regular fa-compass"></i> Detective Requests &amp; Approvals (2)
+                    <i class="fa-regular fa-compass"></i> Detective Requests &amp; Approvals ({{ detective_requests|length }})
                 </a>
                 <a class="dash-tab-btn" href="#panel-blog">
                     <i class="fa-regular fa-newspaper"></i> Blog Management
                 </a>
                 <a class="dash-tab-btn" href="#panel-feedback">
-                    <i class="fa-regular fa-comment-dots"></i> Feedback Moderation (3)
+                    <i class="fa-regular fa-comment-dots"></i> Feedback Moderation ({{ pending_feedbacks }})
                 </a>
             </div>
         </div>
     </section>
 
 
-    <!-- ==================== MAIN CONTENT PANELS ==================== -->
+    <!-- MAIN CONTENT PANELS -->
     <main class="dashboard-content-section">
         <div class="container">
 
@@ -575,83 +575,50 @@
                 <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;" class="border-b-line pb-3">PLATFORM RECOVERY ANALYTICS</h2>
 
                 <div class="grid-2">
-                    <!-- Case Volume Breakdown Chart -->
                     <div class="card-box">
                         <h3 class="font-display border-b-line pb-2" style="font-size: 1rem; font-weight: 700;">CASE VOLUME RATIOS</h3>
                         
                         <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
                             <div>
                                 <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 600;">
-                                    <span>Solved &amp; Reunited Cases (412)</span>
-                                    <span style="color: var(--emerald-accent);">43.7%</span>
+                                    <span>Solved &amp; Reunited Cases ({{ solved_cases }})</span>
+                                    <span style="color: var(--emerald-accent);">Active</span>
                                 </div>
                                 <div class="chart-bar-bg">
-                                    <div class="chart-bar-fill" style="width: 43.7%; background-color: var(--emerald-accent);">412</div>
+                                    <div class="chart-bar-fill" style="width: 75%; background-color: var(--emerald-accent);">{{ solved_cases }}</div>
                                 </div>
                             </div>
 
                             <div>
                                 <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 600;">
-                                    <span>Active Lost Cases (342)</span>
-                                    <span style="color: var(--amber-accent);">36.3%</span>
+                                    <span>Active Lost Cases ({{ total_lost }})</span>
+                                    <span style="color: var(--amber-accent);">Active</span>
                                 </div>
                                 <div class="chart-bar-bg">
-                                    <div class="chart-bar-fill" style="width: 36.3%; background-color: var(--amber-accent);">342</div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 600;">
-                                    <span>Active Found Reports (189)</span>
-                                    <span style="color: var(--stone-dark);">20.0%</span>
-                                </div>
-                                <div class="chart-bar-bg">
-                                    <div class="chart-bar-fill" style="width: 20%; background-color: var(--stone-dark);">189</div>
+                                    <div class="chart-bar-fill" style="width: 55%; background-color: var(--amber-accent);">{{ total_lost }}</div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Detective Performance Leaderboard -->
                     <div class="card-box">
-                        <h3 class="font-display border-b-line pb-2" style="font-size: 1rem; font-weight: 700;">TOP DETECTIVE RECOVERY PERFORMANCE</h3>
-
-                        <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.85rem;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--stone-bg); padding: 0.6rem 0.85rem; border-radius: 6px;">
-                                <div>
-                                    <h4 class="font-display" style="font-size: 0.85rem; font-weight: 700;">Marcus Thorne (London)</h4>
-                                    <p style="font-size: 0.65rem; color: var(--stone-muted);">K9 Lead Handler</p>
-                                </div>
-                                <span style="font-size: 0.8rem; font-weight: 800; color: var(--emerald-accent);">210 Solved</span>
-                            </div>
-
-                            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--stone-bg); padding: 0.6rem 0.85rem; border-radius: 6px;">
-                                <div>
-                                    <h4 class="font-display" style="font-size: 0.85rem; font-weight: 700;">Sarah Vance (Kyoto)</h4>
-                                    <p style="font-size: 0.65rem; color: var(--stone-muted);">Urban Missing Lead</p>
-                                </div>
-                                <span style="font-size: 0.8rem; font-weight: 800; color: var(--emerald-accent);">142 Solved</span>
-                            </div>
-
-                            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--stone-bg); padding: 0.6rem 0.85rem; border-radius: 6px;">
-                                <div>
-                                    <h4 class="font-display" style="font-size: 0.85rem; font-weight: 700;">Kenji Sato (Tokyo)</h4>
-                                    <p style="font-size: 0.65rem; color: var(--stone-muted);">AI Vision Forensic Specialist</p>
-                                </div>
-                                <span style="font-size: 0.8rem; font-weight: 800; color: var(--emerald-accent);">98 Solved</span>
-                            </div>
+                        <h3 class="font-display border-b-line pb-2" style="font-size: 1rem; font-weight: 700;">AI VECTOR ENGINE HEALTH</h3>
+                        <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.75rem; line-height: 1.5;">
+                            Automated visual feature vectors active. Camera feed similarity scans processing in real-time across database.
+                        </p>
+                        <div style="margin-top: 1rem; padding: 0.85rem; background: #d1fae5; border: 1px solid #10b981; border-radius: 6px; color: #065f46; font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fa-regular fa-circle-check"></i>
+                            <span>Vector Index Operational • Response Latency &lt; 120ms</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-
             <!-- 2. USER MANAGEMENT -->
             <div id="panel-users" class="dash-panel">
                 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.25rem;" class="border-b-line pb-3">
                     <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800;">USER ACCOUNTS DIRECTORY</h2>
-                    
-                    <input type="text" id="user-search" placeholder="Search user by name, username, email..." class="neu-input" style="padding: 0.65rem 1rem; width: 18rem;" oninput="filterUsers()">
+                    <input type="text" id="user-search" placeholder="Search user by name, email..." class="neu-input" style="padding: 0.65rem 1rem; width: 18rem;" oninput="filterUsers()">
                 </div>
 
                 <div class="card-box" style="padding: 0.5rem; overflow-x: auto;">
@@ -667,112 +634,85 @@
                             </tr>
                         </thead>
                         <tbody>
+                            {% for u in users %}
                             <tr>
-                                <td><strong>Daisuke Tanaka</strong></td>
-                                <td>daisuketanaka</td>
-                                <td>daisuke@example.jp</td>
-                                <td>Citizen</td>
-                                <td><span class="badge-tag bg-emerald">Active</span></td>
-                                <td style="display: flex; gap: 0.3rem;">
-                                    <button onclick="openModal('modal-view-user')" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Profile</button>
-                                    <button onclick="alert('User account disabled.');" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Disable</button>
+                                <td><strong>{{ u.full_name }}</strong></td>
+                                <td>{{ u.user.username }}</td>
+                                <td>{{ u.user.email }}</td>
+                                <td>{% if u.is_detective %}Detective{% else %}Citizen{% endif %}</td>
+                                <td>
+                                    {% if u.is_banned %}
+                                    <span class="badge-tag bg-red">Banned</span>
+                                    {% else %}
+                                    <span class="badge-tag bg-emerald">Active</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <form action="{% url 'admin_toggle_ban' pk=u.pk %}" method="POST" style="display: inline;">
+                                        {% csrf_token %}
+                                        {% if u.is_banned %}
+                                        <button type="submit" class="neu-button-emerald" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Unban</button>
+                                        {% else %}
+                                        <button type="submit" class="neu-button-danger" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Ban User</button>
+                                        {% endif %}
+                                    </form>
                                 </td>
                             </tr>
-                            <tr>
-                                <td><strong>Emma Jensen</strong></td>
-                                <td>emmajensen</td>
-                                <td>emma@copenhagen.dk</td>
-                                <td>Citizen</td>
-                                <td><span class="badge-tag bg-emerald">Active</span></td>
-                                <td style="display: flex; gap: 0.3rem;">
-                                    <button onclick="openModal('modal-view-user')" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Profile</button>
-                                    <button onclick="alert('User account disabled.');" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Disable</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong>Liam Wilson</strong></td>
-                                <td>liamwilson</td>
-                                <td>liam@melbourne.au</td>
-                                <td>Citizen</td>
-                                <td><span class="badge-tag bg-red">Disabled</span></td>
-                                <td style="display: flex; gap: 0.3rem;">
-                                    <button onclick="openModal('modal-view-user')" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Profile</button>
-                                    <button onclick="alert('User account enabled.');" class="neu-button-emerald" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Enable</button>
-                                </td>
-                            </tr>
+                            {% empty %}
+                            <tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--stone-muted);">No user accounts found.</td></tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
             </div>
 
-
             <!-- 3. DETECTIVE VETTING -->
             <div id="panel-vetting" class="dash-panel">
-                <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;" class="border-b-line pb-3">PENDING DETECTIVE APPLICATIONS (5)</h2>
-
+                <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;" class="border-b-line pb-3">PENDING DETECTIVE APPLICATIONS ({{ pending_detective_apps|length }})</h2>
                 <div class="grid-2">
-                    <!-- Applicant 1 -->
+                    {% for app in pending_detective_apps %}
                     <div class="card-box">
                         <div>
                             <div style="display: flex; justify-content: space-between; align-items: flex-start;" class="border-b-line pb-2">
                                 <div>
-                                    <h3 class="font-display" style="font-size: 1rem; font-weight: 700;">Investigator Hiroshi Sato</h3>
-                                    <p style="font-size: 0.65rem; color: var(--stone-muted); font-family: monospace;">Lic. #PD-90124 • Osaka, Japan</p>
+                                    <h3 class="font-display" style="font-size: 1rem; font-weight: 700;">{{ app.full_name }}</h3>
+                                    <p style="font-size: 0.65rem; color: var(--stone-muted); font-family: monospace;">Lic. {{ app.license_number }} • {{ app.address }}</p>
                                 </div>
-                                <span class="badge-tag bg-amber"><i class="fa-regular fa-clock"></i> PENDING VETTING</span>
+                                <span class="badge-tag bg-amber"><i class="fa-regular fa-clock"></i> PENDING</span>
                             </div>
-                            <p style="font-size: 0.75rem; color: var(--stone-dark); margin-top: 0.75rem; font-weight: 300;">
-                                10 years experience in missing pet forensic tracking and local shelter liaison operations.
+                            <p style="font-size: 0.75rem; color: var(--stone-dark); margin-top: 0.75rem;">
+                                {{ app.experience_years }} yrs experience. Specialization: {{ app.specialization }}
                             </p>
                         </div>
                         <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.75rem; display: flex; gap: 0.5rem;">
-                            <button onclick="openModal('modal-view-detective-app')" class="neu-button" style="flex: 1;">View Info</button>
-                            <button onclick="alert('Detective application Approved!');" class="neu-button-emerald" style="flex: 1;"><i class="fa-regular fa-circle-check"></i> Approve</button>
-                            <button onclick="alert('Application Rejected.');" class="neu-button-danger" style="flex: 1;">Reject</button>
+                            <form action="{% url 'admin_approve_detective' pk=app.pk %}" method="POST" style="flex: 1;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="approve">
+                                <button type="submit" class="neu-button-emerald" style="width: 100%;"><i class="fa-regular fa-circle-check"></i> Approve</button>
+                            </form>
+                            <form action="{% url 'admin_approve_detective' pk=app.pk %}" method="POST" style="flex: 1;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="reject">
+                                <button type="submit" class="neu-button-danger" style="width: 100%;">Reject</button>
+                            </form>
                         </div>
                     </div>
-
-                    <!-- Applicant 2 -->
-                    <div class="card-box">
-                        <div>
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start;" class="border-b-line pb-2">
-                                <div>
-                                    <h3 class="font-display" style="font-size: 1rem; font-weight: 700;">Private Detective Claire Dubois</h3>
-                                    <p style="font-size: 0.65rem; color: var(--stone-muted); font-family: monospace;">Lic. #PD-33019 • Paris, France</p>
-                                </div>
-                                <span class="badge-tag bg-amber"><i class="fa-regular fa-clock"></i> PENDING VETTING</span>
-                            </div>
-                            <p style="font-size: 0.75rem; color: var(--stone-dark); margin-top: 0.75rem; font-weight: 300;">
-                                Specializes in urban missing persons, facial recognition indexing, and transit hub tracking.
-                            </p>
-                        </div>
-                        <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.75rem; display: flex; gap: 0.5rem;">
-                            <button onclick="openModal('modal-view-detective-app')" class="neu-button" style="flex: 1;">View Info</button>
-                            <button onclick="alert('Detective application Approved!');" class="neu-button-emerald" style="flex: 1;"><i class="fa-regular fa-circle-check"></i> Approve</button>
-                            <button onclick="alert('Application Rejected.');" class="neu-button-danger" style="flex: 1;">Reject</button>
-                        </div>
+                    {% empty %}
+                    <div class="card-box" style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--stone-muted);">
+                        No pending detective applications requiring vetting.
                     </div>
+                    {% endfor %}
                 </div>
             </div>
 
-
-            <!-- 4. CASE DATABASE -->
+            <!-- 4. CASE DATABASE CONTROL (MARK SOLVED FIXED) -->
             <div id="panel-cases" class="dash-panel">
                 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.25rem;" class="border-b-line pb-3">
                     <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800;">CASE DATABASE CONTROL</h2>
-
-                    <div style="display: flex; gap: 0.5rem;">
-                        <input type="text" id="case-search" placeholder="Search case title or city..." class="neu-input" style="padding: 0.6rem 0.85rem;" oninput="filterCases()">
-                        <select id="case-category-filter" class="neu-input" style="padding: 0.6rem 0.85rem;" onchange="filterCases()">
-                            <option value="all">All Statuses</option>
-                            <option value="lost">Lost Only</option>
-                            <option value="found">Found Only</option>
-                        </select>
-                    </div>
                 </div>
 
                 <div class="card-box" style="padding: 0.5rem; overflow-x: auto;">
-                    <table class="custom-table" id="cases-admin-table">
+                    <table class="custom-table">
                         <thead>
                             <tr>
                                 <th>Case ID</th>
@@ -785,324 +725,155 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr data-type="lost">
-                                <td><code>#LF-883912</code></td>
-                                <td><strong>Golden Retriever 'Leo'</strong></td>
-                                <td><span class="badge-tag bg-red">Lost Pet</span></td>
-                                <td>Kyoto, Japan</td>
-                                <td>$1,500</td>
-                                <td><span class="badge-tag bg-amber">Active</span></td>
-                                <td style="display: flex; gap: 0.3rem;">
-                                    <a href="case-details.html" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Inspect</a>
-                                    <button onclick="alert('Case marked as Solved.');" class="neu-button-emerald" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Mark Solved</button>
-                                    <button onclick="alert('Case deleted.');" class="neu-button-danger" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Delete</button>
+                            {% for c in cases %}
+                            <tr>
+                                <td><code>{{ c.case_number }}</code></td>
+                                <td><strong>{{ c.title }}</strong></td>
+                                <td><span class="badge-tag {% if c.case_type == 'LOST' %}bg-red{% else %}bg-emerald{% endif %}">{{ c.get_case_type_display }}</span></td>
+                                <td>{{ c.location }}</td>
+                                <td>${{ c.reward|floatformat:0 }}</td>
+                                <td>
+                                    {% if c.status == 'CLOSED' or c.status == 'FOUND' %}
+                                    <span class="badge-tag bg-emerald">Solved / Reunited</span>
+                                    {% elif c.status == 'INVESTIGATING' %}
+                                    <span class="badge-tag bg-emerald">Investigating</span>
+                                    {% else %}
+                                    <span class="badge-tag bg-amber">Active (Open)</span>
+                                    {% endif %}
+                                </td>
+                                <td style="display: flex; gap: 0.3rem; align-items: center;">
+                                    <a href="{% url 'case_detail' pk=c.pk %}" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Inspect</a>
+                                    
+                                    {% if c.status != 'CLOSED' and c.status != 'FOUND' %}
+                                    <form action="{% url 'admin_mark_case_solved' pk=c.pk %}" method="POST" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="neu-button-emerald" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Mark Solved</button>
+                                    </form>
+                                    {% else %}
+                                    <span style="font-size: 0.65rem; color: var(--emerald-accent); font-weight: 700; padding: 0.2rem 0.4rem;"><i class="fa-regular fa-circle-check"></i> Solved</span>
+                                    {% endif %}
+
+                                    <form action="{% url 'admin_delete_case' pk=c.pk %}" method="POST" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="neu-button-danger" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Delete</button>
+                                    </form>
                                 </td>
                             </tr>
-                            <tr data-type="lost">
-                                <td><code>#LF-401928</code></td>
-                                <td><strong>Arthur Jensen (Senior)</strong></td>
-                                <td><span class="badge-tag bg-red">Missing Person</span></td>
-                                <td>Copenhagen, DK</td>
-                                <td>None</td>
-                                <td><span class="badge-tag bg-amber">Active</span></td>
-                                <td style="display: flex; gap: 0.3rem;">
-                                    <a href="case-details.html" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Inspect</a>
-                                    <button onclick="alert('Case marked as Solved.');" class="neu-button-emerald" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Mark Solved</button>
-                                    <button onclick="alert('Case deleted.');" class="neu-button-danger" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Delete</button>
-                                </td>
-                            </tr>
-                            <tr data-type="found">
-                                <td><code>#LF-102938</code></td>
-                                <td><strong>Siamese Cat (Unclaimed)</strong></td>
-                                <td><span class="badge-tag bg-emerald">Found Pet</span></td>
-                                <td>Melbourne, AU</td>
-                                <td>None</td>
-                                <td><span class="badge-tag bg-emerald">Unclaimed</span></td>
-                                <td style="display: flex; gap: 0.3rem;">
-                                    <a href="case-details.html" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Inspect</a>
-                                    <button onclick="alert('Case marked as Reunited.');" class="neu-button-emerald" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Mark Solved</button>
-                                    <button onclick="alert('Case deleted.');" class="neu-button-danger" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Delete</button>
-                                </td>
-                            </tr>
+                            {% empty %}
+                            <tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--stone-muted);">No cases in database.</td></tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
             </div>
 
-
-            <!-- 5. DETECTIVE REQUESTS & DISPATCH APPROVALS -->
+            <!-- 5. DETECTIVE REQUESTS & ASSIGNMENTS -->
             <div id="panel-assignment" class="dash-panel">
-                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.5rem;" class="border-b-line pb-3">
-                    <div>
-                        <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800;">USER DETECTIVE REQUESTS &amp; APPROVALS</h2>
-                        <p style="font-size: 0.75rem; color: var(--stone-muted);">Review user dispatch requests. Approve to assign detective or decline with a reason sent to the user.</p>
-                    </div>
-                    <span class="badge-tag bg-amber"><i class="fa-regular fa-clock"></i> 2 PENDING DISPATCH REQUESTS</span>
-                </div>
+                <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;" class="border-b-line pb-3">DETECTIVE DISPATCH REQUESTS</h2>
 
                 <div class="grid-2">
-                    <!-- Request 1 -->
+                    {% for req in detective_requests %}
                     <div class="card-box">
                         <div>
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start;" class="border-b-line pb-2">
-                                <div>
-                                    <span class="badge-tag bg-red">URGENT DISPATCH</span>
-                                    <h3 class="font-display" style="font-size: 1.05rem; font-weight: 700; margin-top: 0.35rem;">Case #LF-883912 — Golden Retriever 'Leo'</h3>
-                                </div>
-                                <span style="font-size: 0.85rem; font-weight: 800; color: var(--amber-accent);">$1,500 Reward</span>
-                            </div>
-
-                            <div style="margin-top: 0.85rem; font-size: 0.75rem; display: flex; flex-direction: column; gap: 0.4rem;">
-                                <p><strong>Requested By User:</strong> Daisuke Tanaka (daisuketanaka)</p>
-                                <p><strong>Target Detective:</strong> Detective Sarah Vance (#PD-88219)</p>
-                                <p style="color: var(--stone-muted); font-style: italic; background: var(--stone-bg); padding: 0.5rem; border-radius: 4px; border: 1px solid var(--stone-border); margin-top: 0.2rem;">
-                                    "Please dispatch Detective Vance, she is a local Kyoto specialist and has handled similar cases."
-                                </p>
-                            </div>
+                            <h3 class="font-display" style="font-size: 1rem; font-weight: 700;">{{ req.case.title }} ({{ req.case.case_number }})</h3>
+                            <p style="font-size: 0.75rem; color: var(--stone-muted);">Requested by {{ req.requested_by.profile.full_name|default:req.requested_by.username }}</p>
+                            {% if req.message %}<p style="font-size: 0.75rem; margin-top: 0.5rem;">"{{ req.message }}"</p>{% endif %}
                         </div>
 
-                        <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.75rem; display: flex; gap: 0.5rem;">
-                            <button onclick="alert('Request Approved! Case #LF-883912 has been assigned to Detective Sarah Vance.');" class="neu-button-emerald" style="flex: 1;">
-                                <i class="fa-regular fa-circle-check"></i> Approve &amp; Dispatch
-                            </button>
-                            <button onclick="openDeclineModal('Case #LF-883912 — Golden Retriever Leo', 'Daisuke Tanaka')" class="neu-button-danger" style="flex: 1;">
-                                <i class="fa-regular fa-circle-xmark"></i> Decline Request
-                            </button>
-                        </div>
+                        <form action="{% url 'admin_assign_detective' %}" method="POST" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                            {% csrf_token %}
+                            <input type="hidden" name="case_id" value="{{ req.case.pk }}">
+                            <input type="hidden" name="request_id" value="{{ req.pk }}">
+                            <select name="detective_id" class="neu-input" style="width: 100%; padding: 0.5rem;" required>
+                                <option value="">Select Approved Detective to Assign...</option>
+                                {% for det in approved_detectives %}
+                                <option value="{{ det.pk }}">{{ det.full_name }} ({{ det.city }})</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="neu-button-emerald">Assign Detective</button>
+                        </form>
                     </div>
-
-                    <!-- Request 2 -->
-                    <div class="card-box">
-                        <div>
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start;" class="border-b-line pb-2">
-                                <div>
-                                    <span class="badge-tag bg-amber">SEARCHING</span>
-                                    <h3 class="font-display" style="font-size: 1.05rem; font-weight: 700; margin-top: 0.35rem;">Case #LF-501928 — Tabby Cat 'Milo'</h3>
-                                </div>
-                                <span style="font-size: 0.85rem; font-weight: 800; color: var(--stone-dark);">$200 Reward</span>
-                            </div>
-
-                            <div style="margin-top: 0.85rem; font-size: 0.75rem; display: flex; flex-direction: column; gap: 0.4rem;">
-                                <p><strong>Requested By User:</strong> Emma Jensen (emmajensen)</p>
-                                <p><strong>Target Detective:</strong> Any Available Osaka Detective (Kenji Sato Recommended)</p>
-                                <p style="color: var(--stone-muted); font-style: italic; background: var(--stone-bg); padding: 0.5rem; border-radius: 4px; border: 1px solid var(--stone-border); margin-top: 0.2rem;">
-                                    "Need a licensed investigator in Osaka equipped with night-vision gear."
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.75rem; display: flex; gap: 0.5rem;">
-                            <button onclick="alert('Request Approved! Case #LF-501928 has been assigned to Investigator Kenji Sato.');" class="neu-button-emerald" style="flex: 1;">
-                                <i class="fa-regular fa-circle-check"></i> Approve &amp; Dispatch
-                            </button>
-                            <button onclick="openDeclineModal('Case #LF-501928 — Tabby Cat Milo', 'Emma Jensen')" class="neu-button-danger" style="flex: 1;">
-                                <i class="fa-regular fa-circle-xmark"></i> Decline Request
-                            </button>
-                        </div>
+                    {% empty %}
+                    <div class="card-box" style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--stone-muted);">
+                        No pending detective dispatch requests.
                     </div>
+                    {% endfor %}
                 </div>
             </div>
 
-
-            <!-- 6. BLOG MANAGEMENT PANEL -->
+            <!-- 6. BLOG MANAGEMENT -->
             <div id="panel-blog" class="dash-panel">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;" class="border-b-line pb-3">
-                    <div>
-                        <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800;">PLATFORM BLOG &amp; GUIDES CONTROL</h2>
-                        <p style="font-size: 0.75rem; color: var(--stone-muted);">Publish recovery protocols, AI technical articles, and investigation guides.</p>
-                    </div>
-                    <button onclick="openModal('modal-create-blog')" class="neu-button-dark" style="padding: 0.65rem 1.1rem; font-size: 0.7rem;">+ Create New Article</button>
-                </div>
-
-                <div class="card-box" style="padding: 0.5rem; overflow-x: auto;">
-                    <table class="custom-table">
-                        <thead>
-                            <tr>
-                                <th>Article Title</th>
-                                <th>Category</th>
-                                <th>Author</th>
-                                <th>Read Time</th>
-                                <th>Published Date</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>The Critical First 2 Hours Guide</strong></td>
-                                <td><span class="badge-tag bg-emerald">PROTOCOL GUIDE</span></td>
-                                <td>Sarah Vance</td>
-                                <td>5 Mins</td>
-                                <td>July 20, 2026</td>
-                                <td style="display: flex; gap: 0.3rem;">
-                                    <button onclick="alert('Editing article...');" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Edit</button>
-                                    <button onclick="alert('Article deleted.');" class="neu-button-danger" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Delete</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong>Demystifying Vector Matching &amp; FAISS Indexing</strong></td>
-                                <td><span class="badge-tag bg-amber">AI EXPLAINED</span></td>
-                                <td>System AI Unit</td>
-                                <td>7 Mins</td>
-                                <td>July 18, 2026</td>
-                                <td style="display: flex; gap: 0.3rem;">
-                                    <button onclick="alert('Editing article...');" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Edit</button>
-                                    <button onclick="alert('Article deleted.');" class="neu-button-danger" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Delete</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-
-            <!-- 7. FEEDBACK MODERATION PANEL -->
-            <div id="panel-feedback" class="dash-panel">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;" class="border-b-line pb-3">
-                    <div>
-                        <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800;">FEEDBACK &amp; TESTIMONIAL MODERATION (3)</h2>
-                        <p style="font-size: 0.75rem; color: var(--stone-muted);">Approve user recovery stories to feature on the platform homepage.</p>
-                    </div>
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.25rem;" class="border-b-line pb-3">
+                    <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800;">BLOG ARTICLE MANAGEMENT</h2>
+                    <button onclick="openModal('modal-create-blog')" class="neu-button-dark"><i class="fa-regular fa-newspaper"></i> Publish Article</button>
                 </div>
 
                 <div class="grid-2">
+                    {% for blog in blogs %}
                     <div class="card-box">
                         <div>
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start;" class="border-b-line pb-2">
-                                <div>
-                                    <h3 class="font-display" style="font-size: 1rem; font-weight: 700;">Daisuke Tanaka</h3>
-                                    <p style="font-size: 0.65rem; color: var(--stone-muted);">Reunited Pet Owner • Kyoto, Japan</p>
-                                </div>
-                                <span class="badge-tag bg-amber">PENDING REVIEW</span>
-                            </div>
-                            <p style="font-size: 0.75rem; color: var(--stone-dark); margin-top: 0.75rem; font-style: italic;">
-                                "Within 30 minutes of uploading Leo's photo, the AI vector search matched a camera feed 2 miles away. Detective Sarah had him safely home by evening!"
-                            </p>
+                            <h3 class="font-display" style="font-size: 1rem; font-weight: 700;">{{ blog.title }}</h3>
+                            <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.25rem;">Published {{ blog.created_at|date:"M d, Y" }}</p>
+                            <p style="font-size: 0.75rem; margin-top: 0.5rem;">{{ blog.content|truncatewords:25 }}</p>
                         </div>
-                        <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.75rem; display: flex; gap: 0.5rem;">
-                            <button onclick="alert('Feedback Approved & Published to Homepage!');" class="neu-button-emerald" style="flex: 1;"><i class="fa-regular fa-circle-check"></i> Approve for Homepage</button>
-                            <button onclick="alert('Feedback rejected.');" class="neu-button-danger" style="flex: 1;">Reject</button>
-                        </div>
+                        <form action="{% url 'admin_manage_blog' %}" method="POST" style="margin-top: 1rem;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="blog_id" value="{{ blog.pk }}">
+                            <button type="submit" class="neu-button-danger">Delete Article</button>
+                        </form>
                     </div>
+                    {% empty %}
+                    <div class="card-box" style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--stone-muted);">
+                        No blog articles published.
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
 
+            <!-- 7. FEEDBACK MODERATION -->
+            <div id="panel-feedback" class="dash-panel">
+                <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;" class="border-b-line pb-3">FEEDBACK MODERATION</h2>
+
+                <div class="grid-2">
+                    {% for fb in feedbacks %}
                     <div class="card-box">
                         <div>
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start;" class="border-b-line pb-2">
-                                <div>
-                                    <h3 class="font-display" style="font-size: 1rem; font-weight: 700;">Emma Jensen</h3>
-                                    <p style="font-size: 0.65rem; color: var(--stone-muted);">Family Member • Copenhagen, DK</p>
-                                </div>
-                                <span class="badge-tag bg-amber">PENDING REVIEW</span>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--stone-muted);">
+                                <span>From: <strong>{{ fb.sender.profile.full_name|default:fb.sender.username }}</strong></span>
+                                <span>{{ fb.created_at|date:"M d, Y" }}</span>
                             </div>
-                            <p style="font-size: 0.75rem; color: var(--stone-dark); margin-top: 0.75rem; font-style: italic;">
-                                "Through LOST &amp; FOUND, structured real-time logs kept our family calm until Private Investigator Marcus brought my father home safely."
-                            </p>
+                            <p style="font-size: 0.8rem; margin-top: 0.5rem; font-style: italic;">"{{ fb.comment }}"</p>
                         </div>
                         <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.75rem; display: flex; gap: 0.5rem;">
-                            <button onclick="alert('Feedback Approved & Published to Homepage!');" class="neu-button-emerald" style="flex: 1;"><i class="fa-regular fa-circle-check"></i> Approve for Homepage</button>
-                            <button onclick="alert('Feedback rejected.');" class="neu-button-danger" style="flex: 1;">Reject</button>
+                            {% if not fb.is_approved %}
+                            <form action="{% url 'admin_manage_feedback' pk=fb.pk %}" method="POST" style="flex: 1;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="approve">
+                                <button type="submit" class="neu-button-emerald" style="width: 100%;">Approve</button>
+                            </form>
+                            {% endif %}
+                            <form action="{% url 'admin_manage_feedback' pk=fb.pk %}" method="POST" style="flex: 1;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="delete">
+                                <button type="submit" class="neu-button-danger" style="width: 100%;">Delete</button>
+                            </form>
                         </div>
                     </div>
+                    {% empty %}
+                    <div class="card-box" style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--stone-muted);">
+                        No feedback submissions requiring moderation.
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
 
         </div>
     </main>
 
-
-    <!-- ==================== FOOTER ==================== -->
-    <footer style="padding: 3rem 0; border-top: 1px solid rgba(210, 205, 199, 0.8);">
-        <div class="container">
-            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1.5rem;">
-                <div>
-                    <h2 class="font-display" style="font-size: 1.5rem; font-weight: 800; text-transform: uppercase;">LOST &amp; FOUND</h2>
-                    <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.2rem;">AI-Powered Recovery Network</p>
-                </div>
-                <div style="display: flex; gap: 1.5rem; font-size: 0.65rem; text-transform: uppercase; font-weight: 600; color: var(--stone-muted);">
-                    <a href="index.html" style="text-decoration: underline;">Home</a>
-                    <a href="cases.html" style="text-decoration: underline;">All Cases</a>
-                    <a href="#" style="text-decoration: underline;">Privacy Policy</a>
-                </div>
-            </div>
-            <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(210, 205, 199, 0.4); text-align: center; font-size: 0.65rem; color: var(--stone-muted);">
-                ALL RIGHTS RESERVED &copy; 2026 LOST &amp; FOUND PLATFORM
-            </div>
-        </div>
-    </footer>
-
-
-    <!-- ==================== ALL MODALS ==================== -->
+    <!-- MODALS -->
     <div id="modal-overlay" class="modal-overlay">
-        
-        <!-- 1. VIEW USER MODAL -->
-        <div id="modal-view-user" class="neu-card modal-body hidden">
-            <button onclick="closeModals()" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
-
-            <div style="margin-bottom: 1rem;">
-                <span class="badge-tag bg-emerald"><i class="fa-regular fa-user"></i> USER PROFILE</span>
-                <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700; margin-top: 0.35rem;">Daisuke Tanaka</h3>
-                <p style="font-size: 0.72rem; color: var(--stone-muted);">Registered Citizen • Joined June 2026</p>
-            </div>
-
-            <ul style="font-size: 0.75rem; color: var(--stone-dark); list-style: none; display: flex; flex-direction: column; gap: 0.5rem;" class="border-t-line pt-3">
-                <li><strong>Username:</strong> daisuketanaka</li>
-                <li><strong>Email:</strong> daisuke@example.jp</li>
-                <li><strong>Phone:</strong> +81 90-1234-5678</li>
-                <li><strong>Active Posts:</strong> 2 Lost, 1 Found</li>
-            </ul>
-
-            <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem;">
-                <button onclick="alert('User Disabled.'); closeModals();" class="neu-button" style="flex: 1;">Disable User</button>
-                <button onclick="closeModals()" class="neu-button-dark" style="flex: 1;">Close</button>
-            </div>
-        </div>
-
-
-        <!-- 2. VIEW DETECTIVE APPLICATION MODAL -->
-        <div id="modal-view-detective-app" class="neu-card modal-body lg hidden">
-            <button onclick="closeModals()" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
-
-            <div style="margin-bottom: 1rem;">
-                <span class="badge-tag bg-amber"><i class="fa-regular fa-id-badge"></i> VETTING INFO</span>
-                <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700; margin-top: 0.35rem;">Investigator Hiroshi Sato</h3>
-                <p style="font-size: 0.72rem; color: var(--stone-muted);">Osaka Guild • License #PD-90124</p>
-            </div>
-
-            <div style="font-size: 0.75rem; line-height: 1.5;" class="border-t-line pt-3">
-                <p><strong>Years Experience:</strong> 10 Years</p>
-                <p><strong>Specialization:</strong> Pet Scent Tracking &amp; Forensic Imagery</p>
-                <p style="margin-top: 0.5rem;"><strong>Background Check:</strong> Cleared by National Licensing Board</p>
-            </div>
-
-            <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem;">
-                <button onclick="alert('Detective Approved!'); closeModals();" class="neu-button-emerald" style="flex: 1;">Approve Detective</button>
-                <button onclick="alert('Application Rejected.'); closeModals();" class="neu-button-danger" style="flex: 1;">Reject</button>
-            </div>
-        </div>
-
-
-        <!-- 3. DECLINE DETECTIVE REQUEST MODAL -->
-        <div id="modal-decline-request" class="neu-card modal-body lg hidden">
-            <button onclick="closeModals()" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
-
-            <div style="margin-bottom: 1rem;">
-                <span class="badge-tag bg-red"><i class="fa-regular fa-circle-xmark"></i> DECLINE DISPATCH REQUEST</span>
-                <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700; margin-top: 0.35rem;">Decline Detective Request</h3>
-                <p style="font-size: 0.72rem; color: var(--stone-muted);">Target Case: <span id="decline-case-info" style="font-weight: 700; color: var(--stone-dark);"></span></p>
-                <p style="font-size: 0.72rem; color: var(--stone-muted);">Requested By: <span id="decline-user-name" style="font-weight: 700; color: var(--stone-dark);"></span></p>
-            </div>
-
-            <form onsubmit="event.preventDefault(); alert('Request declined. Reason sent to user.'); closeModals();" style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.75rem;">
-                <div>
-                    <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Reason for Declining (Sent to Requested User)</label>
-                    <textarea rows="4" placeholder="Explain why this request cannot be approved (e.g. Requested detective is unavailable in this region, insufficient case details provided, bounty threshold not met)..." required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;"></textarea>
-                </div>
-
-                <button type="submit" class="neu-button-danger" style="padding: 0.75rem; margin-top: 0.25rem;">SEND DECLINE NOTICE TO USER</button>
-            </form>
-        </div>
-
-
-        <!-- 4. CREATE BLOG MODAL -->
+        <!-- CREATE BLOG MODAL -->
         <div id="modal-create-blog" class="neu-card modal-body lg hidden">
             <button onclick="closeModals()" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
 
@@ -1111,111 +882,50 @@
                 <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700; margin-top: 0.35rem;">Publish Blog / Recovery Guide</h3>
             </div>
 
-            <form onsubmit="event.preventDefault(); alert('Blog article created successfully!'); closeModals();" style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.75rem;">
+            <form action="{% url 'admin_manage_blog' %}" method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.75rem;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="create">
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Article Title</label>
-                    <input type="text" placeholder="e.g. Tactical Action Guide for Missing Persons" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
-                </div>
-
-                <div class="grid-2">
-                    <div>
-                        <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Category</label>
-                        <select class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
-                            <option value="protocol">PROTOCOL GUIDE</option>
-                            <option value="ai">AI EXPLAINED</option>
-                            <option value="field">FIELD WORK</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Read Time (Minutes)</label>
-                        <input type="number" placeholder="5" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
-                    </div>
+                    <input type="text" name="title" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
                 </div>
 
                 <div>
-                    <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Featured Image URL</label>
-                    <input type="text" placeholder="https://images.unsplash.com/..." required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                    <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Featured Image</label>
+                    <input type="file" name="image" accept="image/*" class="neu-input" style="width: 100%; padding: 0.5rem 0.75rem;">
                 </div>
 
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Article Body / Content</label>
-                    <textarea rows="5" placeholder="Write full article text here..." required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;"></textarea>
+                    <textarea rows="5" name="content" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;"></textarea>
                 </div>
 
                 <button type="submit" class="neu-button-dark" style="padding: 0.75rem;">PUBLISH ARTICLE NOW</button>
             </form>
         </div>
-
     </div>
 
-
-    <!-- ==================== JAVASCRIPT CONTROLLERS ==================== -->
     <script>
-        // Live User Table Filter
         function filterUsers() {
             const query = document.getElementById('user-search').value.toLowerCase();
             const rows = document.querySelectorAll('#users-table tbody tr');
-
             rows.forEach(row => {
-                const text = row.innerText.toLowerCase();
-                row.style.display = text.includes(query) ? '' : 'none';
+                row.style.display = row.innerText.toLowerCase().includes(query) ? '' : 'none';
             });
         }
 
-        // Live Case Filter
-        function filterCases() {
-            const query = document.getElementById('case-search').value.toLowerCase();
-            const cat = document.getElementById('case-category-filter').value;
-            const rows = document.querySelectorAll('#cases-admin-table tbody tr');
-
-            rows.forEach(row => {
-                const text = row.innerText.toLowerCase();
-                const type = row.getAttribute('data-type');
-
-                const matchesQuery = text.includes(query);
-                const matchesType = (cat === 'all') || (type === cat);
-
-                row.style.display = (matchesQuery && matchesType) ? '' : 'none';
-            });
-        }
-
-        // Open Decline Modal with Context Data
-        function openDeclineModal(caseInfo, userName) {
-            document.getElementById('decline-case-info').textContent = caseInfo;
-            document.getElementById('decline-user-name').textContent = userName;
-            openModal('modal-decline-request');
-        }
-
-        // Modal Handlers (Prevents overlapping modals)
         const modalOverlay = document.getElementById('modal-overlay');
-
-        function openModal(modalId) {
-            const modalBodies = document.querySelectorAll('.modal-body');
-            modalBodies.forEach(body => body.classList.add('hidden'));
-
-            const target = document.getElementById(modalId);
-            if (target) {
-                target.classList.remove('hidden');
-            }
-
+        function openModal(id) {
+            document.querySelectorAll('.modal-body').forEach(b => b.classList.add('hidden'));
+            const t = document.getElementById(id);
+            if (t) t.classList.remove('hidden');
             modalOverlay.classList.add('active');
         }
-
         function closeModals() {
             modalOverlay.classList.remove('active');
-            const modalBodies = document.querySelectorAll('.modal-body');
-            modalBodies.forEach(body => body.classList.add('hidden'));
+            document.querySelectorAll('.modal-body').forEach(b => b.classList.add('hidden'));
         }
-
-        if (modalOverlay) {
-            modalOverlay.addEventListener('click', (e) => {
-                if (e.target === modalOverlay) closeModals();
-            });
-        }
-
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeModals();
-        });
+        if (modalOverlay) modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModals(); });
     </script>
 </body>
 </html>
