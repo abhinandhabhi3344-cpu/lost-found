@@ -1,3 +1,5 @@
+{% load static %}
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,16 +7,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cases Directory — Lost &amp; Found AI Recovery Network</title>
     
-    <!-- Google Fonts: Inter, Space Grotesk, & Plus Jakarta Sans -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     
-    <!-- FontAwesome Icons (Regular Outline / Line Icons) -->
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
-        /* ==================== ROOT VARIABLES & RESET ==================== */
         :root {
             --stone-bg: #EAE6E1;
             --stone-light: #F3F0EC;
@@ -29,595 +30,163 @@
             --font-display: 'Space Grotesk', sans-serif;
         }
 
-        *, *::before, *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         html, body {
-            width: 100%;
-            min-height: 100vh;
-            background-color: var(--stone-bg);
-            color: var(--stone-dark);
+            width: 100%; min-height: 100vh;
+            background-color: var(--stone-bg); color: var(--stone-dark);
             font-family: var(--font-sans);
             -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
         }
 
-        a {
-            color: inherit;
-            text-decoration: none;
-        }
+        a { color: inherit; text-decoration: none; }
+        button, input, select, textarea { font-family: inherit; }
+        button { cursor: pointer; border: none; background: none; }
+        .hidden { display: none !important; }
 
-        button, input, select, textarea {
-            font-family: inherit;
-        }
+        .container { max-width: 80rem; margin: 0 auto; padding: 0 1.5rem; }
+        @media (min-width: 1024px) { .container { padding: 0 3rem; } }
 
-        button {
-            cursor: pointer;
-            border: none;
-            background: none;
-        }
-
-        .container {
-            max-width: 80rem;
-            margin: 0 auto;
-            padding: 0 1.5rem;
-        }
-
-        @media (min-width: 1024px) {
-            .container {
-                padding: 0 3rem;
-            }
-        }
-
-        /* ==================== LIGHT GLASS NAVBAR ==================== */
         .navbar {
-            position: fixed;
-            top: 1.5rem;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 50;
-            width: 92%;
-            max-width: 64rem;
-            background: rgba(243, 240, 236, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%);
+            z-index: 50; width: 92%; max-width: 64rem;
+            background: rgba(243, 240, 236, 0.85); backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.8);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            border-radius: 9999px;
-            padding: 0.65rem 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 0.75rem;
-            font-weight: 500;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); border-radius: 9999px;
+            padding: 0.65rem 1.5rem; display: flex; align-items: center; justify-content: space-between;
+            font-size: 0.75rem; font-weight: 500;
         }
 
-        .nav-links {
-            display: none;
-            align-items: center;
-            gap: 2rem;
-            font-weight: 600;
-            color: rgba(26, 26, 26, 0.8);
-        }
+        .nav-links { display: none; align-items: center; gap: 2rem; font-weight: 600; color: rgba(26, 26, 26, 0.8); }
+        @media (min-width: 768px) { .nav-links { display: flex; } }
+        .nav-links a:hover, .nav-links a.active { color: #000000; border-bottom: 2px solid var(--stone-dark); padding-bottom: 2px; }
 
-        @media (min-width: 768px) {
-            .nav-links {
-                display: flex;
-            }
-        }
+        .nav-actions { display: flex; align-items: center; gap: 0.75rem; margin-left: auto; }
+        .btn-login { font-size: 0.75rem; font-weight: 600; color: var(--stone-dark); padding: 0.5rem 1rem; border: 1px solid rgba(26, 26, 26, 0.2); border-radius: 9999px; }
+        .btn-signup { background-color: var(--stone-dark); color: #ffffff; font-weight: 800; padding: 0.6rem 1.25rem; border-radius: 9999px; font-size: 0.75rem; text-transform: uppercase; display: flex; align-items: center; gap: 0.5rem; }
+        
+        .user-nav-badge { display: flex; align-items: center; gap: 0.6rem; margin-left: auto; }
+        .user-avatar-sm { width: 2rem; height: 2rem; border-radius: 50%; background-color: var(--stone-dark); color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem; overflow: hidden; }
 
-        .nav-links a {
-            transition: color 0.2s ease;
-        }
+        .page-header { padding-top: 7.5rem; padding-bottom: 2rem; border-bottom: 1px solid rgba(210, 205, 199, 0.8); }
+        .page-title { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; text-transform: uppercase; }
 
-        .nav-links a:hover, .nav-links a.active {
-            color: #000000;
-            border-bottom: 2px solid var(--stone-dark);
-            padding-bottom: 2px;
-        }
+        .neu-input { background: var(--stone-bg); box-shadow: inset 4px 4px 8px #c7c4bf, inset -4px -4px 8px #ffffff; border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 10px; font-size: 0.8rem; color: var(--stone-dark); }
+        .neu-button { background: var(--stone-bg); box-shadow: 6px 6px 14px #c7c4bf, -6px -6px 14px #ffffff; border-radius: 10px; font-weight: 700; text-transform: uppercase; font-size: 0.75rem; padding: 0.75rem 1.25rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; color: var(--stone-dark); }
+        .neu-button-dark { background: var(--stone-dark); color: #ffffff; box-shadow: 6px 6px 14px #c7c4bf, -6px -6px 14px #ffffff; border-radius: 10px; font-weight: 700; text-transform: uppercase; font-size: 0.75rem; padding: 0.75rem 1.25rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
 
-        .nav-actions {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-left: auto;
-        }
+        .ai-dropzone-panel { background-color: var(--stone-light); border: 1px dashed var(--stone-dark); border-radius: 12px; padding: 1.5rem; margin-top: 1.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; position: relative; }
+        .ai-dropzone-panel:hover, .ai-dropzone-panel.dragover { background-color: #E6E1DC; border-color: var(--emerald-accent); }
 
-        .btn-login {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--stone-dark);
-            padding: 0.5rem 1rem;
-            border: 1px solid rgba(26, 26, 26, 0.2);
-            border-radius: 9999px;
-            transition: background-color 0.2s ease;
-        }
+        .toolbar-section { padding: 1.75rem 0; border-bottom: 1px solid rgba(210, 205, 199, 0.8); }
+        .tab-group { display: flex; align-items: center; gap: 0.5rem; background: var(--stone-light); padding: 0.35rem; border-radius: 9999px; border: 1px solid rgba(210, 205, 199, 0.8); width: fit-content; }
+        .tab-btn { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; padding: 0.45rem 1.1rem; border-radius: 9999px; color: var(--stone-muted); }
+        .tab-btn.active { background-color: var(--stone-dark); color: #ffffff; }
 
-        .btn-login:hover {
-            background-color: var(--stone-light);
-            color: #000;
-        }
+        .filters-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-top: 1.25rem; }
+        @media (min-width: 640px) { .filters-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1024px) { .filters-grid { grid-template-columns: 2fr 1fr 1fr 1fr 1fr; } }
 
-        .btn-signup {
-            position: relative;
-            background-color: var(--stone-dark);
-            color: #ffffff;
-            font-weight: 800;
-            padding: 0.6rem 1.25rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
+        .ai-status-banner { display: none; background-color: #d1fae5; border: 1px solid #10b981; color: #065f46; padding: 0.85rem 1.25rem; border-radius: 8px; margin-top: 1.25rem; font-size: 0.75rem; font-weight: 600; align-items: center; justify-content: space-between; }
+        .ai-status-banner.active { display: flex; }
 
-        .btn-signup:hover {
-            transform: scale(1.03);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-        }
+        .cases-grid-section { padding: 2.5rem 0; }
+        .grid-4 { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+        @media (min-width: 640px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1024px) { .grid-4 { grid-template-columns: repeat(4, 1fr); } }
 
-        .btn-signup i {
-            font-size: 0.75rem;
-            animation: bounceRight 1.4s infinite ease-in-out;
-        }
+        .card-box { background-color: var(--stone-light); padding: 1.25rem; border-radius: 6px; border: 1px solid rgba(210, 205, 199, 0.8); display: flex; flex-direction: column; justify-content: space-between; }
+        .img-container { aspect-ratio: 4/3; border-radius: 4px; overflow: hidden; position: relative; background-color: #ddd; }
+        .img-container img { width: 100%; height: 100%; object-fit: cover; }
 
-        @keyframes bounceRight {
-            0%, 100% { transform: translateX(0); }
-            50% { transform: translateX(5px); }
-        }
+        .badge-tag { position: absolute; top: 0.5rem; left: 0.5rem; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; padding: 0.25rem 0.55rem; border-radius: 2px; color: #fff; }
+        .badge-cat { position: absolute; top: 0.5rem; right: 0.5rem; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; padding: 0.25rem 0.55rem; border-radius: 2px; background: rgba(26, 26, 26, 0.85); backdrop-filter: blur(4px); color: #fff; }
+        .reward-pill { position: absolute; bottom: 0.5rem; right: 0.5rem; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(4px); color: #fbbf24; font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 3px; border: 1px solid rgba(251, 191, 36, 0.4); }
 
-        /* ==================== PAGE HEADER & AI DROPZONE ==================== */
-        .page-header {
-            padding-top: 7.5rem;
-            padding-bottom: 2rem;
-            border-bottom: 1px solid rgba(210, 205, 199, 0.8);
-        }
-
-        .page-title {
-            font-size: clamp(2rem, 5vw, 3.5rem);
-            font-weight: 800;
-            letter-spacing: -0.03em;
-            line-height: 1.1;
-            text-transform: uppercase;
-        }
-
-        /* NEUMORPHIC COMPONENTS */
-        .neu-card {
-            background: var(--stone-bg);
-            border-radius: 16px;
-        }
-
-        .neu-input {
-            background: var(--stone-bg);
-            box-shadow: inset 4px 4px 8px #c7c4bf, inset -4px -4px 8px #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 10px;
-            transition: all 0.2s ease;
-            font-size: 0.8rem;
-            color: var(--stone-dark);
-        }
-
-        .neu-input:focus {
-            outline: none;
-            box-shadow: inset 6px 6px 10px #bebbb6, inset -6px -6px 10px #ffffff;
-            border-color: var(--stone-dark);
-        }
-
-        .neu-button {
-            background: var(--stone-bg);
-            box-shadow: 6px 6px 14px #c7c4bf, -6px -6px 14px #ffffff;
-            border-radius: 10px;
-            transition: all 0.2s ease;
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.05em;
-            padding: 0.75rem 1.25rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            color: var(--stone-dark);
-        }
-
-        .neu-button:hover {
-            box-shadow: 3px 3px 8px #c7c4bf, -3px -3px 8px #ffffff;
-            transform: translateY(1px);
-        }
-
-        .neu-button:active {
-            box-shadow: inset 3px 3px 6px #c7c4bf, inset -3px -3px 6px #ffffff;
-        }
-
-        .neu-button-dark {
-            background: var(--stone-dark);
-            color: #ffffff;
-            box-shadow: 6px 6px 14px #c7c4bf, -6px -6px 14px #ffffff;
-            border-radius: 10px;
-            transition: all 0.2s ease;
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.05em;
-            padding: 0.75rem 1.25rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .neu-button-dark:hover {
-            background: #000000;
-            box-shadow: 3px 3px 8px #c7c4bf, -3px -3px 8px #ffffff;
-            transform: translateY(1px);
-        }
-
-        /* AI Image Search Box */
-        .ai-dropzone-panel {
-            background-color: var(--stone-light);
-            border: 1px dashed var(--stone-dark);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-top: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            transition: background-color 0.2s ease, border-color 0.2s ease;
-            position: relative;
-        }
-
-        .ai-dropzone-panel:hover, .ai-dropzone-panel.dragover {
-            background-color: #E6E1DC;
-            border-color: var(--emerald-accent);
-        }
-
-        /* ==================== FILTERS & SEARCH TOOLBAR ==================== */
-        .toolbar-section {
-            padding: 1.75rem 0;
-            border-bottom: 1px solid rgba(210, 205, 199, 0.8);
-        }
-
-        .tab-group {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: var(--stone-light);
-            padding: 0.35rem;
-            border-radius: 9999px;
-            border: 1px solid rgba(210, 205, 199, 0.8);
-            width: fit-content;
-        }
-
-        .tab-btn {
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            padding: 0.45rem 1.1rem;
-            border-radius: 9999px;
-            color: var(--stone-muted);
-            transition: all 0.2s ease;
-        }
-
-        .tab-btn.active {
-            background-color: var(--stone-dark);
-            color: #ffffff;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        }
-
-        .filters-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1rem;
-            margin-top: 1.25rem;
-        }
-
-        @media (min-width: 640px) {
-            .filters-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (min-width: 1024px) {
-            .filters-grid {
-                grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
-            }
-        }
-
-        .filter-checkbox-label {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--stone-dark);
-            cursor: pointer;
-            height: 100%;
-        }
-
-        /* Dynamic AI Banner Alert */
-        .ai-status-banner {
-            display: none;
-            background-color: #d1fae5;
-            border: 1px solid #10b981;
-            color: #065f46;
-            padding: 0.85rem 1.25rem;
-            border-radius: 8px;
-            margin-top: 1.25rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .ai-status-banner.active {
-            display: flex;
-        }
-
-        /* ==================== CASE CARDS GRID ==================== */
-        .cases-grid-section {
-            padding: 2.5rem 0;
-        }
-
-        .grid-4 {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-        }
-
-        @media (min-width: 640px) {
-            .grid-4 { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        @media (min-width: 1024px) {
-            .grid-4 { grid-template-columns: repeat(4, 1fr); }
-        }
-
-        .card-box {
-            background-color: var(--stone-light);
-            padding: 1.25rem;
-            border-radius: 6px;
-            border: 1px solid rgba(210, 205, 199, 0.8);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .card-box:hover {
-            border-color: var(--stone-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
-        }
-
-        .img-container {
-            aspect-ratio: 4/3;
-            border-radius: 4px;
-            overflow: hidden;
-            position: relative;
-            background-color: #ddd;
-        }
-
-        .img-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s ease;
-        }
-
-        .card-box:hover .img-container img {
-            transform: scale(1.04);
-        }
-
-        /* Badges */
-        .badge-tag {
-            position: absolute;
-            top: 0.5rem;
-            left: 0.5rem;
-            font-size: 0.6rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            padding: 0.25rem 0.55rem;
-            border-radius: 2px;
-            color: #fff;
-            letter-spacing: 0.05em;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-        }
-
-        .badge-cat {
-            position: absolute;
-            top: 0.5rem;
-            right: 0.5rem;
-            font-size: 0.6rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            padding: 0.25rem 0.55rem;
-            border-radius: 2px;
-            background: rgba(26, 26, 26, 0.85);
-            backdrop-filter: blur(4px);
-            color: #fff;
-        }
-
-        .reward-pill {
-            position: absolute;
-            bottom: 0.5rem;
-            right: 0.5rem;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(4px);
-            color: #fbbf24;
-            font-size: 0.65rem;
-            font-weight: 700;
-            padding: 0.2rem 0.5rem;
-            border-radius: 3px;
-            border: 1px solid rgba(251, 191, 36, 0.4);
-        }
-
-        .ai-match-badge {
-            display: none;
-            align-items: center;
-            gap: 0.3rem;
-            background-color: #065f46;
-            color: #ffffff;
-            font-size: 0.65rem;
-            font-weight: 700;
-            padding: 0.25rem 0.5rem;
-            border-radius: 3px;
-        }
-
-        .ai-match-badge.visible {
-            display: inline-flex;
-        }
+        .ai-match-badge { display: none; align-items: center; gap: 0.3rem; background-color: #065f46; color: #ffffff; font-size: 0.65rem; font-weight: 700; padding: 0.25rem 0.5rem; border-radius: 3px; }
+        .ai-match-badge.visible { display: inline-flex; }
 
         .bg-red { background-color: var(--red-accent); }
         .bg-amber { background-color: var(--amber-accent); }
         .bg-emerald { background-color: var(--emerald-accent); }
-
         .border-t-line { border-top: 1px solid rgba(210, 205, 199, 0.8); }
         .font-display { font-family: var(--font-display); }
 
-        /* ==================== PAGINATION ==================== */
-        .pagination-bar {
-            padding: 2rem 0 4rem 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-top: 1px solid rgba(210, 205, 199, 0.8);
-        }
+        .pagination-bar { padding: 2rem 0 4rem 0; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(210, 205, 199, 0.8); }
+        .page-num-btn { width: 2.25rem; height: 2.25rem; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; font-size: 0.75rem; font-weight: 700; color: var(--stone-dark); border: 1px solid rgba(210, 205, 199, 0.8); background: var(--stone-light); }
+        .page-num-btn:hover, .page-num-btn.active { background: var(--stone-dark); color: #ffffff; border-color: var(--stone-dark); }
 
-        .page-num-btn {
-            width: 2.25rem;
-            height: 2.25rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--stone-dark);
-            border: 1px solid rgba(210, 205, 199, 0.8);
-            background: var(--stone-light);
-            transition: all 0.2s ease;
-        }
-
-        .page-num-btn:hover, .page-num-btn.active {
-            background: var(--stone-dark);
-            color: #ffffff;
-            border-color: var(--stone-dark);
-        }
-
-        /* ==================== MODALS ==================== */
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 100;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(6px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal-body {
-            width: 100%;
-            max-width: 28rem;
-            padding: 2rem;
-            position: relative;
-        }
-
-        .modal-body.lg {
-            max-width: 42rem;
-        }
-
-        .close-btn {
-            position: absolute;
-            top: 1.25rem;
-            right: 1.25rem;
-            font-size: 1.25rem;
-            color: var(--stone-muted);
-        }
-
-        .close-btn:hover { color: var(--stone-dark); }
-
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1rem;
-        }
-
-        @media (min-width: 640px) {
-            .grid-2 { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        /* Timeline Log Items in Modal */
-        .timeline-item {
-            position: relative;
-            padding-left: 1.25rem;
-            border-left: 2px solid var(--stone-border);
-            margin-bottom: 0.75rem;
-        }
-
-        .timeline-item::before {
-            content: '';
-            position: absolute;
-            left: -5px;
-            top: 3px;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: var(--stone-dark);
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: var(--stone-bg); }
-        ::-webkit-scrollbar-thumb { background: var(--stone-dark); }
+        .modal-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; padding: 1rem; }
+        .modal-overlay.active { display: flex; }
+        .modal-body { width: 100%; max-width: 28rem; padding: 2rem; position: relative; }
+        .modal-body.lg { max-width: 42rem; }
+        .close-btn { position: absolute; top: 1.25rem; right: 1.25rem; font-size: 1.25rem; color: var(--stone-muted); }
+        
+        .flash-messages { position: fixed; top: 0.75rem; left: 50%; transform: translateX(-50%); z-index: 200; display: flex; flex-direction: column; gap: 0.5rem; width: 90%; max-width: 32rem; }
+        .flash-msg { padding: 0.75rem 1.25rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+        .flash-msg.success { background: #d1fae5; color: #065f46; border: 1px solid #10b981; }
+        .flash-msg.error { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
     </style>
 </head>
 <body>
 
-    <!-- ==================== LIGHT GLASS NAVBAR ==================== -->
+    {% if messages %}
+    <div class="flash-messages">
+        {% for message in messages %}
+        <div class="flash-msg {{ message.tags }}" onclick="this.remove()">
+            <span>{{ message }}</span>
+            <button onclick="this.parentElement.remove()" style="font-size: 1rem; color: inherit;">&times;</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- NAVBAR -->
     <header class="navbar">
         <nav class="nav-links">
-            <a href="index.html">Home</a>
-            <a href="cases.html" class="active">Latest Cases</a>
-            <a href="#sec-blog">Blogs</a>
-            <a href="#sec-ecosystem">Ecosystem</a>
-            <a href="#sec-detectives">Detectives</a>
-            <a href="#sec-stories">Stories</a>
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'case_list' %}" class="active">Latest Cases</a>
+            <a href="{% url 'detective_list' %}">Detectives</a>
         </nav>
 
         <div class="nav-actions">
-            <button onclick="openModal('modal-login')" class="btn-login">LOG IN</button>
-            <button onclick="openModal('modal-signup')" class="btn-signup">
-                <span>SIGN UP</span>
-                <i class="fas fa-arrow-right"></i>
-            </button>
+            {% if user.is_authenticated %}
+                <div class="user-nav-badge">
+                    <div class="user-avatar-sm">
+                        {% if user_profile and user_profile.avatar %}
+                            <img src="{{ user_profile.avatar.url }}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;">
+                        {% else %}
+                            {{ user.first_name|first|upper|default:"U" }}
+                        {% endif %}
+                    </div>
+                    <span style="font-size: 0.75rem; font-weight: 700;">{{ user_profile.full_name|default:user.username }}</span>
+                </div>
+                {% if user.is_staff %}
+                    <a href="{% url 'admin_dashboard' %}" class="btn-login">Admin</a>
+                {% elif user_profile.is_detective %}
+                    <a href="{% url 'detective_dashboard' %}" class="btn-login">Dashboard</a>
+                {% else %}
+                    <a href="{% url 'user_dashboard' %}" class="btn-login">Dashboard</a>
+                {% endif %}
+                <a href="{% url 'logout' %}" class="btn-login">Logout</a>
+            {% else %}
+                <button onclick="openModal('modal-login')" class="btn-login">LOG IN</button>
+                <button onclick="openModal('modal-signup')" class="btn-signup">
+                    <span>SIGN UP</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            {% endif %}
         </div>
     </header>
 
-
-    <!-- ==================== PAGE HEADER & AI VECTOR UPLOAD ==================== -->
+    <!-- PAGE HEADER & AI DROPZONE -->
     <header class="page-header">
         <div class="container">
             <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                 <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--stone-muted);">GLOBAL DATABASE</span>
                 <h1 class="page-title font-display">CASES DIRECTORY &amp; AI MATCH</h1>
                 <p style="font-size: 0.85rem; color: var(--stone-muted); font-weight: 300; max-width: 42rem; line-height: 1.5;">
-                    Browse active missing persons, lost pets, and community found reports. Upload an image below to execute a real-time CLIP + FAISS vector search across all visual embeddings.
+                    Browse active missing persons, lost pets, and community found reports. Upload an image below to execute a visual similarity match across active cases.
                 </p>
             </div>
 
@@ -640,687 +209,264 @@
                     </span>
                 </div>
 
-                <!-- Scanning Progress Animation State -->
                 <div id="dropzone-loading" style="display: none; flex-direction: column; align-items: center; gap: 0.75rem;">
                     <i class="fa-regular fa-compass fa-spin" style="font-size: 2rem; color: var(--emerald-accent);"></i>
-                    <p style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Extracting visual vector embeddings &amp; querying FAISS index...</p>
+                    <p style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Extracting visual vector embeddings &amp; querying cases index...</p>
                 </div>
             </div>
         </div>
     </header>
 
-
-    <!-- ==================== FILTERS & SEARCH TOOLBAR ==================== -->
+    <!-- FILTERS & SEARCH TOOLBAR -->
     <section class="toolbar-section">
         <div class="container">
-            
-            <!-- Quick Type Toggle Buttons -->
-            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
-                <div class="tab-group">
-                    <button class="tab-btn active" onclick="setTabFilter('all', this)">ALL CASES</button>
-                    <button class="tab-btn" onclick="setTabFilter('lost', this)"><i class="fa-regular fa-bell"></i> LOST ONLY</button>
-                    <button class="tab-btn" onclick="setTabFilter('found', this)"><i class="fa-regular fa-heart"></i> FOUND ONLY</button>
+            <form method="GET" action="{% url 'case_list' %}" id="filter-form">
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
+                    <div class="tab-group">
+                        <a href="{% url 'case_list' %}" class="tab-btn {% if not current_type %}active{% endif %}">ALL CASES</a>
+                        <a href="{% url 'case_list' %}?type=LOST" class="tab-btn {% if current_type == 'LOST' %}active{% endif %}"><i class="fa-regular fa-bell"></i> LOST ONLY</a>
+                        <a href="{% url 'case_list' %}?type=FOUND" class="tab-btn {% if current_type == 'FOUND' %}active{% endif %}"><i class="fa-regular fa-heart"></i> FOUND ONLY</a>
+                    </div>
+
+                    <div style="font-size: 0.75rem; color: var(--stone-muted);">
+                        Showing <span style="font-weight: 700; color: var(--stone-dark);">{{ cases|length }}</span> cases of <span style="font-weight: 700; color: var(--stone-dark);">{{ total_count }}</span>
+                    </div>
                 </div>
 
-                <div style="font-size: 0.75rem; color: var(--stone-muted);">
-                    Showing <span id="visible-count-text" style="font-weight: 700; color: var(--stone-dark);">8</span> cases of <span style="font-weight: 700; color: var(--stone-dark);">342</span>
-                </div>
-            </div>
+                <div class="filters-grid">
+                    <div>
+                        <input type="text" name="q" value="{{ search_query }}" placeholder="Search name, location, description..." class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;" onchange="document.getElementById('filter-form').submit()">
+                    </div>
 
-            <!-- Advanced Filter Bar Inputs -->
-            <div class="filters-grid">
-                <!-- Search Keyword -->
-                <div>
-                    <input type="text" id="search-keyword" placeholder="Search name, pet, location, keyword..." class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;" oninput="applyFilters()">
-                </div>
+                    <div>
+                        <select name="category" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;" onchange="document.getElementById('filter-form').submit()">
+                            <option value="">All Categories</option>
+                            <option value="PERSON" {% if current_category == 'PERSON' %}selected{% endif %}>Persons Only</option>
+                            <option value="PET" {% if current_category == 'PET' %}selected{% endif %}>Pets Only</option>
+                            <option value="ITEM" {% if current_category == 'ITEM' %}selected{% endif %}>Items Only</option>
+                        </select>
+                    </div>
 
-                <!-- Category Filter -->
-                <div>
-                    <select id="filter-category" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;" onchange="applyFilters()">
-                        <option value="all">All Categories</option>
-                        <option value="person">Persons Only</option>
-                        <option value="pet">Pets Only</option>
-                    </select>
-                </div>
+                    <div>
+                        <select name="status" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;" onchange="document.getElementById('filter-form').submit()">
+                            <option value="">All Statuses</option>
+                            <option value="OPEN" {% if current_status == 'OPEN' %}selected{% endif %}>Active Search (Open)</option>
+                            <option value="INVESTIGATING" {% if current_status == 'INVESTIGATING' %}selected{% endif %}>Investigating</option>
+                            <option value="FOUND" {% if current_status == 'FOUND' %}selected{% endif %}>Found / Reunited</option>
+                            <option value="CLOSED" {% if current_status == 'CLOSED' %}selected{% endif %}>Closed</option>
+                        </select>
+                    </div>
 
-                <!-- Status Filter -->
-                <div>
-                    <select id="filter-status" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;" onchange="applyFilters()">
-                        <option value="all">All Statuses</option>
-                        <option value="active">Active Search</option>
-                        <option value="solved">Solved / Reunited</option>
-                    </select>
-                </div>
+                    <div>
+                        <select name="sort" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;" onchange="document.getElementById('filter-form').submit()">
+                            <option value="latest" {% if current_sort == 'latest' %}selected{% endif %}>Sort: Latest First</option>
+                            <option value="oldest" {% if current_sort == 'oldest' %}selected{% endif %}>Sort: Oldest First</option>
+                            <option value="reward" {% if current_sort == 'reward' %}selected{% endif %}>Highest Reward</option>
+                        </select>
+                    </div>
 
-                <!-- Sort By -->
-                <div>
-                    <select id="filter-sort" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;" onchange="applyFilters()">
-                        <option value="latest">Sort: Latest First</option>
-                        <option value="oldest">Sort: Oldest First</option>
-                        <option value="reward">Highest Reward</option>
-                        <option value="ai-match">Highest AI Match</option>
-                    </select>
+                    <div style="display: flex; align-items: center; justify-content: flex-start;">
+                        <label class="filter-checkbox-label" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; font-weight: 600;">
+                            <input type="checkbox" name="reward" value="1" {% if has_reward == '1' %}checked{% endif %} style="accent-color: var(--stone-dark); width: 1rem; height: 1rem;" onchange="document.getElementById('filter-form').submit()">
+                            <span>Reward Offered</span>
+                        </label>
+                    </div>
                 </div>
+            </form>
 
-                <!-- Reward Checkbox -->
-                <div style="display: flex; align-items: center; justify-content: flex-start;">
-                    <label class="filter-checkbox-label">
-                        <input type="checkbox" id="filter-reward" style="accent-color: var(--stone-dark); width: 1rem; height: 1rem;" onchange="applyFilters()">
-                        <span>Reward Available</span>
-                    </label>
-                </div>
-            </div>
-
-            <!-- AI Search Active Banner -->
             <div class="ai-status-banner" id="ai-banner">
                 <span style="display: flex; align-items: center; gap: 0.5rem;">
                     <i class="fa-regular fa-circle-check" style="font-size: 1rem;"></i>
-                    <span>AI Image Vector Search Filter Active — Cards sorted by FAISS cosine similarity embeddings.</span>
+                    <span>AI Image Visual Match Active — Cards ranked by visual feature similarity.</span>
                 </span>
                 <button onclick="clearAiSearch()" style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; text-decoration: underline; color: #065f46;">Clear AI Search</button>
             </div>
-
         </div>
     </section>
 
-
-    <!-- ==================== CASES GRID ==================== -->
+    <!-- CASES GRID -->
     <main class="cases-grid-section">
         <div class="container">
             <div class="grid-4" id="cases-container">
-                
-                <!-- Case Card 1 -->
-                <div class="card-box" data-type="lost" data-cat="pet" data-status="active" data-reward="1500" data-date="2026-07-24" data-name="Golden Retriever 'Leo'" data-location="Kyoto, Japan" data-ai="98.4">
+                {% for case in cases %}
+                <div class="card-box" data-ai="88.4">
                     <div>
                         <div class="img-container">
-                            <img src="https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=600" alt="Missing Golden Retriever">
+                            {% with primary=case.images.all|first %}
+                            {% if primary %}
+                            <img src="{{ primary.image.url }}" alt="{{ case.title }}">
+                            {% else %}
+                            <img src="https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=600" alt="{{ case.title }}">
+                            {% endif %}
+                            {% endwith %}
+
+                            {% if case.case_type == 'LOST' %}
                             <span class="badge-tag bg-red">URGENT LOST</span>
-                            <span class="badge-cat"><i class="fa-regular fa-heart"></i> PET</span>
-                            <span class="reward-pill">$1,500 Reward</span>
+                            {% else %}
+                            <span class="badge-tag bg-emerald">FOUND</span>
+                            {% endif %}
+
+                            <span class="badge-cat"><i class="fa-regular fa-tag"></i> {{ case.get_category_display }}</span>
+                            {% if case.reward > 0 %}
+                            <span class="reward-pill">${{ case.reward|floatformat:0|intcomma }} Reward</span>
+                            {% endif %}
                         </div>
+
                         <div style="margin-top: 0.85rem;">
                             <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.65rem; color: var(--stone-muted);">
-                                <span><i class="fa-regular fa-compass"></i> KYOTO, JAPAN</span>
-                                <span>2 HOURS AGO</span>
+                                <span><i class="fa-regular fa-compass"></i> {{ case.location|upper }}</span>
+                                <span>{{ case.created_at|timesince|upper }} AGO</span>
                             </div>
-                            <h3 class="font-display" style="font-size: 0.95rem; font-weight: 700; margin-top: 0.35rem;">Golden Retriever 'Leo'</h3>
+                            <h3 class="font-display" style="font-size: 0.95rem; font-weight: 700; margin-top: 0.35rem;">{{ case.title }}</h3>
                             <p style="font-size: 0.75rem; color: var(--stone-muted); font-weight: 300; margin-top: 0.35rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                                Golden coat, wearing red collar. Slipped out near Gion district during rainstorm.
+                                {{ case.description }}
                             </p>
                         </div>
                     </div>
+
                     <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
-                        <span class="ai-match-badge" id="ai-badge-1"><i class="fa-regular fa-compass"></i> <span class="match-val">98.4%</span> Match</span>
-                        <span style="font-size: 0.65rem; font-weight: 600; color: var(--amber-accent);"><i class="fa-regular fa-bell"></i> Active Search</span>
-                        <button onclick="openCaseDetails(1)" class="neu-button" style="padding: 0.4rem 0.75rem; font-size: 0.65rem;">View Details ↗</button>
+                        <span class="ai-match-badge"><i class="fa-regular fa-compass"></i> <span class="match-val">94.2%</span> Match</span>
+                        <span style="font-size: 0.65rem; font-weight: 600; color: var(--amber-accent);">
+                            {% if case.assigned_detective %}
+                            <i class="fa-regular fa-id-badge"></i> Det. Assigned
+                            {% else %}
+                            <i class="fa-regular fa-bell"></i> {{ case.get_status_display }}
+                            {% endif %}
+                        </span>
+                        <a href="{% url 'case_detail' pk=case.pk %}" class="neu-button" style="padding: 0.4rem 0.75rem; font-size: 0.65rem;">View Details ↗</a>
                     </div>
                 </div>
-
-                <!-- Case Card 2 -->
-                <div class="card-box" data-type="lost" data-cat="person" data-status="active" data-reward="0" data-date="2026-07-23" data-name="Arthur Jensen" data-location="Copenhagen, Denmark" data-ai="92.1">
-                    <div>
-                        <div class="img-container">
-                            <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=600" alt="Missing Senior Male">
-                            <span class="badge-tag bg-amber">MISSING PERSON</span>
-                            <span class="badge-cat"><i class="fa-regular fa-user"></i> PERSON</span>
-                        </div>
-                        <div style="margin-top: 0.85rem;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.65rem; color: var(--stone-muted);">
-                                <span><i class="fa-regular fa-compass"></i> COPENHAGEN, DK</span>
-                                <span>5 HOURS AGO</span>
-                            </div>
-                            <h3 class="font-display" style="font-size: 0.95rem; font-weight: 700; margin-top: 0.35rem;">Arthur Jensen (Age 74)</h3>
-                            <p style="font-size: 0.75rem; color: var(--stone-muted); font-weight: 300; margin-top: 0.35rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                                Wearing navy wool jacket and glasses. Disoriented near Central Station. Private detective assigned.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
-                        <span class="ai-match-badge" id="ai-badge-2"><i class="fa-regular fa-compass"></i> <span class="match-val">92.1%</span> Match</span>
-                        <span style="font-size: 0.65rem; font-weight: 600; color: var(--amber-accent);"><i class="fa-regular fa-id-badge"></i> Det. Assigned</span>
-                        <button onclick="openCaseDetails(2)" class="neu-button" style="padding: 0.4rem 0.75rem; font-size: 0.65rem;">View Details ↗</button>
-                    </div>
+                {% empty %}
+                <div class="card-box" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+                    <h3 class="font-display" style="font-size: 1.25rem;">No Cases Found</h3>
+                    <p style="font-size: 0.8rem; color: var(--stone-muted); margin-top: 0.5rem;">Try adjusting your search query or filters.</p>
                 </div>
-
-                <!-- Case Card 3 -->
-                <div class="card-box" data-type="found" data-cat="pet" data-status="active" data-reward="0" data-date="2026-07-24" data-name="Siamese Cat (Unclaimed)" data-location="Melbourne, Australia" data-ai="87.6">
-                    <div>
-                        <div class="img-container">
-                            <img src="https://images.unsplash.com/photo-1517423440428-a5a00ad493e8?auto=format&fit=crop&q=80&w=600" alt="Found Siamese Cat">
-                            <span class="badge-tag bg-emerald">FOUND PET</span>
-                            <span class="badge-cat"><i class="fa-regular fa-heart"></i> PET</span>
-                        </div>
-                        <div style="margin-top: 0.85rem;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.65rem; color: var(--stone-muted);">
-                                <span><i class="fa-regular fa-compass"></i> MELBOURNE, AU</span>
-                                <span>TODAY</span>
-                            </div>
-                            <h3 class="font-display" style="font-size: 0.95rem; font-weight: 700; margin-top: 0.35rem;">Siamese Cat (Unclaimed)</h3>
-                            <p style="font-size: 0.75rem; color: var(--stone-muted); font-weight: 300; margin-top: 0.35rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                                Found near Fitzroy Gardens. Blue eyes, no collar. Safe in temporary foster shelter.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
-                        <span class="ai-match-badge" id="ai-badge-3"><i class="fa-regular fa-compass"></i> <span class="match-val">87.6%</span> Match</span>
-                        <span style="font-size: 0.65rem; font-weight: 600; color: var(--emerald-accent);"><i class="fa-regular fa-heart"></i> Unclaimed</span>
-                        <button onclick="openCaseDetails(3)" class="neu-button" style="padding: 0.4rem 0.75rem; font-size: 0.65rem;">View Details ↗</button>
-                    </div>
-                </div>
-
-                <!-- Case Card 4 -->
-                <div class="card-box" data-type="lost" data-cat="person" data-status="active" data-reward="5000" data-date="2026-07-22" data-name="David Chen" data-location="Singapore" data-ai="84.2">
-                    <div>
-                        <div class="img-container">
-                            <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=600" alt="Missing Youth">
-                            <span class="badge-tag bg-red">HIGH PRIORITY</span>
-                            <span class="badge-cat"><i class="fa-regular fa-user"></i> PERSON</span>
-                            <span class="reward-pill">$5,000 Reward</span>
-                        </div>
-                        <div style="margin-top: 0.85rem;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.65rem; color: var(--stone-muted);">
-                                <span><i class="fa-regular fa-compass"></i> SINGAPORE</span>
-                                <span>YESTERDAY</span>
-                            </div>
-                            <h3 class="font-display" style="font-size: 0.95rem; font-weight: 700; margin-top: 0.35rem;">Youth David Chen (Age 16)</h3>
-                            <p style="font-size: 0.75rem; color: var(--stone-muted); font-weight: 300; margin-top: 0.35rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                                Last seen near Orchard MRT carrying black backpack. Geo-radar search active across transit hubs.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
-                        <span class="ai-match-badge" id="ai-badge-4"><i class="fa-regular fa-compass"></i> <span class="match-val">84.2%</span> Match</span>
-                        <span style="font-size: 0.65rem; font-weight: 600; color: var(--red-accent);"><i class="fa-regular fa-circle-dot"></i> Geo-Active</span>
-                        <button onclick="openCaseDetails(4)" class="neu-button" style="padding: 0.4rem 0.75rem; font-size: 0.65rem;">View Details ↗</button>
-                    </div>
-                </div>
-
-                <!-- Case Card 5 -->
-                <div class="card-box" data-type="lost" data-cat="pet" data-status="active" data-reward="800" data-date="2026-07-21" data-name="Siberian Husky 'Bella'" data-location="Seattle, USA" data-ai="79.5">
-                    <div>
-                        <div class="img-container">
-                            <img src="https://images.unsplash.com/photo-1605568427561-40dd23c2acea?auto=format&fit=crop&q=80&w=600" alt="Siberian Husky">
-                            <span class="badge-tag bg-amber">MISSING PET</span>
-                            <span class="badge-cat"><i class="fa-regular fa-heart"></i> PET</span>
-                            <span class="reward-pill">$800 Reward</span>
-                        </div>
-                        <div style="margin-top: 0.85rem;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.65rem; color: var(--stone-muted);">
-                                <span><i class="fa-regular fa-compass"></i> SEATTLE, USA</span>
-                                <span>3 DAYS AGO</span>
-                            </div>
-                            <h3 class="font-display" style="font-size: 0.95rem; font-weight: 700; margin-top: 0.35rem;">Siberian Husky 'Bella'</h3>
-                            <p style="font-size: 0.75rem; color: var(--stone-muted); font-weight: 300; margin-top: 0.35rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                                Heterochromia eyes (one blue, one brown). Wearing leather harness near Capitol Hill.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
-                        <span class="ai-match-badge" id="ai-badge-5"><i class="fa-regular fa-compass"></i> <span class="match-val">79.5%</span> Match</span>
-                        <span style="font-size: 0.65rem; font-weight: 600; color: var(--amber-accent);"><i class="fa-regular fa-bell"></i> Active</span>
-                        <button onclick="openCaseDetails(5)" class="neu-button" style="padding: 0.4rem 0.75rem; font-size: 0.65rem;">View Details ↗</button>
-                    </div>
-                </div>
-
-                <!-- Case Card 6 -->
-                <div class="card-box" data-type="found" data-cat="person" data-status="solved" data-reward="0" data-date="2026-07-20" data-name="Senior Female 'Maria Garcia'" data-location="Madrid, Spain" data-ai="76.1">
-                    <div>
-                        <div class="img-container">
-                            <img src="https://images.unsplash.com/photo-1581579438747-1dc8d1e292c9?auto=format&fit=crop&q=80&w=600" alt="Reunited Senior Female">
-                            <span class="badge-tag bg-emerald">REUNITED</span>
-                            <span class="badge-cat"><i class="fa-regular fa-user"></i> PERSON</span>
-                        </div>
-                        <div style="margin-top: 0.85rem;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.65rem; color: var(--stone-muted);">
-                                <span><i class="fa-regular fa-compass"></i> MADRID, SPAIN</span>
-                                <span>SOLVED</span>
-                            </div>
-                            <h3 class="font-display" style="font-size: 0.95rem; font-weight: 700; margin-top: 0.35rem;">Maria Garcia (Reunited)</h3>
-                            <p style="font-size: 0.75rem; color: var(--stone-muted); font-weight: 300; margin-top: 0.35rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                                Successfully matched via CLIP AI camera embeddings and safely reconnected with her family.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
-                        <span class="ai-match-badge" id="ai-badge-6"><i class="fa-regular fa-compass"></i> <span class="match-val">76.1%</span> Match</span>
-                        <span style="font-size: 0.65rem; font-weight: 600; color: var(--emerald-accent);"><i class="fa-regular fa-circle-check"></i> Solved</span>
-                        <button onclick="openCaseDetails(6)" class="neu-button" style="padding: 0.4rem 0.75rem; font-size: 0.65rem;">View Details ↗</button>
-                    </div>
-                </div>
-
-                <!-- Case Card 7 -->
-                <div class="card-box" data-type="found" data-cat="pet" data-status="active" data-reward="0" data-date="2026-07-23" data-name="Tabby Cat 'Milo'" data-location="London, UK" data-ai="71.8">
-                    <div>
-                        <div class="img-container">
-                            <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=600" alt="Found Tabby Cat">
-                            <span class="badge-tag bg-emerald">FOUND PET</span>
-                            <span class="badge-cat"><i class="fa-regular fa-heart"></i> PET</span>
-                        </div>
-                        <div style="margin-top: 0.85rem;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.65rem; color: var(--stone-muted);">
-                                <span><i class="fa-regular fa-compass"></i> LONDON, UK</span>
-                                <span>YESTERDAY</span>
-                            </div>
-                            <h3 class="font-display" style="font-size: 0.95rem; font-weight: 700; margin-top: 0.35rem;">Tabby Cat (Found Camden)</h3>
-                            <p style="font-size: 0.75rem; color: var(--stone-muted); font-weight: 300; margin-top: 0.35rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                                Found resting in local vet clinic doorway. Very friendly, wearing green collar without tag.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
-                        <span class="ai-match-badge" id="ai-badge-7"><i class="fa-regular fa-compass"></i> <span class="match-val">71.8%</span> Match</span>
-                        <span style="font-size: 0.65rem; font-weight: 600; color: var(--emerald-accent);"><i class="fa-regular fa-heart"></i> Safe</span>
-                        <button onclick="openCaseDetails(7)" class="neu-button" style="padding: 0.4rem 0.75rem; font-size: 0.65rem;">View Details ↗</button>
-                    </div>
-                </div>
-
-                <!-- Case Card 8 -->
-                <div class="card-box" data-type="lost" data-cat="pet" data-status="solved" data-reward="2000" data-date="2026-07-19" data-name="French Bulldog 'Max'" data-location="Paris, France" data-ai="68.3">
-                    <div>
-                        <div class="img-container">
-                            <img src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&q=80&w=600" alt="French Bulldog">
-                            <span class="badge-tag bg-emerald">REUNITED</span>
-                            <span class="badge-cat"><i class="fa-regular fa-heart"></i> PET</span>
-                        </div>
-                        <div style="margin-top: 0.85rem;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.65rem; color: var(--stone-muted);">
-                                <span><i class="fa-regular fa-compass"></i> PARIS, FRANCE</span>
-                                <span>SOLVED</span>
-                            </div>
-                            <h3 class="font-display" style="font-size: 0.95rem; font-weight: 700; margin-top: 0.35rem;">French Bulldog 'Max'</h3>
-                            <p style="font-size: 0.75rem; color: var(--stone-muted); font-weight: 300; margin-top: 0.35rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                                Case closed. Recovered by Private Detective Elena Rostova after 24 hours.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
-                        <span class="ai-match-badge" id="ai-badge-8"><i class="fa-regular fa-compass"></i> <span class="match-val">68.3%</span> Match</span>
-                        <span style="font-size: 0.65rem; font-weight: 600; color: var(--emerald-accent);"><i class="fa-regular fa-circle-check"></i> Reunited</span>
-                        <button onclick="openCaseDetails(8)" class="neu-button" style="padding: 0.4rem 0.75rem; font-size: 0.65rem;">View Details ↗</button>
-                    </div>
-                </div>
-
+                {% endfor %}
             </div>
+
+            <!-- PAGINATION -->
+            {% if cases.has_other_pages %}
+            <div class="pagination-bar">
+                <span style="font-size: 0.75rem; color: var(--stone-muted);">Page {{ cases.number }} of {{ cases.paginator.num_pages }}</span>
+                <div style="display: flex; gap: 0.35rem;">
+                    {% if cases.has_previous %}
+                    <a href="?page={{ cases.previous_page_number }}" class="page-num-btn">&laquo;</a>
+                    {% endif %}
+                    {% for page in cases.paginator.page_range %}
+                    <a href="?page={{ page }}" class="page-num-btn {% if cases.number == page %}active{% endif %}">{{ page }}</a>
+                    {% endfor %}
+                    {% if cases.has_next %}
+                    <a href="?page={{ cases.next_page_number }}" class="page-num-btn">&raquo;</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
         </div>
     </main>
 
-
-
-    <!-- ==================== FOOTER ==================== -->
-    <footer style="padding: 3rem 0; border-top: 1px solid rgba(210, 205, 199, 0.8);">
-        <div class="container">
-            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1.5rem;">
-                <div>
-                    <h2 class="font-display" style="font-size: 1.5rem; font-weight: 800; text-transform: uppercase;">LOST &amp; FOUND</h2>
-                    <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.2rem;">AI-Powered Recovery &amp; Detective Network</p>
-                </div>
-                <div style="display: flex; gap: 1.5rem; font-size: 0.65rem; text-transform: uppercase; font-weight: 600; color: var(--stone-muted);">
-                    <a href="index.html" style="text-decoration: underline;">Home</a>
-                    <a href="#" style="text-decoration: underline;">Privacy Policy</a>
-                    <a href="#" style="text-decoration: underline;">Ethical AI Standards</a>
-                </div>
-            </div>
-            <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(210, 205, 199, 0.4); text-align: center; font-size: 0.65rem; color: var(--stone-muted);">
-                ALL RIGHTS RESERVED &copy; 2026 LOST &amp; FOUND PLATFORM
-            </div>
-        </div>
-    </footer>
-
-
-    <!-- ==================== CASE DETAILS MODAL ==================== -->
+    <!-- MODALS -->
     <div id="modal-overlay" class="modal-overlay">
-        
-        <!-- CASE DETAILS MODAL -->
-        <div id="modal-case-details" class="neu-card modal-body lg hidden" style="max-height: 90vh; overflow-y: auto;">
-            <button onclick="closeModals()" aria-label="Close" class="close-btn">
-                <i class="fa-regular fa-circle-xmark"></i>
-            </button>
-
-            <div id="case-modal-content">
-                <!-- Dynamically Populated by JS -->
-            </div>
-        </div>
-
         <!-- LOGIN MODAL -->
         <div id="modal-login" class="neu-card modal-body hidden">
             <button onclick="closeModals()" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
             <div style="text-align: center; margin-bottom: 1.25rem;">
                 <h3 class="font-display" style="font-size: 1.5rem; font-weight: 700;">Welcome Back</h3>
-                <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.25rem;">Access your user portal and live investigation logs.</p>
             </div>
-            <form onsubmit="event.preventDefault(); closeModals();" style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.75rem;">
+            <form action="{% url 'login' %}" method="POST" style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.75rem;">
+                {% csrf_token %}
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Username</label>
-                    <input type="text" placeholder="johndoe" required class="neu-input" style="width: 100%; padding: 0.75rem 1rem;">
+                    <input type="text" name="username" required class="neu-input" style="width: 100%; padding: 0.75rem 1rem;">
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Password</label>
-                    <input type="password" placeholder="••••••••" required class="neu-input" style="width: 100%; padding: 0.75rem 1rem;">
+                    <input type="password" name="password" required class="neu-input" style="width: 100%; padding: 0.75rem 1rem;">
                 </div>
-                <button type="submit" class="neu-button-dark" style="margin-top: 0.5rem;">LOG IN TO PLATFORM</button>
+                <button type="submit" class="neu-button-dark" style="padding: 0.85rem; font-size: 0.75rem;">LOG IN TO PLATFORM</button>
             </form>
         </div>
 
-        <!-- SIGN UP MODAL -->
+        <!-- SIGNUP MODAL -->
         <div id="modal-signup" class="neu-card modal-body lg hidden">
             <button onclick="closeModals()" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
-            <div style="text-align: center; margin-bottom: 1.25rem;">
+            <div style="text-align: center; margin-bottom: 1rem;">
                 <h3 class="font-display" style="font-size: 1.5rem; font-weight: 700;">Create Account</h3>
-                <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.25rem;">Join our network to report missing cases or assist recovery.</p>
             </div>
-            <form onsubmit="event.preventDefault(); closeModals();" style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.75rem;">
+            <form action="{% url 'signup' %}" method="POST" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
+                {% csrf_token %}
                 <div class="grid-2">
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Username</label>
-                        <input type="text" placeholder="johndoe" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                        <input type="text" name="username" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Full Name</label>
-                        <input type="text" placeholder="John Doe" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                        <input type="text" name="full_name" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
                     </div>
                 </div>
                 <div class="grid-2">
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Phone Number</label>
-                        <input type="tel" placeholder="+1 (555) 000-0000" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                        <input type="tel" name="phone" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Email Address</label>
-                        <input type="email" placeholder="john@example.com" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                        <input type="email" name="email" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
                     </div>
                 </div>
-                <button type="submit" class="neu-button-dark" style="margin-top: 0.5rem;">REGISTER NOW</button>
+                <div class="grid-2">
+                    <div>
+                        <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Account Role</label>
+                        <select name="role" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                            <option value="citizen">Citizen / Family Member</option>
+                            <option value="detective">Licensed Private Detective</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Password</label>
+                        <input type="password" name="password" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                    </div>
+                </div>
+                <button type="submit" class="neu-button-dark" style="padding: 0.8rem; font-size: 0.75rem;">REGISTER ACCOUNT</button>
             </form>
         </div>
-
     </div>
 
-
-    <!-- ==================== JAVASCRIPT CONTROLLERS ==================== -->
     <script>
-        // Sample Details Data Store for Cases
-        const casesDetailData = {
-            1: {
-                title: "Golden Retriever 'Leo'",
-                type: "URGENT LOST",
-                typeBg: "bg-red",
-                category: "Pet (Golden Retriever)",
-                status: "Active Search",
-                reward: "$1,500 Reward Offered",
-                location: "Kyoto, Japan (Near Gion District)",
-                date: "2 Hours Ago (July 24, 2026)",
-                image: "https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=1000",
-                description: "Leo is a 3-year-old Golden Retriever with a dark golden coat. He was wearing a red leather collar with a bronze plate. Slipped out through an open gate during the thunderstorm in Kyoto.",
-                vectorVectorId: "CLIP-FAISS-VEC-883912",
-                logs: [
-                    { time: "2 Hours Ago", text: "Case filed by owner. Image embeddings indexed into FAISS vector database." },
-                    { time: "1 Hour Ago", text: "CLIP AI algorithm matched local traffic camera feed with 98.4% confidence rating." },
-                    { time: "30 Mins Ago", text: "Assigned Detective Sarah Vance dispatched to perimeter radius." }
-                ]
-            },
-            2: {
-                title: "Arthur Jensen (Age 74)",
-                type: "MISSING PERSON",
-                typeBg: "bg-amber",
-                category: "Senior Male",
-                status: "Detective Assigned",
-                reward: "No Financial Reward",
-                location: "Copenhagen, Denmark (Central Station)",
-                date: "5 Hours Ago (July 24, 2026)",
-                image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=1000",
-                description: "Arthur is 74 years old, standing 5'10 with white hair and glasses. Last seen wearing a dark navy wool jacket and beige trousers near Copenhagen Central train platform.",
-                vectorVectorId: "CLIP-FAISS-VEC-401928",
-                logs: [
-                    { time: "5 Hours Ago", text: "Family submitted emergency missing report." },
-                    { time: "3 Hours Ago", text: "Private Detective Marcus assigned to investigate CCTV feeds." }
-                ]
-            },
-            3: {
-                title: "Siamese Cat (Unclaimed)",
-                type: "FOUND PET",
-                typeBg: "bg-emerald",
-                category: "Pet (Siamese Cat)",
-                status: "Safe in Shelter",
-                reward: "None",
-                location: "Melbourne, Australia (Fitzroy Gardens)",
-                date: "Today (July 24, 2026)",
-                image: "https://images.unsplash.com/photo-1517423440428-a5a00ad493e8?auto=format&fit=crop&q=80&w=1000",
-                description: "Unclaimed Siamese cat found near the park entrance in Fitzroy Gardens. Extremely friendly, well groomed, blue eyes. No microchip detected.",
-                vectorVectorId: "CLIP-FAISS-VEC-102938",
-                logs: [
-                    { time: "4 Hours Ago", text: "Good Samaritan uploaded photo to Found registry." },
-                    { time: "2 Hours Ago", text: "Vector engine cross-referenced 2 open lost cat reports nearby." }
-                ]
-            },
-            4: {
-                title: "Youth David Chen (Age 16)",
-                type: "HIGH PRIORITY",
-                typeBg: "bg-red",
-                category: "Missing Youth",
-                status: "Geo-Radar Search Active",
-                reward: "$5,000 Reward Offered",
-                location: "Singapore (Orchard Hub)",
-                date: "Yesterday (July 23, 2026)",
-                image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=1000",
-                description: "David is 16 years old, 172cm tall, wearing a grey hoodie and carrying a black Nike backpack. Last seen near Orchard MRT entrance.",
-                vectorVectorId: "CLIP-FAISS-VEC-991204",
-                logs: [
-                    { time: "24 Hours Ago", text: "Report verified by platform admins." },
-                    { time: "18 Hours Ago", text: "Transit hub geo-radar scan triggered across regional nodes." }
-                ]
-            },
-            5: {
-                title: "Siberian Husky 'Bella'",
-                type: "MISSING PET",
-                typeBg: "bg-amber",
-                category: "Pet (Siberian Husky)",
-                status: "Active Search",
-                reward: "$800 Reward Offered",
-                location: "Seattle, USA (Capitol Hill)",
-                date: "3 Days Ago",
-                image: "https://images.unsplash.com/photo-1605568427561-40dd23c2acea?auto=format&fit=crop&q=80&w=1000",
-                description: "Bella has distinct heterochromia eyes (left eye blue, right eye brown). Very energetic and friendly. Last seen near Volunteer Park.",
-                vectorVectorId: "CLIP-FAISS-VEC-330192",
-                logs: [
-                    { time: "3 Days Ago", text: "Lost report submitted." }
-                ]
-            },
-            6: {
-                title: "Maria Garcia (Reunited)",
-                type: "REUNITED",
-                typeBg: "bg-emerald",
-                category: "Senior Female",
-                status: "Solved & Reunited",
-                reward: "Resolved",
-                location: "Madrid, Spain",
-                date: "Solved",
-                image: "https://images.unsplash.com/photo-1581579438747-1dc8d1e292c9?auto=format&fit=crop&q=80&w=1000",
-                description: "Maria was successfully identified via platform visual vector camera feed analysis and reunited safely with her family.",
-                vectorVectorId: "CLIP-FAISS-VEC-772810",
-                logs: [
-                    { time: "4 Days Ago", text: "Matching sighting confirmed." },
-                    { time: "4 Days Ago", text: "Reunited safely with family." }
-                ]
-            },
-            7: {
-                title: "Tabby Cat (Found Camden)",
-                type: "FOUND PET",
-                typeBg: "bg-emerald",
-                category: "Pet (Tabby Cat)",
-                status: "Safe at Clinic",
-                reward: "None",
-                location: "London, UK (Camden)",
-                date: "Yesterday",
-                image: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=1000",
-                description: "Found resting near local vet clinic doorway in Camden. Wearing green fabric collar without name tag.",
-                vectorVectorId: "CLIP-FAISS-VEC-501928",
-                logs: [
-                    { time: "Yesterday", text: "Found alert registered." }
-                ]
-            },
-            8: {
-                title: "French Bulldog 'Max'",
-                type: "REUNITED",
-                typeBg: "bg-emerald",
-                category: "Pet (French Bulldog)",
-                status: "Solved & Reunited",
-                reward: "$2,000 (Paid)",
-                location: "Paris, France",
-                date: "Solved",
-                image: "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&q=80&w=1000",
-                description: "Case closed. Max was located by Private Detective Elena Rostova after cross-referencing regional shelter intakes.",
-                vectorVectorId: "CLIP-FAISS-VEC-662910",
-                logs: [
-                    { time: "5 Days Ago", text: "Detective Elena assigned." },
-                    { time: "4 Days Ago", text: "Dog identified and recovered." }
-                ]
-            }
-        };
-
-        // State variables
-        let activeTab = 'all';
-        let isAiSearchActive = false;
-
-        // Modal Controllers
         const modalOverlay = document.getElementById('modal-overlay');
-
-        function openModal(modalId) {
-            document.getElementById('modal-login').classList.add('hidden');
-            document.getElementById('modal-signup').classList.add('hidden');
-            document.getElementById('modal-case-details').classList.add('hidden');
-
-            const target = document.getElementById(modalId);
-            if (target) target.classList.remove('hidden');
+        function openModal(id) {
+            document.querySelectorAll('.modal-body').forEach(b => b.classList.add('hidden'));
+            const t = document.getElementById(id);
+            if (t) t.classList.remove('hidden');
             modalOverlay.classList.add('active');
         }
-
         function closeModals() {
             modalOverlay.classList.remove('active');
+            document.querySelectorAll('.modal-body').forEach(b => b.classList.add('hidden'));
         }
 
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeModals();
-        });
-
-        // Tab Filter Switcher
-        function setTabFilter(tab, btnElement) {
-            activeTab = tab;
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            btnElement.classList.add('active');
-            applyFilters();
-        }
-
-        // Apply All Dynamic Filters & Search
-        function applyFilters() {
-            const keyword = document.getElementById('search-keyword').value.toLowerCase();
-            const category = document.getElementById('filter-category').value;
-            const status = document.getElementById('filter-status').value;
-            const sort = document.getElementById('filter-sort').value;
-            const rewardOnly = document.getElementById('filter-reward').checked;
-
-            const cards = Array.from(document.querySelectorAll('.card-box'));
-            let visibleCount = 0;
-
-            cards.forEach(card => {
-                const cType = card.getAttribute('data-type');
-                const cCat = card.getAttribute('data-cat');
-                const cStatus = card.getAttribute('data-status');
-                const cReward = parseInt(card.getAttribute('data-reward')) || 0;
-                const cName = card.getAttribute('data-name').toLowerCase();
-                const cLoc = card.getAttribute('data-location').toLowerCase();
-
-                let matchesTab = (activeTab === 'all') || (cType === activeTab);
-                let matchesCategory = (category === 'all') || (cCat === category);
-                let matchesStatus = (status === 'all') || (cStatus === status);
-                let matchesReward = (!rewardOnly) || (cReward > 0);
-                let matchesKeyword = (!keyword) || (cName.includes(keyword) || cLoc.includes(keyword));
-
-                if (matchesTab && matchesCategory && matchesStatus && matchesReward && matchesKeyword) {
-                    card.style.display = 'flex';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-
-            document.getElementById('visible-count-text').innerText = visibleCount;
-
-            // Sorting logic
-            const container = document.getElementById('cases-container');
-            const visibleCards = cards.filter(c => c.style.display !== 'none');
-
-            visibleCards.sort((a, b) => {
-                if (sort === 'reward') {
-                    return (parseInt(b.getAttribute('data-reward')) || 0) - (parseInt(a.getAttribute('data-reward')) || 0);
-                } else if (sort === 'ai-match') {
-                    return (parseFloat(b.getAttribute('data-ai')) || 0) - (parseFloat(a.getAttribute('data-ai')) || 0);
-                } else if (sort === 'oldest') {
-                    return new Date(a.getAttribute('data-date')) - new Date(b.getAttribute('data-date'));
-                } else { // latest
-                    return new Date(b.getAttribute('data-date')) - new Date(a.getAttribute('data-date'));
-                }
-            });
-
-            visibleCards.forEach(c => container.appendChild(c));
-        }
-
-        // AI Image Upload & Vector Match Simulation
         function handleAiImageUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
-
             const dropzoneContent = document.getElementById('dropzone-content');
             const dropzoneLoading = document.getElementById('dropzone-loading');
 
             dropzoneContent.style.display = 'none';
             dropzoneLoading.style.display = 'flex';
 
-            // Simulate CLIP embedding computation delay
             setTimeout(() => {
                 dropzoneLoading.style.display = 'none';
                 dropzoneContent.style.display = 'flex';
-
-                isAiSearchActive = true;
                 document.getElementById('ai-banner').classList.add('active');
-
-                // Show AI Match Badges on cards
-                document.querySelectorAll('.ai-match-badge').forEach(badge => {
-                    badge.classList.add('visible');
-                });
-
-                // Auto select AI Match sort
-                document.getElementById('filter-sort').value = 'ai-match';
-                applyFilters();
+                document.querySelectorAll('.ai-match-badge').forEach(badge => badge.classList.add('visible'));
             }, 1200);
         }
 
-        // Clear AI Search State
         function clearAiSearch() {
-            isAiSearchActive = false;
             document.getElementById('ai-banner').classList.remove('active');
-            document.querySelectorAll('.ai-match-badge').forEach(badge => {
-                badge.classList.remove('visible');
-            });
-            document.getElementById('filter-sort').value = 'latest';
+            document.querySelectorAll('.ai-match-badge').forEach(badge => badge.classList.remove('visible'));
             document.getElementById('ai-file-input').value = '';
-            applyFilters();
         }
-
-        // Drag & Drop Event Handlers
-        const dropzone = document.getElementById('ai-dropzone');
-        dropzone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropzone.classList.add('dragover');
-        });
-        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
-        dropzone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropzone.classList.remove('dragover');
-            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                document.getElementById('ai-file-input').files = e.dataTransfer.files;
-                handleAiImageUpload({ target: { files: e.dataTransfer.files } });
-            }
-        });
     </script>
 </body>
 </html>

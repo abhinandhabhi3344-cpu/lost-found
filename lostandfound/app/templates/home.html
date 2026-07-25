@@ -149,6 +149,27 @@
         }
         .btn-signup:hover { transform: scale(1.03); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25); }
 
+        .user-nav-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-left: auto;
+        }
+
+        .user-avatar-sm {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            background-color: var(--stone-dark);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.75rem;
+            overflow: hidden;
+        }
+
         /* SIDE DOT NAVIGATION */
         .dot-nav {
             position: fixed;
@@ -252,9 +273,37 @@
         .modal-body.lg { max-width: 36rem; }
         .close-btn { position: absolute; top: 1.25rem; right: 1.25rem; font-size: 1.25rem; color: var(--stone-muted); }
         .close-btn:hover { color: var(--stone-dark); }
+
+        /* FLASH MESSAGES */
+        .flash-messages {
+            position: fixed; top: 0.75rem; left: 50%; transform: translateX(-50%);
+            z-index: 200; display: flex; flex-direction: column; gap: 0.5rem; width: 90%; max-width: 32rem;
+        }
+        .flash-msg {
+            padding: 0.75rem 1.25rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600;
+            display: flex; justify-content: space-between; align-items: center;
+            animation: slideDown 0.3s ease;
+        }
+        .flash-msg.success { background: #d1fae5; color: #065f46; border: 1px solid #10b981; }
+        .flash-msg.error { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
+        .flash-msg.warning { background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; }
+        .flash-msg.info { background: #dbeafe; color: #1e40af; border: 1px solid #3b82f6; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
+
+    <!-- FLASH MESSAGES -->
+    {% if messages %}
+    <div class="flash-messages">
+        {% for message in messages %}
+        <div class="flash-msg {{ message.tags }}" onclick="this.remove()">
+            <span>{{ message }}</span>
+            <button onclick="this.parentElement.remove()" style="font-size: 1rem; color: inherit;">&times;</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
     <!-- LIGHT GLASS NAVBAR -->
     <header class="navbar">
@@ -268,11 +317,32 @@
         </nav>
 
         <div class="nav-actions">
-            <button onclick="openModal('modal-login')" class="btn-login">LOG IN</button>
-            <button onclick="openModal('modal-signup')" class="btn-signup">
-                <span>SIGN UP</span>
-                <i class="fas fa-arrow-right"></i>
-            </button>
+            {% if user.is_authenticated %}
+                <div class="user-nav-badge">
+                    <div class="user-avatar-sm">
+                        {% if user_profile and user_profile.avatar %}
+                            <img src="{{ user_profile.avatar.url }}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;">
+                        {% else %}
+                            {{ user.first_name|first|upper|default:"U" }}
+                        {% endif %}
+                    </div>
+                    <span style="font-size: 0.75rem; font-weight: 700;">{{ user_profile.full_name|default:user.username }}</span>
+                </div>
+                {% if user.is_staff %}
+                    <a href="{% url 'admin_dashboard' %}" class="btn-login">Admin</a>
+                {% elif user_profile.is_detective %}
+                    <a href="{% url 'detective_dashboard' %}" class="btn-login">Dashboard</a>
+                {% else %}
+                    <a href="{% url 'user_dashboard' %}" class="btn-login">Dashboard</a>
+                {% endif %}
+                <a href="{% url 'logout' %}" class="btn-login">Logout</a>
+            {% else %}
+                <button onclick="openModal('modal-login')" class="btn-login">LOG IN</button>
+                <button onclick="openModal('modal-signup')" class="btn-signup">
+                    <span>SIGN UP</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            {% endif %}
         </div>
     </header>
 
@@ -305,6 +375,7 @@
                     </h1>
 
                     <div class="hero-actions">
+                        {% if user.is_authenticated %}
                         <button onclick="openModal('modal-report-missing')" class="neu-button-dark action-btn">
                             <i class="fa-regular fa-bell"></i>
                             <span>REPORT MISSING</span>
@@ -313,6 +384,16 @@
                             <i class="fa-regular fa-heart"></i>
                             <span>I FOUND SOMEONE / PET</span>
                         </button>
+                        {% else %}
+                        <button onclick="openModal('modal-login')" class="neu-button-dark action-btn">
+                            <i class="fa-regular fa-bell"></i>
+                            <span>REPORT MISSING</span>
+                        </button>
+                        <button onclick="openModal('modal-login')" class="neu-button action-btn" style="color: var(--stone-dark);">
+                            <i class="fa-regular fa-heart"></i>
+                            <span>I FOUND SOMEONE / PET</span>
+                        </button>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -331,80 +412,48 @@
                         <span style="font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--stone-muted); display: block; margin-bottom: 0.25rem;">LIVE PLATFORM FEED</span>
                         <h2 class="font-display" style="font-size: clamp(1.5rem, 3vw, 2.5rem); font-weight: 500;">ACTIVE SEARCHES &amp; LATEST CASES</h2>
                     </div>
-                    <button onclick="openModal('modal-report-missing')" style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; display: inline-flex; align-items: center; gap: 0.25rem;">
-                        SUBMIT A NEW CASE <i class="fa-regular fa-square-plus"></i>
-                    </button>
+                    <a href="{% url 'case_list' %}" style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; display: inline-flex; align-items: center; gap: 0.25rem;">
+                        VIEW ALL CASES <i class="fa-regular fa-square-plus"></i>
+                    </a>
                 </div>
 
                 <div class="grid-4 reveal delay-1" style="margin: auto 0;">
+                    {% for case in latest_cases %}
                     <div class="card-box">
                         <div class="img-hover-zoom" style="aspect-ratio: 4/3; border-radius: 2px;">
-                            <img src="https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=600" alt="Missing Golden Retriever">
-                            <span class="badge-tag bg-red">URGENT</span>
+                            {% with primary=case.images.all|first %}
+                            {% if primary %}
+                            <img src="{{ primary.image.url }}" alt="{{ case.title }}">
+                            {% else %}
+                            <img src="https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=600" alt="{{ case.title }}">
+                            {% endif %}
+                            {% endwith %}
+                            {% if case.case_type == 'LOST' %}
+                            <span class="badge-tag bg-red">{{ case.get_status_display }}</span>
+                            {% else %}
+                            <span class="badge-tag bg-emerald">FOUND</span>
+                            {% endif %}
                         </div>
                         <div style="margin-top: 0.75rem;">
-                            <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--stone-muted);"><span>KYOTO, JAPAN</span><span>2 HOURS AGO</span></div>
-                            <h3 class="font-display" style="font-size: 0.9rem; font-weight: 600; margin-top: 0.25rem;">Golden Retriever 'Leo'</h3>
-                            <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.25rem;">Golden coat, wearing red collar. CLIP Vector index matches local camera feeds.</p>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--stone-muted);"><span>{{ case.location|upper }}</span><span>{{ case.created_at|timesince }} AGO</span></div>
+                            <h3 class="font-display" style="font-size: 0.9rem; font-weight: 600; margin-top: 0.25rem;">{{ case.title }}</h3>
+                            <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.25rem;">{{ case.description|truncatewords:15 }}</p>
                         </div>
                         <div class="border-t-line" style="margin-top: 0.75rem; padding-top: 0.5rem; display: flex; justify-content: space-between; font-size: 0.65rem;">
-                            <span style="color: var(--emerald-accent); font-weight: 600;"><i class="fa-regular fa-compass"></i> AI Match: 98.2%</span>
-                            <a href="case-details.html" style="text-transform: uppercase; font-weight: 700;">Inspect ↗</a>
+                            <span style="font-weight: 600;">{{ case.get_category_display }}</span>
+                            <a href="{% url 'case_detail' pk=case.pk %}" style="text-transform: uppercase; font-weight: 700;">Inspect ↗</a>
                         </div>
                     </div>
-
-                    <div class="card-box">
-                        <div class="img-hover-zoom" style="aspect-ratio: 4/3; border-radius: 2px;">
-                            <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=600" alt="Missing Person Senior">
-                            <span class="badge-tag bg-amber">INVESTIGATING</span>
-                        </div>
-                        <div style="margin-top: 0.75rem;">
-                            <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--stone-muted);"><span>COPENHAGEN, DK</span><span>5 HOURS AGO</span></div>
-                            <h3 class="font-display" style="font-size: 0.9rem; font-weight: 600; margin-top: 0.25rem;">Elderly Male 'Arthur Jensen'</h3>
-                            <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.25rem;">Age 74, last seen near Central Station. Detective Marcus assigned.</p>
-                        </div>
-                        <div class="border-t-line" style="margin-top: 0.75rem; padding-top: 0.5rem; display: flex; justify-content: space-between; font-size: 0.65rem;">
-                            <span style="font-weight: 600;"><i class="fa-regular fa-id-badge"></i> Det. Assigned</span>
-                            <a href="case-details.html" style="text-transform: uppercase; font-weight: 700;">Inspect ↗</a>
-                        </div>
+                    {% empty %}
+                    <div class="card-box" style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
+                        <p style="color: var(--stone-muted);">No cases posted yet. Be the first to create a report!</p>
                     </div>
-
-                    <div class="card-box">
-                        <div class="img-hover-zoom" style="aspect-ratio: 4/3; border-radius: 2px;">
-                            <img src="https://images.unsplash.com/photo-1517423440428-a5a00ad493e8?auto=format&fit=crop&q=80&w=600" alt="Found Siamese Cat">
-                            <span class="badge-tag bg-emerald">FOUND PET</span>
-                        </div>
-                        <div style="margin-top: 0.75rem;">
-                            <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--stone-muted);"><span>MELBOURNE, AU</span><span>TODAY</span></div>
-                            <h3 class="font-display" style="font-size: 0.9rem; font-weight: 600; margin-top: 0.25rem;">Siamese Cat (Unclaimed)</h3>
-                            <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.25rem;">Found near Fitzroy park. High similarity with 2 open lost reports in area.</p>
-                        </div>
-                        <div class="border-t-line" style="margin-top: 0.75rem; padding-top: 0.5rem; display: flex; justify-content: space-between; font-size: 0.65rem;">
-                            <span style="color: var(--emerald-accent); font-weight: 600;"><i class="fa-regular fa-compass"></i> 2 Matches</span>
-                            <a href="case-details.html" style="text-transform: uppercase; font-weight: 700;">Inspect ↗</a>
-                        </div>
-                    </div>
-
-                    <div class="card-box">
-                        <div class="img-hover-zoom" style="aspect-ratio: 4/3; border-radius: 2px;">
-                            <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=600" alt="Missing Youth">
-                            <span class="badge-tag bg-red">HIGH PRIORITY</span>
-                        </div>
-                        <div style="margin-top: 0.75rem;">
-                            <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--stone-muted);"><span>SINGAPORE</span><span>YESTERDAY</span></div>
-                            <h3 class="font-display" style="font-size: 0.9rem; font-weight: 600; margin-top: 0.25rem;">Youth 'David Chen'</h3>
-                            <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.25rem;">Age 16. Geo-tagged search in progress across transit hubs.</p>
-                        </div>
-                        <div class="border-t-line" style="margin-top: 0.75rem; padding-top: 0.5rem; display: flex; justify-content: space-between; font-size: 0.65rem;">
-                            <span style="color: var(--emerald-accent); font-weight: 600;"><i class="fa-regular fa-circle-dot"></i> Geo-Radar Active</span>
-                            <a href="case-details.html" style="text-transform: uppercase; font-weight: 700;">Inspect ↗</a>
-                        </div>
-                    </div>
+                    {% endfor %}
                 </div>
 
                 <div class="border-t-line" style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--stone-muted); padding-top: 0.75rem;">
                     <span>TRANSFORMING UNSTRUCTURED IMAGES INTO REAL-TIME RECOVERY VECTORS</span>
-                    <span>ACTIVE MONITORED CASES: 342</span>
+                    <span>ACTIVE MONITORED CASES: {{ total_cases }}</span>
                 </div>
             </div>
         </section>
@@ -421,6 +470,26 @@
                 </div>
 
                 <div class="grid-3 reveal delay-1" style="margin: auto 0;">
+                    {% for blog in blogs %}
+                    <div class="card-box" style="padding: 1.5rem;">
+                        <div class="img-hover-zoom" style="aspect-ratio: 16/9; border-radius: 2px; margin-bottom: 1rem;">
+                            {% if blog.image %}
+                            <img src="{{ blog.image.url }}" alt="{{ blog.title }}">
+                            {% else %}
+                            <img src="https://images.unsplash.com/photo-1453728013993-6d66e9c9123a?auto=format&fit=crop&q=80&w=800" alt="{{ blog.title }}">
+                            {% endif %}
+                        </div>
+                        <div>
+                            <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--emerald-accent);">ARTICLE</span>
+                            <h3 class="font-display" style="font-size: 1.05rem; font-weight: 600; margin-top: 0.35rem;">{{ blog.title }}</h3>
+                            <p style="font-size: 0.78rem; color: var(--stone-muted); margin-top: 0.5rem;">{{ blog.content|truncatewords:20 }}</p>
+                        </div>
+                        <div class="border-t-line" style="margin-top: 1.25rem; padding-top: 0.75rem; display: flex; justify-content: space-between; font-size: 0.7rem;">
+                            <span><i class="fa-regular fa-clock"></i> {{ blog.created_at|date:"M d, Y" }}</span>
+                            <span style="font-weight: 700;">By {{ blog.author.first_name|default:blog.author.username }}</span>
+                        </div>
+                    </div>
+                    {% empty %}
                     <div class="card-box" style="padding: 1.5rem;">
                         <div class="img-hover-zoom" style="aspect-ratio: 16/9; border-radius: 2px; margin-bottom: 1rem;">
                             <img src="https://images.unsplash.com/photo-1453728013993-6d66e9c9123a?auto=format&fit=crop&q=80&w=800" alt="Camera search">
@@ -432,10 +501,9 @@
                         </div>
                         <div class="border-t-line" style="margin-top: 1.25rem; padding-top: 0.75rem; display: flex; justify-content: space-between; font-size: 0.7rem;">
                             <span><i class="fa-regular fa-clock"></i> 5 min read</span>
-                            <a href="#" style="font-weight: 700; text-transform: uppercase;">Read Guide ↗</a>
+                            <span style="font-weight: 700; text-transform: uppercase;">Read Guide ↗</span>
                         </div>
                     </div>
-
                     <div class="card-box" style="padding: 1.5rem;">
                         <div class="img-hover-zoom" style="aspect-ratio: 16/9; border-radius: 2px; margin-bottom: 1rem;">
                             <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800" alt="AI Vector diagram">
@@ -447,10 +515,9 @@
                         </div>
                         <div class="border-t-line" style="margin-top: 1.25rem; padding-top: 0.75rem; display: flex; justify-content: space-between; font-size: 0.7rem;">
                             <span><i class="fa-regular fa-clock"></i> 7 min read</span>
-                            <a href="#" style="font-weight: 700; text-transform: uppercase;">Read Article ↗</a>
+                            <span style="font-weight: 700; text-transform: uppercase;">Read Article ↗</span>
                         </div>
                     </div>
-
                     <div class="card-box" style="padding: 1.5rem;">
                         <div class="img-hover-zoom" style="aspect-ratio: 16/9; border-radius: 2px; margin-bottom: 1rem;">
                             <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800" alt="Globe connections network">
@@ -462,14 +529,15 @@
                         </div>
                         <div class="border-t-line" style="margin-top: 1.25rem; padding-top: 0.75rem; display: flex; justify-content: space-between; font-size: 0.7rem;">
                             <span><i class="fa-regular fa-clock"></i> 4 min read</span>
-                            <a href="#" style="font-weight: 700; text-transform: uppercase;">Read Guide ↗</a>
+                            <span style="font-weight: 700; text-transform: uppercase;">Read Guide ↗</span>
                         </div>
                     </div>
+                    {% endfor %}
                 </div>
 
                 <div class="border-t-line" style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--stone-muted); padding-top: 0.75rem;">
                     <span>VERIFIED EXPERT ARTICLES &amp; ACTIONABLE GUIDANCE</span>
-                    <a href="#" style="font-weight: 700; color: var(--stone-dark); text-transform: uppercase;">EXPLORE ALL ARTICLES ↗</a>
+                    <a href="{% url 'case_list' %}" style="font-weight: 700; color: var(--stone-dark); text-transform: uppercase;">EXPLORE ALL ARTICLES ↗</a>
                 </div>
             </div>
         </section>
@@ -531,12 +599,35 @@
                         <span style="font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--stone-muted); display: block; margin-bottom: 0.25rem;">VERIFIED PROFESSIONAL GUILD</span>
                         <h2 class="font-display" style="font-size: clamp(1.5rem, 3.5vw, 2.75rem); font-weight: 500;">ASSOCIATED PRIVATE DETECTIVES</h2>
                     </div>
-                    <button onclick="openModal('modal-signup')" style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; display: inline-flex; align-items: center; gap: 0.25rem;">
-                        APPLY AS INVESTIGATOR <i class="fa-regular fa-paper-plane"></i>
-                    </button>
+                    <a href="{% url 'detective_list' %}" style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; display: inline-flex; align-items: center; gap: 0.25rem;">
+                        VIEW ALL <i class="fa-regular fa-paper-plane"></i>
+                    </a>
                 </div>
 
                 <div class="grid-4 reveal delay-1" style="margin: auto 0;">
+                    {% for det in detectives %}
+                    <div class="card-box">
+                        <div>
+                            <div class="img-hover-zoom" style="aspect-ratio: 1/1; border-radius: 2px;">
+                                {% if det.avatar %}
+                                <img src="{{ det.avatar.url }}" alt="{{ det.full_name }}">
+                                {% else %}
+                                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=600" alt="{{ det.full_name }}">
+                                {% endif %}
+                                <span class="badge-tag bg-emerald"><i class="fa-regular fa-circle-check"></i> VETTED</span>
+                            </div>
+                            <div style="margin-top: 0.75rem;">
+                                <h3 class="font-display" style="font-size: 1rem; font-weight: 600;">{{ det.full_name }}</h3>
+                                <p style="font-size: 0.65rem; color: var(--stone-muted); font-family: monospace;">Lic. {{ det.license_number }} • {{ det.city|upper|default:"GLOBAL" }}</p>
+                                <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.5rem;">{{ det.specialization|truncatewords:10|default:"Expert investigator" }}</p>
+                            </div>
+                        </div>
+                        <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.5rem; display: flex; justify-content: space-between; font-size: 0.65rem;">
+                            <span style="font-weight: 700;">{{ det.experience_years }}yr Exp.</span>
+                            <a href="{% url 'detective_profile' pk=det.pk %}" style="color: var(--emerald-accent); font-weight: 600;">VIEW PROFILE ↗</a>
+                        </div>
+                    </div>
+                    {% empty %}
                     <div class="card-box">
                         <div>
                             <div class="img-hover-zoom" style="aspect-ratio: 1/1; border-radius: 2px;">
@@ -554,92 +645,61 @@
                             <span style="color: var(--emerald-accent); font-weight: 600;">ACTIVE</span>
                         </div>
                     </div>
-
-                    <div class="card-box">
-                        <div>
-                            <div class="img-hover-zoom" style="aspect-ratio: 1/1; border-radius: 2px;">
-                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=600" alt="Kenji Sato">
-                                <span class="badge-tag bg-emerald"><i class="fa-regular fa-circle-check"></i> VETTED</span>
-                            </div>
-                            <div style="margin-top: 0.75rem;">
-                                <h3 class="font-display" style="font-size: 1rem; font-weight: 600;">Kenji Sato</h3>
-                                <p style="font-size: 0.65rem; color: var(--stone-muted); font-family: monospace;">Lic. #PD-40912 • TOKYO</p>
-                                <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.5rem;">Expert in image forensic analysis &amp; high-stakes pet tracking.</p>
-                            </div>
-                        </div>
-                        <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.5rem; display: flex; justify-content: space-between; font-size: 0.65rem;">
-                            <span style="font-weight: 700;">98 Solved</span>
-                            <span style="color: var(--emerald-accent); font-weight: 600;">ACTIVE</span>
-                        </div>
-                    </div>
-
-                    <div class="card-box">
-                        <div>
-                            <div class="img-hover-zoom" style="aspect-ratio: 1/1; border-radius: 2px;">
-                                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=600" alt="Marcus Thorne">
-                                <span class="badge-tag bg-emerald"><i class="fa-regular fa-circle-check"></i> VETTED</span>
-                            </div>
-                            <div style="margin-top: 0.75rem;">
-                                <h3 class="font-display" style="font-size: 1rem; font-weight: 600;">Marcus Thorne</h3>
-                                <p style="font-size: 0.65rem; color: var(--stone-muted); font-family: monospace;">Lic. #PD-33104 • LONDON</p>
-                                <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.5rem;">Lead handler for K9 Search &amp; Rescue. Cross-border recovery expert.</p>
-                            </div>
-                        </div>
-                        <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.5rem; display: flex; justify-content: space-between; font-size: 0.65rem;">
-                            <span style="font-weight: 700;">210 Solved</span>
-                            <span style="color: var(--emerald-accent); font-weight: 600;">ACTIVE</span>
-                        </div>
-                    </div>
-
-                    <div class="card-box">
-                        <div>
-                            <div class="img-hover-zoom" style="aspect-ratio: 1/1; border-radius: 2px;">
-                                <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=600" alt="Elena Rostova">
-                                <span class="badge-tag bg-emerald"><i class="fa-regular fa-circle-check"></i> VETTED</span>
-                            </div>
-                            <div style="margin-top: 0.75rem;">
-                                <h3 class="font-display" style="font-size: 1rem; font-weight: 600;">Elena Rostova</h3>
-                                <p style="font-size: 0.65rem; color: var(--stone-muted); font-family: monospace;">Lic. #PD-99120 • COPENHAGEN</p>
-                                <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.5rem;">Emergency recovery &amp; youth safety advocate with real-time logging.</p>
-                            </div>
-                        </div>
-                        <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.5rem; display: flex; justify-content: space-between; font-size: 0.65rem;">
-                            <span style="font-weight: 700;">85 Solved</span>
-                            <span style="color: var(--emerald-accent); font-weight: 600;">ACTIVE</span>
-                        </div>
-                    </div>
+                    {% endfor %}
                 </div>
 
                 <div class="border-t-line" style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--stone-muted); padding-top: 0.75rem;">
                     <span>ALL DETECTIVES ARE ADMIN-VETTED WITH LICENSED BACKGROUND CHECKS</span>
-                    <button onclick="openModal('modal-report-missing')" style="font-weight: 700; color: var(--stone-dark);">REQUEST DETECTIVE ASSIGNMENT ↗</button>
+                    <a href="{% url 'detective_list' %}" style="font-weight: 700; color: var(--stone-dark);">VIEW ALL DETECTIVES ↗</a>
                 </div>
             </div>
         </section>
 
-        <!-- SECTION 7: FEEDBACKS (WITH GIVE FEEDBACK CTA BUTTON) -->
+        <!-- SECTION 7: FEEDBACKS -->
         <section id="sec-7" class="snap-section">
             <div class="section-content">
-                
                 <div class="border-b-line reveal" style="display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 1rem;">
                     <div>
                         <span style="font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--stone-muted); display: block; margin-bottom: 0.25rem;">RECOVERY EXPERIENCES</span>
                         <h2 class="font-display" style="font-size: clamp(1.5rem, 3.5vw, 2.75rem); font-weight: 500;">FEEDBACKS</h2>
                     </div>
 
-                    <!-- REQUIREMENT 1 FIX: FEEDBACK BUTTON ASIDE HEADING -->
+                    {% if user.is_authenticated %}
                     <button onclick="openModal('modal-give-feedback')" class="neu-button-dark" style="padding: 0.65rem 1.25rem; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; gap: 0.4rem;">
                         <i class="fa-regular fa-pen-to-square"></i>
                         <span>+ GIVE FEEDBACK</span>
                     </button>
+                    {% else %}
+                    <button onclick="openModal('modal-login')" class="neu-button-dark" style="padding: 0.65rem 1.25rem; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; gap: 0.4rem;">
+                        <i class="fa-regular fa-pen-to-square"></i>
+                        <span>+ GIVE FEEDBACK</span>
+                    </button>
+                    {% endif %}
                 </div>
 
                 <div class="grid-3 reveal delay-1" style="margin: auto 0;">
+                    {% for fb in feedbacks %}
                     <div class="card-box" style="padding: 1.5rem;">
                         <div>
                             <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--emerald-accent);">RECOVERY TESTIMONIAL</span>
                             <p style="font-size: 0.8rem; color: var(--stone-dark); font-weight: 300; line-height: 1.6; font-style: italic; margin-top: 0.75rem;">
-                                "When our Golden Retriever Leo slipped out during a storm in Kyoto, we were devastated. Within 30 minutes of uploading his picture, the vector search matched a camera feed 2 miles away. Detective Sarah had him safely home by evening."
+                                "{{ fb.comment|truncatewords:40 }}"
+                            </p>
+                        </div>
+                        <div class="border-t-line" style="margin-top: 1.25rem; padding-top: 0.75rem; display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="width: 2rem; height: 2rem; border-radius: 9999px; background: var(--stone-dark); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem;">{{ fb.sender.first_name|first|upper|default:"U" }}</div>
+                            <div>
+                                <h4 style="font-size: 0.8rem; font-weight: 600;">{{ fb.sender.profile.full_name|default:fb.sender.username }}</h4>
+                                <span style="font-size: 0.65rem; color: var(--stone-muted);">{{ fb.created_at|date:"M d, Y" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="card-box" style="padding: 1.5rem;">
+                        <div>
+                            <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--emerald-accent);">RECOVERY TESTIMONIAL</span>
+                            <p style="font-size: 0.8rem; color: var(--stone-dark); font-weight: 300; line-height: 1.6; font-style: italic; margin-top: 0.75rem;">
+                                "When our Golden Retriever Leo slipped out during a storm in Kyoto, we were devastated. Within 30 minutes of uploading his picture, the vector search matched a camera feed 2 miles away."
                             </p>
                         </div>
                         <div class="border-t-line" style="margin-top: 1.25rem; padding-top: 0.75rem; display: flex; align-items: center; gap: 0.75rem;">
@@ -650,12 +710,11 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="card-box" style="padding: 1.5rem;">
                         <div>
                             <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);">RECOVERY TESTIMONIAL</span>
                             <p style="font-size: 0.8rem; color: var(--stone-dark); font-weight: 300; line-height: 1.6; font-style: italic; margin-top: 0.75rem;">
-                                "My father wandered off near Copenhagen station. Social media felt chaotic. Through LOST &amp; FOUND, the structured real-time investigation logs kept our whole family calm until Private Investigator Marcus brought him home."
+                                "My father wandered off near Copenhagen station. Through LOST &amp; FOUND, the structured real-time investigation logs kept our whole family calm until he was brought home."
                             </p>
                         </div>
                         <div class="border-t-line" style="margin-top: 1.25rem; padding-top: 0.75rem; display: flex; align-items: center; gap: 0.75rem;">
@@ -666,32 +725,36 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="card-box" style="padding: 1.5rem;">
                         <div>
                             <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);">COMMUNITY MEMBER</span>
                             <p style="font-size: 0.8rem; color: var(--stone-dark); font-weight: 300; line-height: 1.6; font-style: italic; margin-top: 0.75rem;">
-                                "I posted a found Siamese cat in Fitzroy park. The system instantly notified two open missing cat reports nearby. Reconnecting the cat with its worried owner within 2 hours was an incredible experience."
+                                "I posted a found Siamese cat in Fitzroy park. The system instantly notified two open missing cat reports nearby. Reconnecting the cat with its worried owner was incredible."
                             </p>
                         </div>
                         <div class="border-t-line" style="margin-top: 1.25rem; padding-top: 0.75rem; display: flex; align-items: center; gap: 0.75rem;">
                             <div style="width: 2rem; height: 2rem; border-radius: 9999px; background: var(--stone-dark); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem;">L</div>
                             <div>
                                 <h4 style="font-size: 0.8rem; font-weight: 600;">Liam Wilson</h4>
-                                <span style="font-size: 0.65rem; color: var(--stone-muted);">Melbourne, Australia • Good Samaritan</span>
+                                <span style="font-size: 0.65rem; color: var(--stone-muted);">Melbourne, AU • Good Samaritan</span>
                             </div>
                         </div>
                     </div>
+                    {% endfor %}
                 </div>
 
                 <div class="border-t-line" style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--stone-muted); padding-top: 0.75rem;">
-                    <span>TRANSPARENT COMMUNITY FEEDBACK • UPDATED DAILY</span>
+                    <span>COMMUNITY-VERIFIED PLATFORM TESTIMONIALS</span>
+                    {% if user.is_authenticated %}
                     <button onclick="openModal('modal-give-feedback')" style="font-weight: 700; color: var(--stone-dark); text-transform: uppercase;">SHARE YOUR EXPERIENCE ↗</button>
+                    {% else %}
+                    <button onclick="openModal('modal-login')" style="font-weight: 700; color: var(--stone-dark); text-transform: uppercase;">SHARE YOUR EXPERIENCE ↗</button>
+                    {% endif %}
                 </div>
             </div>
         </section>
 
-        <!-- SECTION 8: CTA -->
+        <!-- SECTION 8: CTA (RESTORED ORIGINAL DESIGN) -->
         <section id="sec-8" class="snap-section">
             <div class="section-content">
                 <div class="img-hover-zoom reveal" style="flex: 1; border-radius: 4px; border: 1px solid rgba(210, 205, 199, 0.8); display: flex; align-items: center; justify-content: center; padding: 1.5rem; background: #000;">
@@ -705,10 +768,17 @@
                             Upload a photo to run an instant vector match against our active search database or request a verified private investigator.
                         </p>
                         <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center;">
+                            {% if user.is_authenticated %}
                             <button onclick="openModal('modal-report-missing')" class="neu-button-dark" style="padding: 0.85rem 1.5rem; font-size: 0.7rem; display: flex; align-items: center; gap: 0.5rem;">
                                 <span>CREATE A POST</span>
                                 <i class="fa-regular fa-paper-plane"></i>
                             </button>
+                            {% else %}
+                            <button onclick="openModal('modal-signup')" class="neu-button-dark" style="padding: 0.85rem 1.5rem; font-size: 0.7rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <span>CREATE A POST</span>
+                                <i class="fa-regular fa-paper-plane"></i>
+                            </button>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -738,15 +808,16 @@
                 <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.25rem;">Access your cases, AI matches, and live investigation logs.</p>
             </div>
 
-            <form onsubmit="event.preventDefault(); closeModals();" style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.75rem;">
+            <form action="{% url 'login' %}" method="POST" style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.75rem;">
+                {% csrf_token %}
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Username</label>
-                    <input type="text" placeholder="johndoe" required class="neu-input" style="width: 100%; padding: 0.75rem 1rem;">
+                    <input type="text" name="username" placeholder="johndoe" required class="neu-input" style="width: 100%; padding: 0.75rem 1rem;">
                 </div>
 
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Password</label>
-                    <input type="password" placeholder="••••••••" required class="neu-input" style="width: 100%; padding: 0.75rem 1rem;">
+                    <input type="password" name="password" placeholder="••••••••" required class="neu-input" style="width: 100%; padding: 0.75rem 1rem;">
                 </div>
 
                 <button type="submit" class="neu-button-dark" style="padding: 0.85rem; font-size: 0.75rem; margin-top: 0.5rem;">
@@ -761,7 +832,7 @@
         </div>
 
 
-        <!-- REQUIREMENT 2 FIX: DYNAMIC COMMON SIGNUP MODAL WITH AVATAR & DETECTIVE FIELDS -->
+        <!-- 2. SIGNUP MODAL -->
         <div id="modal-signup" class="neu-card modal-body lg hidden">
             <button onclick="closeModals()" aria-label="Close" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
 
@@ -770,80 +841,76 @@
                 <p style="font-size: 0.75rem; color: var(--stone-muted);">Register as a Citizen or apply as a Licensed Private Investigator.</p>
             </div>
 
-            <form onsubmit="event.preventDefault(); alert('Account registered successfully!'); closeModals();" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
-                
-                <!-- Profile Picture / Avatar Field -->
+            <form action="{% url 'signup' %}" method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
+                {% csrf_token %}
+
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Profile Picture</label>
                     <div class="neu-input" style="padding: 0.65rem; text-align: center; cursor: pointer;" onclick="document.getElementById('signup-avatar-file').click()">
                         <i class="fa-regular fa-user-circle" style="font-size: 1.25rem; color: var(--stone-muted);"></i>
                         <p id="signup-avatar-label" style="font-size: 0.7rem; font-weight: 600; margin-top: 0.15rem;">Click to upload profile photo</p>
                     </div>
-                    <input type="file" id="signup-avatar-file" accept="image/*" style="display: none;" onchange="document.getElementById('signup-avatar-label').textContent = this.files[0] ? this.files[0].name : 'Photo selected';">
+                    <input type="file" name="avatar" id="signup-avatar-file" accept="image/*" style="display: none;" onchange="document.getElementById('signup-avatar-label').textContent = this.files[0] ? this.files[0].name : 'Photo selected';">
                 </div>
 
-                <!-- Row 1: Username & Full Name -->
                 <div class="grid-2">
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Username</label>
-                        <input type="text" placeholder="johndoe" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                        <input type="text" name="username" placeholder="johndoe" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Full Name</label>
-                        <input type="text" placeholder="John Doe" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                        <input type="text" name="full_name" placeholder="John Doe" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
                     </div>
                 </div>
 
-                <!-- Row 2: Phone & Email -->
                 <div class="grid-2">
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Phone Number</label>
-                        <input type="tel" placeholder="+1 (555) 000-0000" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                        <input type="tel" name="phone" placeholder="+1 (555) 000-0000" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Email Address</label>
-                        <input type="email" placeholder="john@example.com" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                        <input type="email" name="email" placeholder="john@example.com" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
                     </div>
                 </div>
 
-                <!-- Row 3: Role Selector & Password -->
                 <div class="grid-2">
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Account Role</label>
-                        <select id="signup-role" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;" onchange="toggleDetectiveFields(this.value)">
+                        <select name="role" id="signup-role" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;" onchange="toggleDetectiveFields(this.value)">
                             <option value="citizen">Citizen / Family Member</option>
                             <option value="detective">Licensed Private Detective</option>
                         </select>
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Password</label>
-                        <input type="password" placeholder="••••••••" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                        <input type="password" name="password" placeholder="••••••••" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
                     </div>
                 </div>
 
-                <!-- DYNAMIC DETECTIVE INPUTS (Hidden unless role === detective) -->
                 <div id="detective-extra-fields" class="hidden" style="display: flex; flex-direction: column; gap: 0.75rem; background: var(--stone-light); padding: 0.85rem; border-radius: 8px; border: 1px solid var(--stone-border); margin-top: 0.25rem;">
                     <span style="font-size: 0.65rem; font-weight: 700; color: var(--amber-accent); text-transform: uppercase;"><i class="fa-regular fa-id-badge"></i> Detective Vetting Credentials</span>
                     
                     <div class="grid-2">
                         <div>
                             <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">License Number</label>
-                            <input type="text" placeholder="e.g. #PD-88219" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
+                            <input type="text" name="license_number" placeholder="e.g. #PD-88219" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                         </div>
                         <div>
                             <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Years Experience</label>
-                            <input type="number" placeholder="e.g. 10" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
+                            <input type="number" name="experience_years" placeholder="e.g. 10" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                         </div>
                     </div>
 
                     <div>
                         <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Operating Region / Territory</label>
-                        <input type="text" placeholder="e.g. Kyoto & Kansai Guild #8" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
+                        <input type="text" name="operating_region" placeholder="e.g. Kyoto & Kansai Guild #8" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                     </div>
 
                     <div>
                         <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Specialization Summary</label>
-                        <textarea rows="2" placeholder="e.g. K9 Scent Tracking, Urban missing persons..." class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;"></textarea>
+                        <textarea rows="2" name="specialization" placeholder="e.g. K9 Scent Tracking, Urban missing persons..." class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;"></textarea>
                     </div>
                 </div>
 
@@ -854,81 +921,54 @@
         </div>
 
 
-        <!-- REQUIREMENT 4 FIX: ENHANCED REPORT MISSING MODAL WITH GRANULAR SUBJECT SPECS -->
+        <!-- 3. REPORT MISSING MODAL -->
         <div id="modal-report-missing" class="neu-card modal-body lg hidden">
             <button onclick="closeModals()" aria-label="Close" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
 
             <div style="margin-bottom: 0.75rem;">
-                <span class="badge-tag bg-red"><i class="fa-regular fa-bell"></i> Emergency Case Report</span>
+                <span class="badge-tag bg-red" style="position: static;"><i class="fa-regular fa-bell"></i> Emergency Case Report</span>
                 <h3 class="font-display" style="font-size: 1.35rem; font-weight: 700; margin-top: 0.35rem;">Report Missing Subject / Pet</h3>
                 <p style="font-size: 0.72rem; color: var(--stone-muted);">Provide complete specs to allow automated CLIP visual vector matching.</p>
             </div>
 
-            <form onsubmit="event.preventDefault(); alert('Case report submitted with visual vector index!'); closeModals();" style="display: flex; flex-direction: column; gap: 0.65rem; font-size: 0.75rem;">
+            <form action="{% url 'case_create' %}" method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 0.65rem; font-size: 0.75rem;">
+                {% csrf_token %}
+                <input type="hidden" name="case_type" value="LOST">
                 
                 <div class="grid-2">
                     <div>
                         <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Subject Title / Name</label>
-                        <input type="text" placeholder="e.g. Golden Retriever 'Leo'" required class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
+                        <input type="text" name="title" placeholder="e.g. Golden Retriever 'Leo'" required class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Category</label>
-                        <select class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
-                            <option value="pet">Pet (Canine, Feline, etc.)</option>
-                            <option value="person">Family Member / Person</option>
-                            <option value="item">Valuable Belonging</option>
+                        <select name="category" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
+                            <option value="PET">Pet (Canine, Feline, etc.)</option>
+                            <option value="PERSON">Family Member / Person</option>
+                            <option value="ITEM">Valuable Belonging</option>
                         </select>
-                    </div>
-                </div>
-
-                <!-- GRANULAR SPECIFICATIONS -->
-                <div class="grid-2">
-                    <div>
-                        <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Breed / Sub-type</label>
-                        <input type="text" placeholder="e.g. Golden Retriever" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
-                    </div>
-                    <div>
-                        <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Age &amp; Gender</label>
-                        <input type="text" placeholder="e.g. 3 Years / Male" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
-                    </div>
-                </div>
-
-                <div class="grid-2">
-                    <div>
-                        <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Coat Color &amp; Fur Type</label>
-                        <input type="text" placeholder="e.g. Dark Golden / Long Coat" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
-                    </div>
-                    <div>
-                        <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Collar / Accessory Details</label>
-                        <input type="text" placeholder="e.g. Red Leather Collar" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                     </div>
                 </div>
 
                 <div class="grid-2">
                     <div>
                         <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Last Seen Location</label>
-                        <input type="text" placeholder="e.g. Gion District, Kyoto, Japan" required class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
+                        <input type="text" name="location" placeholder="e.g. Gion District, Kyoto, Japan" required class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                     </div>
-                    <div>
-                        <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Microchip ID / Tag (Optional)</label>
-                        <input type="text" placeholder="e.g. #985141002931" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
-                    </div>
-                </div>
-
-                <div class="grid-2">
                     <div>
                         <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Bounty / Reward Offer ($)</label>
-                        <input type="number" placeholder="e.g. 1500" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
-                    </div>
-                    <div>
-                        <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Upload Primary Photo</label>
-                        <input type="file" required class="neu-input" style="width: 100%; padding: 0.45rem 0.65rem;">
+                        <input type="number" name="reward" placeholder="e.g. 1500" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                     </div>
                 </div>
 
                 <div>
+                    <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Upload Primary Photo</label>
+                    <input type="file" name="image" accept="image/*" class="neu-input" style="width: 100%; padding: 0.45rem 0.65rem;">
+                </div>
+
+                <div>
                     <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Detailed Story / Circumstances</label>
-                    <textarea rows="2" placeholder="Describe how the subject was lost, behavioral traits, direction heading..." class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;"></textarea>
+                    <textarea rows="2" name="description" placeholder="Describe how the subject was lost, behavioral traits, direction heading..." class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;"></textarea>
                 </div>
 
                 <button type="submit" class="neu-button-dark" style="padding: 0.75rem; margin-top: 0.25rem;">
@@ -943,31 +983,43 @@
             <button onclick="closeModals()" aria-label="Close" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
 
             <div style="margin-bottom: 1rem;">
-                <span class="badge-tag bg-emerald"><i class="fa-regular fa-heart"></i> Found Alert</span>
+                <span class="badge-tag bg-emerald" style="position: static;"><i class="fa-regular fa-heart"></i> Found Alert</span>
                 <h3 class="font-display" style="font-size: 1.35rem; font-weight: 700; margin-top: 0.35rem;">Report Found Subject / Pet</h3>
                 <p style="font-size: 0.72rem; color: var(--stone-muted);">Upload a photo to notify matching open lost cases instantly.</p>
             </div>
 
-            <form onsubmit="event.preventDefault(); alert('Found report submitted. Matching owners notified.'); closeModals();" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
+            <form action="{% url 'case_create' %}" method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
+                {% csrf_token %}
+                <input type="hidden" name="case_type" value="FOUND">
+
                 <div class="grid-2">
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">What Did You Find?</label>
-                        <input type="text" placeholder="e.g. Siamese Cat" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                        <input type="text" name="title" placeholder="e.g. Siamese Cat" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Location Found</label>
-                        <input type="text" placeholder="e.g. Fitzroy Park, Melbourne" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                        <input type="text" name="location" placeholder="e.g. Fitzroy Park, Melbourne" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
                     </div>
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Category</label>
+                    <select name="category" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                        <option value="PET">Pet</option>
+                        <option value="PERSON">Person</option>
+                        <option value="ITEM">Item</option>
+                    </select>
                 </div>
 
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Upload Photo Proof</label>
-                    <input type="file" required class="neu-input" style="width: 100%; padding: 0.5rem 0.75rem;">
+                    <input type="file" name="image" accept="image/*" class="neu-input" style="width: 100%; padding: 0.5rem 0.75rem;">
                 </div>
 
                 <div>
-                    <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Your Contact Phone / Email</label>
-                    <input type="text" placeholder="+81 90-0000-0000" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                    <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Description</label>
+                    <textarea rows="2" name="description" placeholder="Describe what you found, condition, any identifying features..." class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;"></textarea>
                 </div>
 
                 <button type="submit" class="neu-button-dark" style="padding: 0.75rem; margin-top: 0.25rem;">
@@ -977,30 +1029,21 @@
         </div>
 
 
-        <!-- REQUIREMENT 1 FIX: USER FEEDBACK MODAL -->
+        <!-- 5. USER FEEDBACK MODAL -->
         <div id="modal-give-feedback" class="neu-card modal-body hidden">
             <button onclick="closeModals()" aria-label="Close" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
 
             <div style="margin-bottom: 1rem;">
-                <span class="badge-tag bg-emerald"><i class="fa-regular fa-star"></i> PLATFORM TESTIMONIAL</span>
+                <span class="badge-tag bg-emerald" style="position: static;"><i class="fa-regular fa-star"></i> PLATFORM TESTIMONIAL</span>
                 <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700; margin-top: 0.35rem;">Share Your Experience</h3>
                 <p style="font-size: 0.72rem; color: var(--stone-muted);">Your feedback helps maintain community trust and detective quality.</p>
             </div>
 
-            <form onsubmit="event.preventDefault(); alert('Thank you! Your feedback has been submitted to administrators for review.'); closeModals();" style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.75rem;">
-                <div>
-                    <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Your Full Name</label>
-                    <input type="text" placeholder="e.g. Daisuke Tanaka" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
-                </div>
-
-                <div>
-                    <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Role / Designation</label>
-                    <input type="text" placeholder="e.g. Reunited Pet Owner • Kyoto, Japan" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
-                </div>
-
+            <form action="{% url 'feedback_create' %}" method="POST" style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.75rem;">
+                {% csrf_token %}
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Experience Feedback / Testimonial</label>
-                    <textarea rows="4" placeholder="Describe your recovery experience, how the AI vector search helped, or your thoughts on the assigned investigator..." required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;"></textarea>
+                    <textarea rows="4" name="comment" placeholder="Describe your recovery experience, how the AI vector search helped, or your thoughts on the assigned investigator..." required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;"></textarea>
                 </div>
 
                 <button type="submit" class="neu-button-dark" style="padding: 0.75rem;">SUBMIT FEEDBACK FOR REVIEW</button>
@@ -1083,6 +1126,11 @@
         }, { root: document.getElementById('main-scroll'), threshold: 0.4 });
 
         sections.forEach(sec => observer.observe(sec));
+
+        // Auto-dismiss flash messages after 5 seconds
+        setTimeout(() => {
+            document.querySelectorAll('.flash-msg').forEach(msg => msg.remove());
+        }, 5000);
     </script>
 </body>
 </html>

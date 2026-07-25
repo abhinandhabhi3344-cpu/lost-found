@@ -1,3 +1,5 @@
+{% load static %}
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,507 +7,114 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verified Detectives — Lost &amp; Found Recovery Network</title>
     
-    <!-- Google Fonts: Inter, Space Grotesk, & Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
-    <!-- FontAwesome Icons (Regular Outline / Line Icons) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
-        /* ==================== ROOT VARIABLES & RESET ==================== */
         :root {
-            --stone-bg: #EAE6E1;
-            --stone-light: #F3F0EC;
-            --stone-dark: #1A1A1A;
-            --stone-muted: #6B6864;
-            --stone-border: #D2CDC7;
-            --accent-dark: #111827;
-            --emerald-accent: #047857;
-            --amber-accent: #d97706;
-            --red-accent: #dc2626;
-            --font-sans: 'Inter', 'Plus Jakarta Sans', sans-serif;
-            --font-display: 'Space Grotesk', sans-serif;
+            --stone-bg: #EAE6E1; --stone-light: #F3F0EC; --stone-dark: #1A1A1A;
+            --stone-muted: #6B6864; --stone-border: #D2CDC7; --accent-dark: #111827;
+            --emerald-accent: #047857; --amber-accent: #d97706; --red-accent: #dc2626;
+            --font-sans: 'Inter', 'Plus Jakarta Sans', sans-serif; --font-display: 'Space Grotesk', sans-serif;
         }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { width: 100%; min-height: 100vh; background-color: var(--stone-bg); color: var(--stone-dark); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+        a { color: inherit; text-decoration: none; }
+        button, input, select, textarea { font-family: inherit; }
+        button { cursor: pointer; border: none; background: none; }
+        .hidden { display: none !important; }
+        .container { max-width: 80rem; margin: 0 auto; padding: 0 1.5rem; }
+        @media (min-width: 1024px) { .container { padding: 0 3rem; } }
 
-        *, *::before, *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        .navbar { position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%); z-index: 50; width: 92%; max-width: 64rem; background: rgba(243, 240, 236, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.8); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); border-radius: 9999px; padding: 0.65rem 1.5rem; display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; font-weight: 500; }
+        .nav-links { display: none; align-items: center; gap: 2rem; font-weight: 600; color: rgba(26, 26, 26, 0.8); }
+        @media (min-width: 768px) { .nav-links { display: flex; } }
+        .nav-links a:hover, .nav-links a.active { color: #000000; border-bottom: 2px solid var(--stone-dark); padding-bottom: 2px; }
+        .nav-actions { display: flex; align-items: center; gap: 0.75rem; margin-left: auto; }
+        .btn-login { font-size: 0.75rem; font-weight: 600; color: var(--stone-dark); padding: 0.5rem 1rem; border: 1px solid rgba(26, 26, 26, 0.2); border-radius: 9999px; transition: background-color 0.2s ease, color 0.2s ease; display: inline-flex; align-items: center; justify-content: center; }
+        .btn-login:hover { background-color: var(--stone-light); color: #000; }
+        .btn-signup { position: relative; background-color: var(--stone-dark); color: #ffffff; font-weight: 800; padding: 0.6rem 1.25rem; border-radius: 9999px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; transition: transform 0.2s ease, box-shadow 0.2s ease; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); display: flex; align-items: center; gap: 0.5rem; }
+        .btn-signup:hover { transform: scale(1.03); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25); }
+        .user-nav-badge { display: flex; align-items: center; gap: 0.6rem; margin-left: auto; }
+        .user-avatar-sm { width: 2rem; height: 2rem; border-radius: 50%; background-color: var(--stone-dark); color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem; overflow: hidden; }
 
-        html, body {
-            width: 100%;
-            min-height: 100vh;
-            background-color: var(--stone-bg);
-            color: var(--stone-dark);
-            font-family: var(--font-sans);
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
+        .page-header { padding-top: 7.5rem; padding-bottom: 2rem; border-bottom: 1px solid rgba(210, 205, 199, 0.8); }
+        .page-title { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; text-transform: uppercase; }
 
-        a {
-            color: inherit;
-            text-decoration: none;
-        }
+        .neu-input { background: var(--stone-bg); box-shadow: inset 3px 3px 6px #c7c4bf, inset -3px -3px 6px #ffffff; border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 10px; font-size: 0.8rem; color: var(--stone-dark); }
+        .neu-button { background: var(--stone-bg); box-shadow: 4px 4px 10px #c7c4bf, -4px -4px 10px #ffffff; border-radius: 8px; font-weight: 700; text-transform: uppercase; font-size: 0.7rem; padding: 0.65rem 1.1rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; color: var(--stone-dark); }
+        .neu-button-dark { background: var(--stone-dark); color: #ffffff; box-shadow: 4px 4px 10px #c7c4bf, -4px -4px 10px #ffffff; border-radius: 8px; font-weight: 700; text-transform: uppercase; font-size: 0.7rem; padding: 0.65rem 1.1rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; }
 
-        button, input, select, textarea {
-            font-family: inherit;
-        }
-
-        button {
-            cursor: pointer;
-            border: none;
-            background: none;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .container {
-            max-width: 80rem;
-            margin: 0 auto;
-            padding: 0 1.5rem;
-        }
-
-        @media (min-width: 1024px) {
-            .container {
-                padding: 0 3rem;
-            }
-        }
-
-        /* ==================== LIGHT GLASS NAVBAR ==================== */
-        .navbar {
-            position: fixed;
-            top: 1.5rem;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 50;
-            width: 92%;
-            max-width: 64rem;
-            background: rgba(243, 240, 236, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            border-radius: 9999px;
-            padding: 0.65rem 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-
-        .nav-links {
-            display: none;
-            align-items: center;
-            gap: 2rem;
-            font-weight: 600;
-            color: rgba(26, 26, 26, 0.8);
-        }
-
-        @media (min-width: 768px) {
-            .nav-links {
-                display: flex;
-            }
-        }
-
-        .nav-links a:hover, .nav-links a.active {
-            color: #000000;
-            border-bottom: 2px solid var(--stone-dark);
-            padding-bottom: 2px;
-        }
-
-        .nav-actions {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-left: auto;
-        }
-
-        .btn-login {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--stone-dark);
-            padding: 0.5rem 1rem;
-            border: 1px solid rgba(26, 26, 26, 0.2);
-            border-radius: 9999px;
-            transition: background-color 0.2s ease;
-        }
-
-        .btn-login:hover {
-            background-color: var(--stone-light);
-            color: #000;
-        }
-
-        .btn-signup {
-            position: relative;
-            background-color: var(--stone-dark);
-            color: #ffffff;
-            font-weight: 800;
-            padding: 0.6rem 1.25rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn-signup:hover {
-            transform: scale(1.03);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-        }
-
-        .btn-signup i {
-            font-size: 0.75rem;
-            animation: bounceRight 1.4s infinite ease-in-out;
-        }
-
-        @keyframes bounceRight {
-            0%, 100% { transform: translateX(0); }
-            50% { transform: translateX(5px); }
-        }
-
-        /* ==================== PAGE HEADER ==================== */
-        .page-header {
-            padding-top: 7.5rem;
-            padding-bottom: 2rem;
-            border-bottom: 1px solid rgba(210, 205, 199, 0.8);
-        }
-
-        .page-title {
-            font-size: clamp(2rem, 5vw, 3.5rem);
-            font-weight: 800;
-            letter-spacing: -0.03em;
-            line-height: 1.1;
-            text-transform: uppercase;
-        }
-
-        /* NEUMORPHIC COMPONENTS */
-        .neu-card {
-            background: var(--stone-bg);
-            border-radius: 12px;
-        }
-
-        .neu-input {
-            background: var(--stone-bg);
-            box-shadow: inset 3px 3px 6px #c7c4bf, inset -3px -3px 6px #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 10px;
-            transition: all 0.2s ease;
-            font-size: 0.8rem;
-            color: var(--stone-dark);
-        }
-
-        .neu-input:focus {
-            outline: none;
-            box-shadow: inset 4px 4px 8px #bebbb6, inset -4px -4px 8px #ffffff;
-            border-color: var(--stone-dark);
-        }
-
-        .neu-button {
-            background: var(--stone-bg);
-            box-shadow: 4px 4px 10px #c7c4bf, -4px -4px 10px #ffffff;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: 0.7rem;
-            letter-spacing: 0.05em;
-            padding: 0.65rem 1.1rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.4rem;
-            color: var(--stone-dark);
-        }
-
-        .neu-button:hover {
-            box-shadow: 2px 2px 6px #c7c4bf, -2px -2px 6px #ffffff;
-            transform: translateY(1px);
-        }
-
-        .neu-button-dark {
-            background: var(--stone-dark);
-            color: #ffffff;
-            box-shadow: 4px 4px 10px #c7c4bf, -4px -4px 10px #ffffff;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: 0.7rem;
-            letter-spacing: 0.05em;
-            padding: 0.65rem 1.1rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.4rem;
-        }
-
-        .neu-button-dark:hover {
-            background: #000000;
-            box-shadow: 2px 2px 6px #c7c4bf, -2px -2px 6px #ffffff;
-            transform: translateY(1px);
-        }
-
-        /* BADGES */
-        .badge-tag {
-            font-size: 0.60rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            padding: 0.2rem 0.5rem;
-            border-radius: 3px;
-            color: #fff;
-            letter-spacing: 0.05em;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.3rem;
-        }
-
+        .badge-tag { font-size: 0.60rem; font-weight: 700; text-transform: uppercase; padding: 0.2rem 0.5rem; border-radius: 3px; color: #fff; display: inline-flex; align-items: center; gap: 0.3rem; }
         .bg-emerald { background-color: var(--emerald-accent); }
-        .bg-amber { background-color: var(--amber-accent); }
 
-        /* ==================== TOOLBAR & SEARCH SECTION ==================== */
-        .toolbar-section {
-            padding: 1.75rem 0;
-            border-bottom: 1px solid rgba(210, 205, 199, 0.8);
-        }
+        .toolbar-section { padding: 1.75rem 0; border-bottom: 1px solid rgba(210, 205, 199, 0.8); }
+        .detectives-grid-section { padding: 2.5rem 0 4rem 0; }
 
-        .search-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1rem;
-        }
+        .grid-3 { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+        @media (min-width: 640px) { .grid-3 { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1024px) { .grid-3 { grid-template-columns: repeat(3, 1fr); } }
 
-        @media (min-width: 640px) {
-            .search-grid {
-                grid-template-columns: 2fr 1fr;
-            }
-        }
+        .detective-card { background-color: var(--stone-light); padding: 1.5rem; border-radius: 8px; border: 1px solid rgba(210, 205, 199, 0.8); display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s ease; }
+        .detective-card:hover { border-color: var(--stone-dark); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
 
-        @media (min-width: 1024px) {
-            .search-grid {
-                grid-template-columns: 3fr 1.5fr auto;
-            }
-        }
+        .portrait-frame { aspect-ratio: 1/1; border-radius: 6px; overflow: hidden; position: relative; background-color: #ccc; margin-bottom: 1rem; border: 1px solid var(--stone-border); }
+        .portrait-frame img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* ==================== DETECTIVE CARDS GRID ==================== */
-        .detectives-grid-section {
-            padding: 2.5rem 0 4rem 0;
-        }
-
-        .grid-3 {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-        }
-
-        @media (min-width: 640px) {
-            .grid-3 { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        @media (min-width: 1024px) {
-            .grid-3 { grid-template-columns: repeat(3, 1fr); }
-        }
-
-        .detective-card {
-            background-color: var(--stone-light);
-            padding: 1.5rem;
-            border-radius: 8px;
-            border: 1px solid rgba(210, 205, 199, 0.8);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-            cursor: pointer;
-        }
-
-        .detective-card:hover {
-            border-color: var(--stone-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
-        }
-
-        .portrait-frame {
-            aspect-ratio: 1/1;
-            border-radius: 6px;
-            overflow: hidden;
-            position: relative;
-            background-color: #ccc;
-            margin-bottom: 1rem;
-            border: 1px solid var(--stone-border);
-        }
-
-        .portrait-frame img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s ease;
-        }
-
-        .detective-card:hover .portrait-frame img {
-            transform: scale(1.04);
-        }
-
-        .rating-badge {
-            position: absolute;
-            bottom: 0.5rem;
-            left: 0.5rem;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(4px);
-            color: #fbbf24;
-            font-size: 0.65rem;
-            font-weight: 700;
-            padding: 0.2rem 0.5rem;
-            border-radius: 3px;
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-            border: 1px solid rgba(251, 191, 36, 0.4);
-        }
-
-        .stats-mini-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 0.5rem;
-            background: var(--stone-bg);
-            padding: 0.75rem;
-            border-radius: 6px;
-            border: 1px solid var(--stone-border);
-            margin: 1rem 0;
-            text-align: center;
-        }
-
-        .stat-mini-item div {
-            font-size: 0.9rem;
-            font-weight: 800;
-        }
-
-        .stat-mini-item span {
-            font-size: 0.6rem;
-            color: var(--stone-muted);
-            text-transform: uppercase;
-            font-weight: 600;
-            display: block;
-        }
+        .stats-mini-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; background: var(--stone-bg); padding: 0.75rem; border-radius: 6px; border: 1px solid var(--stone-border); margin: 1rem 0; text-align: center; }
+        .stat-mini-item div { font-size: 0.9rem; font-weight: 800; }
+        .stat-mini-item span { font-size: 0.6rem; color: var(--stone-muted); text-transform: uppercase; font-weight: 600; display: block; }
 
         .border-t-line { border-top: 1px solid rgba(210, 205, 199, 0.8); }
         .font-display { font-family: var(--font-display); }
 
-        /* ==================== PAGINATION ==================== */
-        .pagination-bar {
-            padding: 2rem 0 4rem 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-top: 1px solid rgba(210, 205, 199, 0.8);
-        }
-
-        .page-num-btn {
-            width: 2.25rem;
-            height: 2.25rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--stone-dark);
-            border: 1px solid rgba(210, 205, 199, 0.8);
-            background: var(--stone-light);
-            transition: all 0.2s ease;
-        }
-
-        .page-num-btn:hover, .page-num-btn.active {
-            background: var(--stone-dark);
-            color: #ffffff;
-            border-color: var(--stone-dark);
-        }
-
-        /* ==================== MODALS ==================== */
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 100;
-            background: rgba(0, 0, 0, 0.55);
-            backdrop-filter: blur(6px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal-body {
-            width: 100%;
-            max-width: 28rem;
-            padding: 2rem;
-            position: relative;
-        }
-
-        .modal-body.lg {
-            max-width: 34rem;
-        }
-
-        .close-btn {
-            position: absolute;
-            top: 1.25rem;
-            right: 1.25rem;
-            font-size: 1.25rem;
-            color: var(--stone-muted);
-        }
-
-        .close-btn:hover { color: var(--stone-dark); }
-
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1rem;
-        }
-
-        @media (min-width: 640px) {
-            .grid-2 { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: var(--stone-bg); }
-        ::-webkit-scrollbar-thumb { background: var(--stone-dark); }
+        .modal-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; padding: 1rem; }
+        .modal-overlay.active { display: flex; }
+        .modal-body { width: 100%; max-width: 28rem; padding: 2rem; position: relative; }
+        .modal-body.lg { max-width: 36rem; }
+        .close-btn { position: absolute; top: 1.25rem; right: 1.25rem; font-size: 1.25rem; color: var(--stone-muted); }
     </style>
 </head>
 <body>
 
-    <!-- ==================== LIGHT GLASS NAVBAR ==================== -->
+    <!-- NAVBAR -->
     <header class="navbar">
         <nav class="nav-links">
-            <a href="index.html">Home</a>
-            <a href="cases.html">Latest Cases</a>
-            <a href="#sec-blog">Blogs</a>
-            <a href="#sec-ecosystem">Ecosystem</a>
-            <a href="detectives.html" class="active">Detectives</a>
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'case_list' %}">Latest Cases</a>
+            <a href="{% url 'detective_list' %}" class="active">Detectives</a>
         </nav>
 
         <div class="nav-actions">
-            <button onclick="openModal('modal-login')" class="btn-login">LOG IN</button>
-            <button onclick="openModal('modal-signup')" class="btn-signup">
-                <span>SIGN UP</span>
-                <i class="fas fa-arrow-right"></i>
-            </button>
+            {% if user.is_authenticated %}
+                <div class="user-nav-badge">
+                    <div class="user-avatar-sm">
+                        {% if user_profile and user_profile.avatar %}
+                            <img src="{{ user_profile.avatar.url }}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;">
+                        {% else %}
+                            {{ user.first_name|first|upper|default:user.username|first|upper }}
+                        {% endif %}
+                    </div>
+                    <span style="font-size: 0.75rem; font-weight: 700;">{{ user_profile.full_name|default:user.username }}</span>
+                </div>
+                {% if user.is_staff %}
+                    <a href="{% url 'admin_dashboard' %}" class="btn-login">Admin</a>
+                {% elif user_profile.is_detective %}
+                    <a href="{% url 'detective_dashboard' %}" class="btn-login">Dashboard</a>
+                {% else %}
+                    <a href="{% url 'user_dashboard' %}" class="btn-login">Dashboard</a>
+                {% endif %}
+                <a href="{% url 'logout' %}" class="btn-login">Logout</a>
+            {% else %}
+                <button onclick="openModal('modal-login')" class="btn-login">LOG IN</button>
+                <button onclick="openModal('modal-signup')" class="btn-signup">SIGN UP <i class="fas fa-arrow-right"></i></button>
+            {% endif %}
         </div>
     </header>
 
-
-    <!-- ==================== PAGE HEADER ==================== -->
+    <!-- PAGE HEADER -->
     <header class="page-header">
         <div class="container">
             <div style="display: flex; flex-direction: column; gap: 0.5rem;">
@@ -518,361 +127,73 @@
         </div>
     </header>
 
-
-    <!-- ==================== SEARCH & SORT TOOLBAR ==================== -->
+    <!-- SEARCH TOOLBAR -->
     <section class="toolbar-section">
         <div class="container">
-            <div class="search-grid">
-                
-                <!-- Search Input by Name, Experience, City -->
-                <div>
-                    <input type="text" id="search-detective" placeholder="Search detective name, experience, city, license..." class="neu-input" style="width: 100%; padding: 0.7rem 1rem;" oninput="applyFiltersAndSort()">
-                </div>
-
-                <!-- Sort By Dropdown -->
-                <div>
-                    <select id="sort-detective" class="neu-input" style="width: 100%; padding: 0.7rem 1rem;" onchange="applyFiltersAndSort()">
-                        <option value="rating">Sort: Highest Rated</option>
-                        <option value="cases">Sort: Most Cases Solved</option>
-                        <option value="experience">Sort: Most Experienced</option>
-                    </select>
-                </div>
-
-                <!-- Apply Button CTA -->
-                <button onclick="openModal('modal-signup')" class="neu-button-dark" style="white-space: nowrap;">
-                    <i class="fa-regular fa-paper-plane"></i> Apply As Investigator
-                </button>
-
-            </div>
-
-            <!-- Active Results Counter -->
-            <div style="margin-top: 1rem; font-size: 0.75rem; color: var(--stone-muted); display: flex; justify-content: space-between; align-items: center;">
-                <span>Displaying <strong id="detective-count-text" style="color: var(--stone-dark);">6</strong> vetted investigators</span>
-                <span style="font-size: 0.65rem; text-transform: uppercase;"><i class="fa-regular fa-circle-check" style="color: var(--emerald-accent);"></i> All Detectives Background Checked</span>
-            </div>
+            <form method="GET" action="{% url 'detective_list' %}" style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                <input type="text" name="q" value="{{ search_query }}" placeholder="Search detective by name, specialization, or city..." class="neu-input" style="flex: 1; padding: 0.7rem 1rem;">
+                <button type="submit" class="neu-button-dark">Search</button>
+                {% if not user.is_authenticated %}
+                <button type="button" onclick="openModal('modal-signup')" class="neu-button">Apply As Investigator</button>
+                {% endif %}
+            </form>
         </div>
     </section>
 
-
-    <!-- ==================== DETECTIVES GRID ==================== -->
+    <!-- DETECTIVES GRID -->
     <main class="detectives-grid-section">
         <div class="container">
-            <div class="grid-3" id="detectives-container">
-                
-                <!-- Detective 1: Sarah Vance -->
-                <div class="detective-card" onclick="goToProfile('sarah-vance')" data-name="Sarah Vance" data-exp="12" data-cases="142" data-rating="4.9" data-city="Kyoto, Japan">
+            <div class="grid-3">
+                {% for det in detectives %}
+                <div class="detective-card">
                     <div>
                         <div class="portrait-frame">
-                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=600" alt="Sarah Vance">
+                            {% if det.avatar %}
+                            <img src="{{ det.avatar.url }}" alt="{{ det.full_name }}">
+                            {% else %}
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=600" alt="{{ det.full_name }}">
+                            {% endif %}
                             <span class="badge-tag bg-emerald" style="position: absolute; top: 0.5rem; right: 0.5rem;">
                                 <i class="fa-regular fa-circle-check"></i> VETTED
                             </span>
-                            <div class="rating-badge">
-                                <i class="fa-regular fa-star"></i> 4.9 / 5.0
-                            </div>
                         </div>
 
                         <div>
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                                <div>
-                                    <h3 class="font-display" style="font-size: 1.1rem; font-weight: 700;">Sarah Vance</h3>
-                                    <p style="font-size: 0.65rem; color: var(--stone-muted); font-family: monospace; text-transform: uppercase;">Lic. #PD-88219 • KYOTO, JAPAN</p>
-                                </div>
-                            </div>
-
-                            <p style="font-size: 0.75rem; color: var(--stone-muted); font-weight: 300; margin-top: 0.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                                Urban missing persons &amp; tactical GIS tracking specialist. Lead handler for regional search radius scans.
+                            <h3 class="font-display" style="font-size: 1.1rem; font-weight: 700;">{{ det.full_name }}</h3>
+                            <p style="font-size: 0.65rem; color: var(--stone-muted); font-family: monospace; text-transform: uppercase;">Lic. {{ det.license_number }} • {{ det.city|upper|default:det.address|upper|default:"GLOBAL" }}</p>
+                            <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                {{ det.specialization|default:"Licensed investigator" }}
                             </p>
                         </div>
 
-                        <!-- Mini Stats Grid -->
                         <div class="stats-mini-grid">
                             <div class="stat-mini-item">
-                                <div class="font-display" style="color: var(--stone-dark);">12 Yrs</div>
+                                <div class="font-display" style="color: var(--stone-dark);">{{ det.experience_years }} Yrs</div>
                                 <span>Exp.</span>
                             </div>
                             <div class="stat-mini-item">
-                                <div class="font-display" style="color: var(--emerald-accent);">142</div>
-                                <span>Solved</span>
-                            </div>
-                            <div class="stat-mini-item">
-                                <div class="font-display" style="color: var(--emerald-accent);">96.8%</div>
-                                <span>Rate</span>
+                                <div class="font-display" style="color: var(--emerald-accent);">APPROVED</div>
+                                <span>Status</span>
                             </div>
                         </div>
                     </div>
 
                     <div class="border-t-line" style="padding-top: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 0.65rem; font-weight: 700; color: var(--emerald-accent); uppercase;"><i class="fa-regular fa-compass"></i> Active Handler</span>
-                        <a href="detective-profile.html" class="neu-button" style="padding: 0.45rem 0.85rem; font-size: 0.65rem;">View Profile ↗</a>
+                        <span style="font-size: 0.65rem; font-weight: 700; color: var(--emerald-accent);"><i class="fa-regular fa-compass"></i> Active Handler</span>
+                        <a href="{% url 'detective_profile' pk=det.pk %}" class="neu-button" style="padding: 0.45rem 0.85rem; font-size: 0.65rem;">View Profile ↗</a>
                     </div>
                 </div>
-
-                <!-- Detective 2: Marcus Thorne -->
-                <div class="detective-card" onclick="goToProfile('marcus-thorne')" data-name="Marcus Thorne" data-exp="15" data-cases="210" data-rating="5.0" data-city="London, UK">
-                    <div>
-                        <div class="portrait-frame">
-                            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=600" alt="Marcus Thorne">
-                            <span class="badge-tag bg-emerald" style="position: absolute; top: 0.5rem; right: 0.5rem;">
-                                <i class="fa-regular fa-circle-check"></i> VETTED
-                            </span>
-                            <div class="rating-badge">
-                                <i class="fa-regular fa-star"></i> 5.0 / 5.0
-                            </div>
-                        </div>
-
-                        <div>
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                                <div>
-                                    <h3 class="font-display" style="font-size: 1.1rem; font-weight: 700;">Marcus Thorne</h3>
-                                    <p style="font-size: 0.65rem; color: var(--stone-muted); font-family: monospace; text-transform: uppercase;">Lic. #PD-33104 • LONDON, UK</p>
-                                </div>
-                            </div>
-
-                            <p style="font-size: 0.75rem; color: var(--stone-muted); font-weight: 300; margin-top: 0.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                                Lead handler for K9 Search &amp; Rescue unit. Cross-border recovery expert for high-priority missing cases.
-                            </p>
-                        </div>
-
-                        <!-- Mini Stats Grid -->
-                        <div class="stats-mini-grid">
-                            <div class="stat-mini-item">
-                                <div class="font-display" style="color: var(--stone-dark);">15 Yrs</div>
-                                <span>Exp.</span>
-                            </div>
-                            <div class="stat-mini-item">
-                                <div class="font-display" style="color: var(--emerald-accent);">210</div>
-                                <span>Solved</span>
-                            </div>
-                            <div class="stat-mini-item">
-                                <div class="font-display" style="color: var(--emerald-accent);">98.2%</div>
-                                <span>Rate</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="border-t-line" style="padding-top: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 0.65rem; font-weight: 700; color: var(--emerald-accent); uppercase;"><i class="fa-regular fa-compass"></i> Active Handler</span>
-                        <a href="detective-profile.html" class="neu-button" style="padding: 0.45rem 0.85rem; font-size: 0.65rem;">View Profile ↗</a>
-                    </div>
+                {% empty %}
+                <div class="detective-card" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+                    <h3 class="font-display">No Approved Detectives Found</h3>
+                    <p style="font-size: 0.8rem; color: var(--stone-muted); margin-top: 0.5rem;">Try clearing your search query.</p>
                 </div>
-
-                <!-- Detective 3: Kenji Sato -->
-                <div class="detective-card" onclick="goToProfile('kenji-sato')" data-name="Kenji Sato" data-exp="8" data-cases="98" data-rating="4.8" data-city="Tokyo, Japan">
-                    <div>
-                        <div class="portrait-frame">
-                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=600" alt="Kenji Sato">
-                            <span class="badge-tag bg-emerald" style="position: absolute; top: 0.5rem; right: 0.5rem;">
-                                <i class="fa-regular fa-circle-check"></i> VETTED
-                            </span>
-                            <div class="rating-badge">
-                                <i class="fa-regular fa-star"></i> 4.8 / 5.0
-                            </div>
-                        </div>
-
-                        <div>
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                                <div>
-                                    <h3 class="font-display" style="font-size: 1.1rem; font-weight: 700;">Kenji Sato</h3>
-                                    <p style="font-size: 0.65rem; color: var(--stone-muted); font-family: monospace; text-transform: uppercase;">Lic. #PD-40912 • TOKYO, JAPAN</p>
-                                </div>
-                            </div>
-
-                            <p style="font-size: 0.75rem; color: var(--stone-muted); font-weight: 300; margin-top: 0.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                                Expert in AI image forensic analysis &amp; high-stakes pet tracking operations across transit hubs.
-                            </p>
-                        </div>
-
-                        <!-- Mini Stats Grid -->
-                        <div class="stats-mini-grid">
-                            <div class="stat-mini-item">
-                                <div class="font-display" style="color: var(--stone-dark);">8 Yrs</div>
-                                <span>Exp.</span>
-                            </div>
-                            <div class="stat-mini-item">
-                                <div class="font-display" style="color: var(--emerald-accent);">98</div>
-                                <span>Solved</span>
-                            </div>
-                            <div class="stat-mini-item">
-                                <div class="font-display" style="color: var(--emerald-accent);">94.5%</div>
-                                <span>Rate</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="border-t-line" style="padding-top: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 0.65rem; font-weight: 700; color: var(--emerald-accent); uppercase;"><i class="fa-regular fa-compass"></i> Active Handler</span>
-                        <a href="detective-profile.html" class="neu-button" style="padding: 0.45rem 0.85rem; font-size: 0.65rem;">View Profile ↗</a>
-                    </div>
-                </div>
-
-                <!-- Detective 4: Elena Rostova -->
-                <div class="detective-card" onclick="goToProfile('elena-rostova')" data-name="Elena Rostova" data-exp="10" data-cases="85" data-rating="4.7" data-city="Copenhagen, DK">
-                    <div>
-                        <div class="portrait-frame">
-                            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=600" alt="Elena Rostova">
-                            <span class="badge-tag bg-emerald" style="position: absolute; top: 0.5rem; right: 0.5rem;">
-                                <i class="fa-regular fa-circle-check"></i> VETTED
-                            </span>
-                            <div class="rating-badge">
-                                <i class="fa-regular fa-star"></i> 4.7 / 5.0
-                            </div>
-                        </div>
-
-                        <div>
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                                <div>
-                                    <h3 class="font-display" style="font-size: 1.1rem; font-weight: 700;">Elena Rostova</h3>
-                                    <p style="font-size: 0.65rem; color: var(--stone-muted); font-family: monospace; text-transform: uppercase;">Lic. #PD-99120 • COPENHAGEN, DK</p>
-                                </div>
-                            </div>
-
-                            <p style="font-size: 0.75rem; color: var(--stone-muted); font-weight: 300; margin-top: 0.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                                Emergency recovery &amp; youth safety advocate with real-time field logging and shelter liaisons.
-                            </p>
-                        </div>
-
-                        <!-- Mini Stats Grid -->
-                        <div class="stats-mini-grid">
-                            <div class="stat-mini-item">
-                                <div class="font-display" style="color: var(--stone-dark);">10 Yrs</div>
-                                <span>Exp.</span>
-                            </div>
-                            <div class="stat-mini-item">
-                                <div class="font-display" style="color: var(--emerald-accent);">85</div>
-                                <span>Solved</span>
-                            </div>
-                            <div class="stat-mini-item">
-                                <div class="font-display" style="color: var(--emerald-accent);">92.1%</div>
-                                <span>Rate</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="border-t-line" style="padding-top: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 0.65rem; font-weight: 700; color: var(--emerald-accent); uppercase;"><i class="fa-regular fa-compass"></i> Active Handler</span>
-                        <a href="detective-profile.html" class="neu-button" style="padding: 0.45rem 0.85rem; font-size: 0.65rem;">View Profile ↗</a>
-                    </div>
-                </div>
-
-                <!-- Detective 5: Claire Dubois -->
-                <div class="detective-card" onclick="goToProfile('claire-dubois')" data-name="Claire Dubois" data-exp="14" data-cases="175" data-rating="4.9" data-city="Paris, France">
-                    <div>
-                        <div class="portrait-frame">
-                            <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=600" alt="Claire Dubois">
-                            <span class="badge-tag bg-emerald" style="position: absolute; top: 0.5rem; right: 0.5rem;">
-                                <i class="fa-regular fa-circle-check"></i> VETTED
-                            </span>
-                            <div class="rating-badge">
-                                <i class="fa-regular fa-star"></i> 4.9 / 5.0
-                            </div>
-                        </div>
-
-                        <div>
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                                <div>
-                                    <h3 class="font-display" style="font-size: 1.1rem; font-weight: 700;">Claire Dubois</h3>
-                                    <p style="font-size: 0.65rem; color: var(--stone-muted); font-family: monospace; text-transform: uppercase;">Lic. #PD-33019 • PARIS, FRANCE</p>
-                                </div>
-                            </div>
-
-                            <p style="font-size: 0.75rem; color: var(--stone-muted); font-weight: 300; margin-top: 0.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                                Specializes in urban missing persons, facial recognition indexing, and transit hub tracking.
-                            </p>
-                        </div>
-
-                        <!-- Mini Stats Grid -->
-                        <div class="stats-mini-grid">
-                            <div class="stat-mini-item">
-                                <div class="font-display" style="color: var(--stone-dark);">14 Yrs</div>
-                                <span>Exp.</span>
-                            </div>
-                            <div class="stat-mini-item">
-                                <div class="font-display" style="color: var(--emerald-accent);">175</div>
-                                <span>Solved</span>
-                            </div>
-                            <div class="stat-mini-item">
-                                <div class="font-display" style="color: var(--emerald-accent);">97.4%</div>
-                                <span>Rate</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="border-t-line" style="padding-top: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 0.65rem; font-weight: 700; color: var(--emerald-accent); uppercase;"><i class="fa-regular fa-compass"></i> Active Handler</span>
-                        <a href="detective-profile.html" class="neu-button" style="padding: 0.45rem 0.85rem; font-size: 0.65rem;">View Profile ↗</a>
-                    </div>
-                </div>
-
-                <!-- Detective 6: Hiroshi Sato -->
-                <div class="detective-card" onclick="goToProfile('hiroshi-sato')" data-name="Hiroshi Sato" data-exp="11" data-cases="118" data-rating="4.8" data-city="Osaka, Japan">
-                    <div>
-                        <div class="portrait-frame">
-                            <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=600" alt="Hiroshi Sato">
-                            <span class="badge-tag bg-emerald" style="position: absolute; top: 0.5rem; right: 0.5rem;">
-                                <i class="fa-regular fa-circle-check"></i> VETTED
-                            </span>
-                            <div class="rating-badge">
-                                <i class="fa-regular fa-star"></i> 4.8 / 5.0
-                            </div>
-                        </div>
-
-                        <div>
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                                <div>
-                                    <h3 class="font-display" style="font-size: 1.1rem; font-weight: 700;">Hiroshi Sato</h3>
-                                    <p style="font-size: 0.65rem; color: var(--stone-muted); font-family: monospace; text-transform: uppercase;">Lic. #PD-90124 • OSAKA, JAPAN</p>
-                                </div>
-                            </div>
-
-                            <p style="font-size: 0.75rem; color: var(--stone-muted); font-weight: 300; margin-top: 0.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                                11 years experience in pet scent tracking, forensic imagery, and regional shelter liaisons.
-                            </p>
-                        </div>
-
-                        <!-- Mini Stats Grid -->
-                        <div class="stats-mini-grid">
-                            <div class="stat-mini-item">
-                                <div class="font-display" style="color: var(--stone-dark);">11 Yrs</div>
-                                <span>Exp.</span>
-                            </div>
-                            <div class="stat-mini-item">
-                                <div class="font-display" style="color: var(--emerald-accent);">118</div>
-                                <span>Solved</span>
-                            </div>
-                            <div class="stat-mini-item">
-                                <div class="font-display" style="color: var(--emerald-accent);">95.0%</div>
-                                <span>Rate</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="border-t-line" style="padding-top: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 0.65rem; font-weight: 700; color: var(--emerald-accent); uppercase;"><i class="fa-regular fa-compass"></i> Active Handler</span>
-                        <a href="detective-profile.html" class="neu-button" style="padding: 0.45rem 0.85rem; font-size: 0.65rem;">View Profile ↗</a>
-                    </div>
-                </div>
-
+                {% endfor %}
             </div>
         </div>
     </main>
 
-
-    <!-- ==================== PAGINATION BAR ==================== -->
-    <div class="container">
-        <div class="pagination-bar">
-            <button class="neu-button" style="padding: 0.5rem 1rem; font-size: 0.7rem;"><i class="fa-regular fa-arrow-left"></i> Previous</button>
-            <div style="display: flex; gap: 0.4rem; align-items: center;">
-                <button class="page-num-btn active">1</button>
-                <button class="page-num-btn">2</button>
-                <button class="page-num-btn">3</button>
-            </div>
-            <button class="neu-button" style="padding: 0.5rem 1rem; font-size: 0.7rem;">Next <i class="fa-regular fa-arrow-right"></i></button>
-        </div>
-    </div>
-
-
-    <!-- ==================== FOOTER ==================== -->
+    <!-- FOOTER -->
     <footer style="padding: 3rem 0; border-top: 1px solid rgba(210, 205, 199, 0.8);">
         <div class="container">
             <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1.5rem;">
@@ -881,161 +202,84 @@
                     <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.2rem;">AI-Powered Recovery Network</p>
                 </div>
                 <div style="display: flex; gap: 1.5rem; font-size: 0.65rem; text-transform: uppercase; font-weight: 600; color: var(--stone-muted);">
-                    <a href="index.html" style="text-decoration: underline;">Home</a>
-                    <a href="cases.html" style="text-decoration: underline;">All Cases</a>
-                    <a href="#" style="text-decoration: underline;">Privacy Policy</a>
+                    <a href="{% url 'home' %}">Home</a>
+                    <a href="{% url 'case_list' %}">All Cases</a>
                 </div>
-            </div>
-            <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(210, 205, 199, 0.4); text-align: center; font-size: 0.65rem; color: var(--stone-muted);">
-                ALL RIGHTS RESERVED &copy; 2026 LOST &amp; FOUND PLATFORM
             </div>
         </div>
     </footer>
 
-
-    <!-- ==================== MODALS ==================== -->
+    <!-- MODALS -->
     <div id="modal-overlay" class="modal-overlay">
-        
         <!-- LOGIN MODAL -->
         <div id="modal-login" class="neu-card modal-body hidden">
             <button onclick="closeModals()" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
             <div style="text-align: center; margin-bottom: 1.25rem;">
                 <h3 class="font-display" style="font-size: 1.5rem; font-weight: 700;">Welcome Back</h3>
-                <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.25rem;">Access your account &amp; investigation logs.</p>
             </div>
-            <form onsubmit="event.preventDefault(); closeModals();" style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.75rem;">
+            <form action="{% url 'login' %}" method="POST" style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.75rem;">
+                {% csrf_token %}
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Username</label>
-                    <input type="text" placeholder="johndoe" required class="neu-input" style="width: 100%; padding: 0.75rem 1rem;">
+                    <input type="text" name="username" required class="neu-input" style="width: 100%; padding: 0.75rem 1rem;">
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Password</label>
-                    <input type="password" placeholder="••••••••" required class="neu-input" style="width: 100%; padding: 0.75rem 1rem;">
+                    <input type="password" name="password" required class="neu-input" style="width: 100%; padding: 0.75rem 1rem;">
                 </div>
-                <button type="submit" class="neu-button-dark" style="margin-top: 0.5rem;">LOG IN TO PLATFORM</button>
+                <button type="submit" class="neu-button-dark" style="padding: 0.85rem;">LOG IN TO PLATFORM</button>
             </form>
         </div>
 
-        <!-- SIGN UP MODAL -->
+        <!-- SIGNUP MODAL -->
         <div id="modal-signup" class="neu-card modal-body lg hidden">
             <button onclick="closeModals()" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
             <div style="text-align: center; margin-bottom: 1.25rem;">
                 <h3 class="font-display" style="font-size: 1.5rem; font-weight: 700;">Create Account</h3>
-                <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.25rem;">Apply as a licensed investigator or register as a citizen.</p>
             </div>
-            <form onsubmit="event.preventDefault(); closeModals();" style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.75rem;">
+            <form action="{% url 'signup' %}" method="POST" style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.75rem;">
+                {% csrf_token %}
                 <div class="grid-2">
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Username</label>
-                        <input type="text" placeholder="johndoe" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                        <input type="text" name="username" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Full Name</label>
-                        <input type="text" placeholder="John Doe" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                        <input type="text" name="full_name" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
                     </div>
                 </div>
                 <div class="grid-2">
                     <div>
-                        <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Phone Number</label>
-                        <input type="tel" placeholder="+1 (555) 000-0000" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
-                    </div>
-                    <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Account Role</label>
-                        <select class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
-                            <option value="detective">Licensed Private Detective</option>
+                        <select name="role" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
                             <option value="citizen">Citizen / Family Member</option>
+                            <option value="detective">Licensed Private Detective</option>
                         </select>
                     </div>
+                    <div>
+                        <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Password</label>
+                        <input type="password" name="password" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                    </div>
                 </div>
-                <button type="submit" class="neu-button-dark" style="margin-top: 0.5rem;">SUBMIT APPLICATION</button>
+                <button type="submit" class="neu-button-dark" style="padding: 0.8rem;">REGISTER NOW</button>
             </form>
         </div>
-
     </div>
 
-
-    <!-- ==================== JAVASCRIPT CONTROLLERS ==================== -->
     <script>
-        // Redirect to Detective Profile Page
-        function goToProfile(detectiveSlug) {
-            window.location.href = `detective-profile.html?id=${detectiveSlug}`;
-        }
-
-        // Live Dynamic Filtering & Sorting
-        function applyFiltersAndSort() {
-            const query = document.getElementById('search-detective').value.toLowerCase();
-            const sortBy = document.getElementById('sort-detective').value;
-            const container = document.getElementById('detectives-container');
-            const cards = Array.from(document.querySelectorAll('.detective-card'));
-
-            let visibleCount = 0;
-
-            // 1. Filter Logic
-            cards.forEach(card => {
-                const name = card.getAttribute('data-name').toLowerCase();
-                const exp = card.getAttribute('data-exp').toLowerCase();
-                const city = card.getAttribute('data-city').toLowerCase();
-                const text = card.innerText.toLowerCase();
-
-                const matchesQuery = !query || name.includes(query) || exp.includes(query) || city.includes(query) || text.includes(query);
-
-                if (matchesQuery) {
-                    card.style.display = 'flex';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-
-            document.getElementById('detective-count-text').innerText = visibleCount;
-
-            // 2. Sorting Logic
-            const visibleCards = cards.filter(c => c.style.display !== 'none');
-
-            visibleCards.sort((a, b) => {
-                if (sortBy === 'rating') {
-                    return parseFloat(b.getAttribute('data-rating')) - parseFloat(a.getAttribute('data-rating'));
-                } else if (sortBy === 'cases') {
-                    return parseInt(b.getAttribute('data-cases')) - parseInt(a.getAttribute('data-cases'));
-                } else if (sortBy === 'experience') {
-                    return parseInt(b.getAttribute('data-exp')) - parseInt(a.getAttribute('data-exp'));
-                }
-            });
-
-            // Re-append in sorted order
-            visibleCards.forEach(c => container.appendChild(c));
-        }
-
-        // Modal Handlers (Prevents overlapping modals)
         const modalOverlay = document.getElementById('modal-overlay');
-
-        function openModal(modalId) {
-            const modalBodies = document.querySelectorAll('.modal-body');
-            modalBodies.forEach(body => body.classList.add('hidden'));
-
-            const target = document.getElementById(modalId);
-            if (target) {
-                target.classList.remove('hidden');
-            }
-
+        function openModal(id) {
+            document.querySelectorAll('.modal-body').forEach(b => b.classList.add('hidden'));
+            const t = document.getElementById(id);
+            if (t) t.classList.remove('hidden');
             modalOverlay.classList.add('active');
         }
-
         function closeModals() {
             modalOverlay.classList.remove('active');
-            const modalBodies = document.querySelectorAll('.modal-body');
-            modalBodies.forEach(body => body.classList.add('hidden'));
+            document.querySelectorAll('.modal-body').forEach(b => b.classList.add('hidden'));
         }
-
-        if (modalOverlay) {
-            modalOverlay.addEventListener('click', (e) => {
-                if (e.target === modalOverlay) closeModals();
-            });
-        }
-
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeModals();
-        });
+        if (modalOverlay) modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModals(); });
     </script>
 </body>
 </html>

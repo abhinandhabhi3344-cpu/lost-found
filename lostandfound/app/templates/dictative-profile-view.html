@@ -1,655 +1,220 @@
+{% load static %}
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detective Profile — Sarah Vance | Lost &amp; Found AI Recovery Network</title>
+    <title>Detective Profile — {{ detective.full_name }} | Lost &amp; Found</title>
     
-    <!-- Google Fonts: Inter, Space Grotesk, & Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
-        /* ==================== ROOT VARIABLES & RESET ==================== */
         :root {
-            --stone-bg: #EAE6E1;
-            --stone-light: #F3F0EC;
-            --stone-dark: #1A1A1A;
-            --stone-muted: #6B6864;
-            --stone-border: #D2CDC7;
-            --accent-dark: #111827;
-            --emerald-accent: #047857;
-            --amber-accent: #d97706;
-            --red-accent: #dc2626;
-            --font-sans: 'Inter', 'Plus Jakarta Sans', sans-serif;
-            --font-display: 'Space Grotesk', sans-serif;
+            --stone-bg: #EAE6E1; --stone-light: #F3F0EC; --stone-dark: #1A1A1A;
+            --stone-muted: #6B6864; --stone-border: #D2CDC7; --accent-dark: #111827;
+            --emerald-accent: #047857; --amber-accent: #d97706; --red-accent: #dc2626;
+            --font-sans: 'Inter', 'Plus Jakarta Sans', sans-serif; --font-display: 'Space Grotesk', sans-serif;
         }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        html, body { width: 100%; min-height: 100vh; background-color: var(--stone-bg); color: var(--stone-dark); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+        a { color: inherit; text-decoration: none; }
+        button, input, select, textarea { font-family: inherit; }
+        button { cursor: pointer; border: none; background: none; }
+        .hidden { display: none !important; }
+        .container { max-width: 80rem; margin: 0 auto; padding: 0 1.5rem; }
+        @media (min-width: 1024px) { .container { padding: 0 3rem; } }
 
-        *, *::before, *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        .navbar { position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%); z-index: 50; width: 92%; max-width: 64rem; background: rgba(243, 240, 236, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.8); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); border-radius: 9999px; padding: 0.65rem 1.5rem; display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; font-weight: 500; }
+        .nav-links { display: none; align-items: center; gap: 2rem; font-weight: 600; color: rgba(26, 26, 26, 0.8); }
+        @media (min-width: 768px) { .nav-links { display: flex; } }
+        .nav-actions { display: flex; align-items: center; gap: 0.75rem; margin-left: auto; }
+        .btn-login { font-size: 0.75rem; font-weight: 600; color: var(--stone-dark); padding: 0.5rem 1rem; border: 1px solid rgba(26, 26, 26, 0.2); border-radius: 9999px; transition: background-color 0.2s ease, color 0.2s ease; display: inline-flex; align-items: center; justify-content: center; }
+        .btn-login:hover { background-color: var(--stone-light); color: #000; }
+        .btn-signup { position: relative; background-color: var(--stone-dark); color: #ffffff; font-weight: 800; padding: 0.6rem 1.25rem; border-radius: 9999px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; transition: transform 0.2s ease, box-shadow 0.2s ease; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); display: flex; align-items: center; gap: 0.5rem; }
+        .btn-signup:hover { transform: scale(1.03); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25); }
+        .user-nav-badge { display: flex; align-items: center; gap: 0.6rem; margin-left: auto; }
+        .user-avatar-sm { width: 2rem; height: 2rem; border-radius: 50%; background-color: var(--stone-dark); color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem; overflow: hidden; }
 
-        html {
-            scroll-behavior: smooth;
-        }
+        .neu-card { background: var(--stone-bg); border-radius: 12px; box-shadow: 8px 8px 18px #c7c4bf, -8px -8px 18px #ffffff; }
+        .neu-button { background: var(--stone-bg); box-shadow: 4px 4px 10px #c7c4bf, -4px -4px 10px #ffffff; border-radius: 8px; font-weight: 700; text-transform: uppercase; font-size: 0.7rem; padding: 0.65rem 1rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; color: var(--stone-dark); }
+        .neu-button-dark { background: var(--stone-dark); color: #ffffff; box-shadow: 4px 4px 10px #c7c4bf, -4px -4px 10px #ffffff; border-radius: 8px; font-weight: 700; text-transform: uppercase; font-size: 0.7rem; padding: 0.75rem 1.25rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; }
+        .neu-button-emerald { background: var(--emerald-accent); color: #ffffff; border-radius: 8px; font-weight: 700; text-transform: uppercase; font-size: 0.75rem; padding: 0.75rem 1.25rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; box-shadow: 3px 3px 8px #c7c4bf; }
 
-        html, body {
-            width: 100%;
-            min-height: 100vh;
-            background-color: var(--stone-bg);
-            color: var(--stone-dark);
-            font-family: var(--font-sans);
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
+        .profile-header-section { padding-top: 7rem; padding-bottom: 2.5rem; border-bottom: 1px solid rgba(210, 205, 199, 0.8); }
+        .profile-hero-card { background-color: var(--stone-light); border: 1px solid rgba(210, 205, 199, 0.8); border-radius: 12px; padding: 2rem; display: flex; flex-direction: column; gap: 2rem; }
+        @media (min-width: 768px) { .profile-hero-card { flex-direction: row; align-items: flex-start; } }
+        .portrait-frame { width: 8.5rem; height: 8.5rem; border-radius: 50%; object-fit: cover; border: 3px solid var(--emerald-accent); flex-shrink: 0; }
 
-        a {
-            color: inherit;
-            text-decoration: none;
-        }
-
-        button, input, select, textarea {
-            font-family: inherit;
-        }
-
-        button {
-            cursor: pointer;
-            border: none;
-            background: none;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .container {
-            max-width: 80rem;
-            margin: 0 auto;
-            padding: 0 1.5rem;
-        }
-
-        @media (min-width: 1024px) {
-            .container {
-                padding: 0 3rem;
-            }
-        }
-
-        /* ==================== LIGHT GLASS NAVBAR ==================== */
-        .navbar {
-            position: fixed;
-            top: 1.5rem;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 50;
-            width: 92%;
-            max-width: 64rem;
-            background: rgba(243, 240, 236, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            border-radius: 9999px;
-            padding: 0.65rem 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-
-        .nav-links {
-            display: none;
-            align-items: center;
-            gap: 2rem;
-            font-weight: 600;
-            color: rgba(26, 26, 26, 0.8);
-        }
-
-        @media (min-width: 768px) {
-            .nav-links {
-                display: flex;
-            }
-        }
-
-        .nav-links a:hover, .nav-links a.active {
-            color: #000000;
-        }
-
-        .user-nav-badge {
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            margin-left: auto;
-        }
-
-        .user-avatar-sm {
-            width: 2rem;
-            height: 2rem;
-            border-radius: 50%;
-            background-color: var(--stone-dark);
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 0.75rem;
-        }
-
-        /* ==================== NEUMORPHIC COMPONENTS ==================== */
-        .neu-card {
-            background: var(--stone-bg);
-            border-radius: 12px;
-            box-shadow: 8px 8px 18px #c7c4bf, -8px -8px 18px #ffffff;
-        }
-
-        .neu-button {
-            background: var(--stone-bg);
-            box-shadow: 4px 4px 10px #c7c4bf, -4px -4px 10px #ffffff;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: 0.7rem;
-            letter-spacing: 0.05em;
-            padding: 0.65rem 1rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.4rem;
-            color: var(--stone-dark);
-        }
-
-        .neu-button:hover {
-            box-shadow: 2px 2px 6px #c7c4bf, -2px -2px 6px #ffffff;
-            transform: translateY(1px);
-        }
-
-        .neu-button-dark {
-            background: var(--stone-dark);
-            color: #ffffff;
-            box-shadow: 4px 4px 10px #c7c4bf, -4px -4px 10px #ffffff;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: 0.7rem;
-            letter-spacing: 0.05em;
-            padding: 0.75rem 1.25rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.4rem;
-        }
-
-        .neu-button-dark:hover {
-            background: #000000;
-            box-shadow: 2px 2px 6px #c7c4bf, -2px -2px 6px #ffffff;
-            transform: translateY(1px);
-        }
-
-        .neu-button-emerald {
-            background: var(--emerald-accent);
-            color: #ffffff;
-            border-radius: 8px;
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.05em;
-            padding: 0.75rem 1.25rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.4rem;
-            box-shadow: 3px 3px 8px #c7c4bf;
-        }
-
-        .neu-button-emerald:hover {
-            background: #065f46;
-        }
-
-        /* ==================== HERO / PROFILE HEADER ==================== */
-        .profile-header-section {
-            padding-top: 7rem;
-            padding-bottom: 2.5rem;
-            border-bottom: 1px solid rgba(210, 205, 199, 0.8);
-        }
-
-        .profile-hero-card {
-            background-color: var(--stone-light);
-            border: 1px solid rgba(210, 205, 199, 0.8);
-            border-radius: 12px;
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-        }
-
-        @media (min-width: 768px) {
-            .profile-hero-card {
-                flex-direction: row;
-                align-items: flex-start;
-            }
-        }
-
-        .portrait-frame {
-            width: 8.5rem;
-            height: 8.5rem;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid var(--emerald-accent);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-            flex-shrink: 0;
-        }
-
-        .badge-tag {
-            font-size: 0.60rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            padding: 0.2rem 0.5rem;
-            border-radius: 3px;
-            color: #fff;
-            letter-spacing: 0.05em;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.3rem;
-        }
-
+        .badge-tag { font-size: 0.60rem; font-weight: 700; text-transform: uppercase; padding: 0.2rem 0.5rem; border-radius: 3px; color: #fff; display: inline-flex; align-items: center; gap: 0.3rem; }
         .bg-red { background-color: var(--red-accent); }
         .bg-amber { background-color: var(--amber-accent); }
         .bg-emerald { background-color: var(--emerald-accent); }
 
-        /* ==================== STATS METRICS GRID ==================== */
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(1, 1fr);
-            gap: 1.25rem;
-            margin-top: 2rem;
-        }
+        .metrics-grid { display: grid; grid-template-columns: repeat(1, 1fr); gap: 1.25rem; margin-top: 2rem; }
+        @media (min-width: 640px) { .metrics-grid { grid-template-columns: repeat(3, 1fr); } }
+        .stat-card { background: var(--stone-light); border: 1px solid rgba(210, 205, 199, 0.8); border-radius: 8px; padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between; }
+        .stat-number { font-size: 2.25rem; font-weight: 800; margin-top: 0.35rem; }
 
-        @media (min-width: 640px) {
-            .metrics-grid { grid-template-columns: repeat(3, 1fr); }
-        }
+        .main-content { padding: 3rem 0 5rem 0; }
+        .section-block { margin-bottom: 3.5rem; }
+        .grid-3 { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+        @media (min-width: 768px) { .grid-3 { grid-template-columns: repeat(3, 1fr); } }
 
-        .stat-card {
-            background: var(--stone-light);
-            border: 1px solid rgba(210, 205, 199, 0.8);
-            border-radius: 8px;
-            padding: 1.25rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .stat-number {
-            font-size: 2.25rem;
-            font-weight: 800;
-            margin-top: 0.35rem;
-        }
-
-        /* ==================== CONTENT SECTIONS ==================== */
-        .main-content {
-            padding: 3rem 0 5rem 0;
-        }
-
-        .section-block {
-            margin-bottom: 3.5rem;
-        }
-
-        .grid-3 {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-        }
-
-        @media (min-width: 768px) {
-            .grid-3 { grid-template-columns: repeat(3, 1fr); }
-        }
-
-        .grid-4 {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1.25rem;
-        }
-
-        @media (min-width: 640px) {
-            .grid-4 { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        @media (min-width: 1024px) {
-            .grid-4 { grid-template-columns: repeat(4, 1fr); }
-        }
-
-        .card-box {
-            background-color: var(--stone-light);
-            padding: 1.25rem;
-            border-radius: 8px;
-            border: 1px solid rgba(210, 205, 199, 0.8);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .img-container {
-            aspect-ratio: 16/10;
-            border-radius: 6px;
-            overflow: hidden;
-            position: relative;
-            background-color: #ddd;
-        }
-
-        .img-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-        }
-
-        .img-container:hover img {
-            transform: scale(1.03);
-        }
-
-        .reward-pill {
-            position: absolute;
-            bottom: 0.5rem;
-            right: 0.5rem;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(4px);
-            color: #fbbf24;
-            font-size: 0.65rem;
-            font-weight: 700;
-            padding: 0.2rem 0.5rem;
-            border-radius: 3px;
-            border: 1px solid rgba(251, 191, 36, 0.4);
-        }
-
-        .notice-banner {
-            background: rgba(217, 119, 6, 0.08);
-            border: 1px solid rgba(217, 119, 6, 0.3);
-            border-radius: 8px;
-            padding: 1rem 1.25rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            font-size: 0.75rem;
-            color: var(--stone-dark);
-            margin-top: 1.25rem;
-        }
+        .card-box { background-color: var(--stone-light); padding: 1.25rem; border-radius: 8px; border: 1px solid rgba(210, 205, 199, 0.8); display: flex; flex-direction: column; justify-content: space-between; }
+        .img-container { aspect-ratio: 16/10; border-radius: 6px; overflow: hidden; position: relative; background-color: #ddd; }
+        .img-container img { width: 100%; height: 100%; object-fit: cover; }
+        .notice-banner { background: rgba(217, 119, 6, 0.08); border: 1px solid rgba(217, 119, 6, 0.3); border-radius: 8px; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; font-size: 0.75rem; color: var(--stone-dark); margin-top: 1.25rem; }
 
         .border-t-line { border-top: 1px solid rgba(210, 205, 199, 0.8); }
         .border-b-line { border-bottom: 1px solid rgba(210, 205, 199, 0.8); }
         .font-display { font-family: var(--font-display); }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: var(--stone-bg); }
-        ::-webkit-scrollbar-thumb { background: var(--stone-dark); }
     </style>
 </head>
 <body>
 
-    <!-- ==================== LIGHT GLASS NAVBAR ==================== -->
+    <!-- NAVBAR -->
     <header class="navbar">
         <nav class="nav-links">
-            <a href="index.html">Home</a>
-            <a href="cases.html">Latest Cases</a>
-            <a href="#sec-blog">Blogs</a>
-            <a href="#sec-ecosystem">Ecosystem</a>
-            <a href="cases.html" class="active">Detectives</a>
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'case_list' %}">Latest Cases</a>
+            <a href="{% url 'detective_list' %}" class="active">Detectives</a>
         </nav>
-
-        <div class="user-nav-badge">
-            <div class="user-avatar-sm">D</div>
-            <span style="font-size: 0.75rem; font-weight: 700;">Daisuke Tanaka</span>
-            <a href="userdashboard.html" class="neu-button-dark" style="padding: 0.4rem 0.85rem; font-size: 0.65rem; margin-left: 0.5rem;">
-                My Dashboard
-            </a>
+        <div class="nav-actions">
+            {% if user.is_authenticated %}
+                <div class="user-nav-badge">
+                    <div class="user-avatar-sm">
+                        {% if user_profile and user_profile.avatar %}
+                            <img src="{{ user_profile.avatar.url }}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;">
+                        {% else %}
+                            {{ user.first_name|first|upper|default:user.username|first|upper }}
+                        {% endif %}
+                    </div>
+                    <span style="font-size: 0.75rem; font-weight: 700;">{{ user_profile.full_name|default:user.username }}</span>
+                </div>
+                {% if user.is_staff %}
+                    <a href="{% url 'admin_dashboard' %}" class="btn-login">Admin</a>
+                {% elif user_profile.is_detective %}
+                    <a href="{% url 'detective_dashboard' %}" class="btn-login">Dashboard</a>
+                {% else %}
+                    <a href="{% url 'user_dashboard' %}" class="btn-login">Dashboard</a>
+                {% endif %}
+                <a href="{% url 'logout' %}" class="btn-login">Logout</a>
+            {% else %}
+                <a href="{% url 'home' %}" class="btn-login">LOG IN</a>
+                <a href="{% url 'home' %}" class="btn-signup">SIGN UP <i class="fas fa-arrow-right"></i></a>
+            {% endif %}
         </div>
     </header>
 
-
-    <!-- ==================== PROFILE HEADER / HERO ==================== -->
+    <!-- HERO -->
     <header class="profile-header-section">
         <div class="container">
-            
             <div class="profile-hero-card">
-                <!-- Portrait Avatar -->
-                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400" alt="Sarah Vance Portrait" class="portrait-frame">
+                {% if detective.avatar %}
+                <img src="{{ detective.avatar.url }}" alt="{{ detective.full_name }}" class="portrait-frame">
+                {% else %}
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400" alt="{{ detective.full_name }}" class="portrait-frame">
+                {% endif %}
 
-                <!-- Details & Bio -->
                 <div style="flex: 1;">
                     <div>
                         <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
                             <span class="badge-tag bg-emerald"><i class="fa-regular fa-circle-check"></i> VETTED DETECTIVE</span>
-                            <span style="font-size: 0.65rem; font-family: monospace; color: var(--stone-muted);">LIC. #PD-88219</span>
+                            <span style="font-size: 0.65rem; font-family: monospace; color: var(--stone-muted);">LIC. {{ detective.license_number|default:"#PD-OFFICIAL" }}</span>
                         </div>
-                        <h1 class="font-display" style="font-size: 1.85rem; font-weight: 800;">Detective Sarah Vance</h1>
+                        <h1 class="font-display" style="font-size: 1.85rem; font-weight: 800;">Detective {{ detective.full_name }}</h1>
                         <p style="font-size: 0.8rem; font-weight: 600; color: var(--stone-muted); margin-top: 0.15rem;">
-                            Lead Urban Missing &amp; K9 Search Specialist • Kyoto &amp; Kansai Guild #8
+                            {{ detective.specialization|default:"Specialized Investigator" }} • {{ detective.city|default:detective.address|default:"Regional Guild" }}
                         </p>
                     </div>
 
-                    <!-- Biography -->
-                    <p style="font-size: 0.85rem; line-height: 1.6; color: var(--stone-dark); margin-top: 1rem; font-weight: 300;">
-                        Sarah Vance is a 12-year veteran licensed private investigator specializing in urban missing persons tracking, lost pet recovery, and K9 scent trailing. Working in close coordination with the Kyoto Regional Guild and utilizing AI vision camera vectors, she has led over 140 successful field recoveries across the Kansai sector.
-                    </p>
-
-                    <!-- Platform Governance Notice -->
                     <div class="notice-banner">
                         <i class="fa-solid fa-triangle-exclamation" style="color: var(--amber-accent); font-size: 1.25rem;"></i>
                         <div>
-                            <strong>Platform Dispatch Policy:</strong> Direct private hiring is disabled on profile pages to maintain platform governance and administrative vetting. If you have an active lost case, please navigate to your <strong>User Dashboard</strong> to request a detective dispatch.
+                            <strong>Platform Dispatch Policy:</strong> Direct private hiring is disabled on profile pages. To request an assigned detective for your case, navigate to your <strong>User Dashboard</strong>.
                         </div>
                     </div>
-
                 </div>
             </div>
 
-            <!-- OVERVIEW STATS GRID (3 CARDS) -->
+            <!-- METRICS -->
             <div class="metrics-grid">
                 <div class="stat-card">
                     <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-clock"></i> Experience</span>
-                    <div class="stat-number font-display">12 Yrs</div>
-                    <span style="font-size: 0.65rem; color: var(--stone-dark); font-weight: 600; margin-top: 0.2rem;">Licensed Since 2014</span>
+                    <div class="stat-number font-display">{{ detective.experience_years }} Yrs</div>
                 </div>
 
                 <div class="stat-card">
                     <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-circle-check"></i> Solved Cases</span>
-                    <div class="stat-number font-display">142</div>
-                    <span style="font-size: 0.65rem; color: var(--emerald-accent); font-weight: 600; margin-top: 0.2rem;">Verified Recoveries</span>
+                    <div class="stat-number font-display">{{ solved_count }}</div>
                 </div>
 
                 <div class="stat-card">
-                    <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-chart-bar"></i> Success Rate</span>
-                    <div class="stat-number font-display" style="color: var(--emerald-accent);">96.8%</div>
-                    <span style="font-size: 0.65rem; color: var(--stone-muted); font-weight: 600; margin-top: 0.2rem;">High Recovery Index</span>
+                    <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-folder-open"></i> Active Assignments</span>
+                    <div class="stat-number font-display" style="color: var(--emerald-accent);">{{ active_count }}</div>
                 </div>
             </div>
-
         </div>
     </header>
 
-
-    <!-- ==================== MAIN CONTENT ==================== -->
+    <!-- MAIN CONTENT -->
     <main class="main-content">
         <div class="container">
-
-            <!-- SECTION 1: RECENT COMPLETED CASES -->
             <section class="section-block">
                 <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.25rem;" class="border-b-line pb-3">
                     <div>
-                        <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800;">RECENT COMPLETED CASES</h2>
-                        <p style="font-size: 0.75rem; color: var(--stone-muted);">Latest successful field operations closed by Detective Vance.</p>
+                        <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800;">ASSIGNED CASES &amp; ACHIEVEMENTS</h2>
                     </div>
-                    <span class="badge-tag bg-emerald" style="font-size: 0.65rem;"><i class="fa-regular fa-circle-check"></i> 100% VERIFIED</span>
                 </div>
 
                 <div class="grid-3">
-                    <!-- Case Card 1 -->
+                    {% for assignment in assigned_cases %}
                     <div class="card-box">
                         <div>
                             <div class="img-container">
-                                <img src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&q=80&w=600" alt="Reunited French Bulldog Max">
-                                <span class="badge-tag bg-emerald" style="position: absolute; top: 0.5rem; left: 0.5rem;"><i class="fa-regular fa-circle-check"></i> SOLVED</span>
-                                <span class="reward-pill">$2,000 Bounty Paid</span>
+                                {% with primary=assignment.case.images.all|first %}
+                                {% if primary %}
+                                <img src="{{ primary.image.url }}" alt="{{ assignment.case.title }}">
+                                {% else %}
+                                <img src="https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=600" alt="{{ assignment.case.title }}">
+                                {% endif %}
+                                {% endwith %}
+                                <span class="badge-tag {% if assignment.status == 'COMPLETED' %}bg-emerald{% else %}bg-amber{% endif %}" style="position: absolute; top: 0.5rem; left: 0.5rem;">{{ assignment.get_status_display }}</span>
                             </div>
                             <div style="margin-top: 0.85rem;">
-                                <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--stone-muted);">
-                                    <span>KYOTO, JAPAN</span>
-                                    <span>MAY 14, 2026</span>
-                                </div>
-                                <h3 class="font-display" style="font-size: 1rem; font-weight: 700; margin-top: 0.25rem;">French Bulldog 'Max'</h3>
-                                <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.25rem;">
-                                    Located after 3-day scent tracking dispatch near Arashiyama Bamboo Grove. Safely reunited with owner.
-                                </p>
+                                <h3 class="font-display" style="font-size: 1rem; font-weight: 700;">{{ assignment.case.title }}</h3>
+                                <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.25rem;">{{ assignment.case.location }}</p>
                             </div>
-                        </div>
-                        <div class="border-t-line" style="margin-top: 0.85rem; padding-top: 0.65rem;">
-                            <span style="font-size: 0.65rem; color: var(--emerald-accent); font-weight: 700;">Case #LF-77192 • Closed</span>
                         </div>
                     </div>
-
-                    <!-- Case Card 2 -->
-                    <div class="card-box">
-                        <div>
-                            <div class="img-container">
-                                <img src="https://images.unsplash.com/photo-1581579438747-1dc8d1e292c9?auto=format&fit=crop&q=80&w=600" alt="Senior Maria Garcia Reunited">
-                                <span class="badge-tag bg-emerald" style="position: absolute; top: 0.5rem; left: 0.5rem;"><i class="fa-regular fa-heart"></i> REUNITED</span>
-                            </div>
-                            <div style="margin-top: 0.85rem;">
-                                <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--stone-muted);">
-                                    <span>MADRID, SPAIN</span>
-                                    <span>APRIL 28, 2026</span>
-                                </div>
-                                <h3 class="font-display" style="font-size: 1rem; font-weight: 700; margin-top: 0.25rem;">Senior Maria Garcia (Age 81)</h3>
-                                <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.25rem;">
-                                    Cross-referenced metro CCTV vectors. Subject found resting safely at community center shelter.
-                                </p>
-                            </div>
-                        </div>
-                        <div class="border-t-line" style="margin-top: 0.85rem; padding-top: 0.65rem;">
-                            <span style="font-size: 0.65rem; color: var(--emerald-accent); font-weight: 700;">Case #LF-33019 • Closed</span>
-                        </div>
+                    {% empty %}
+                    <div class="card-box" style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--stone-muted);">
+                        No public assignments listed for this detective yet.
                     </div>
-
-                    <!-- Case Card 3 -->
-                    <div class="card-box">
-                        <div>
-                            <div class="img-container">
-                                <img src="https://images.unsplash.com/photo-1517423440428-a5a00ad493e8?auto=format&fit=crop&q=80&w=600" alt="Siamese Tama">
-                                <span class="badge-tag bg-emerald" style="position: absolute; top: 0.5rem; left: 0.5rem;"><i class="fa-regular fa-circle-check"></i> SOLVED</span>
-                                <span class="reward-pill">$800 Bounty Paid</span>
-                            </div>
-                            <div style="margin-top: 0.85rem;">
-                                <div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--stone-muted);">
-                                    <span>OSAKA, JAPAN</span>
-                                    <span>MARCH 11, 2026</span>
-                                </div>
-                                <h3 class="font-display" style="font-size: 1rem; font-weight: 700; margin-top: 0.25rem;">Siamese Cat 'Tama'</h3>
-                                <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.25rem;">
-                                    Rescued from residential parking structure using acoustic sensors and night vision cameras.
-                                </p>
-                            </div>
-                        </div>
-                        <div class="border-t-line" style="margin-top: 0.85rem; padding-top: 0.65rem;">
-                            <span style="font-size: 0.65rem; color: var(--emerald-accent); font-weight: 700;">Case #LF-99201 • Closed</span>
-                        </div>
-                    </div>
+                    {% endfor %}
                 </div>
             </section>
-
-
-            <!-- SECTION 2: GALLERY OF COMPLETED INVESTIGATIONS -->
-            <section class="section-block">
-                <div style="margin-bottom: 1.25rem;" class="border-b-line pb-3">
-                    <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800;">FIELD EVIDENCE GALLERY</h2>
-                    <p style="font-size: 0.75rem; color: var(--stone-muted);">Photographic logs, CCTV vector matches, and reunion moments captured in the field.</p>
-                </div>
-
-                <div class="grid-4">
-                    <div class="card-box" style="padding: 0.65rem;">
-                        <div class="img-container">
-                            <img src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=600" alt="Field Search K9 Trail">
-                            <span class="badge-tag" style="position: absolute; bottom: 0.5rem; left: 0.5rem; background: rgba(0,0,0,0.8);">K9 Trail Photo</span>
-                        </div>
-                        <p style="font-size: 0.68rem; color: var(--stone-muted); margin-top: 0.5rem; text-align: center;">Arashiyama Sector Trail</p>
-                    </div>
-
-                    <div class="card-box" style="padding: 0.65rem;">
-                        <div class="img-container">
-                            <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=600" alt="CCTV Vector Match">
-                            <span class="badge-tag" style="position: absolute; bottom: 0.5rem; left: 0.5rem; background: rgba(0,0,0,0.8);">CCTV AI Match</span>
-                        </div>
-                        <p style="font-size: 0.68rem; color: var(--stone-muted); margin-top: 0.5rem; text-align: center;">Gion District Camera Feed</p>
-                    </div>
-
-                    <div class="card-box" style="padding: 0.65rem;">
-                        <div class="img-container">
-                            <img src="https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=600" alt="Retriever Field Check">
-                            <span class="badge-tag" style="position: absolute; bottom: 0.5rem; left: 0.5rem; background: rgba(0,0,0,0.8);">Reunion Moment</span>
-                        </div>
-                        <p style="font-size: 0.68rem; color: var(--stone-muted); margin-top: 0.5rem; text-align: center;">Golden Retriever Recovery</p>
-                    </div>
-
-                    <div class="card-box" style="padding: 0.65rem;">
-                        <div class="img-container">
-                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=600" alt="Detective Vance in Field">
-                            <span class="badge-tag" style="position: absolute; bottom: 0.5rem; left: 0.5rem; background: rgba(0,0,0,0.8);">Command Unit</span>
-                        </div>
-                        <p style="font-size: 0.68rem; color: var(--stone-muted); margin-top: 0.5rem; text-align: center;">Kyoto Guild Command #8</p>
-                    </div>
-                </div>
-            </section>
-
-
-            <!-- SECTION 3: USER ACTION / DISPATCH INSTRUCTIONS -->
-            <section class="section-block">
-                <div class="card-box" style="background: var(--stone-bg); border: 2px solid var(--stone-border); padding: 2rem; text-align: center; align-items: center;">
-                    <div style="width: 3.5rem; height: 3.5rem; border-radius: 50%; background: #d1fae5; color: var(--emerald-accent); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 1rem;">
-                        <i class="fa-regular fa-paper-plane"></i>
-                    </div>
-
-                    <h2 class="font-display" style="font-size: 1.35rem; font-weight: 800;">Need Detective Sarah Vance for Your Case?</h2>
-                    <p style="font-size: 0.8rem; color: var(--stone-muted); max-width: 34rem; margin: 0.4rem auto 1.5rem auto; font-weight: 300;">
-                        Navigate to your active lost report on your User Dashboard and select <strong>"+ Request Det."</strong>. Platform administrators will review and approve your dispatch request.
-                    </p>
-
-                    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem;">
-                        <a href="userdashboard.html#panel-lost" class="neu-button-emerald">
-                            Go to User Dashboard &amp; Request Detective
-                        </a>
-                    </div>
-                </div>
-            </section>
-
         </div>
     </main>
 
-
-    <!-- ==================== FOOTER ==================== -->
+    <!-- FOOTER -->
     <footer style="padding: 3rem 0; border-top: 1px solid rgba(210, 205, 199, 0.8);">
         <div class="container">
             <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1.5rem;">
                 <div>
                     <h2 class="font-display" style="font-size: 1.5rem; font-weight: 800; text-transform: uppercase;">LOST &amp; FOUND</h2>
-                    <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.2rem;">AI-Powered Recovery Network</p>
                 </div>
                 <div style="display: flex; gap: 1.5rem; font-size: 0.65rem; text-transform: uppercase; font-weight: 600; color: var(--stone-muted);">
-                    <a href="index.html" style="text-decoration: underline;">Home</a>
-                    <a href="cases.html" style="text-decoration: underline;">All Cases</a>
-                    <a href="#" style="text-decoration: underline;">Privacy Policy</a>
+                    <a href="{% url 'home' %}">Home</a>
+                    <a href="{% url 'case_list' %}">All Cases</a>
                 </div>
-            </div>
-            <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(210, 205, 199, 0.4); text-align: center; font-size: 0.65rem; color: var(--stone-muted);">
-                ALL RIGHTS RESERVED &copy; 2026 LOST &amp; FOUND PLATFORM
             </div>
         </div>
     </footer>
-
 </body>
 </html>
