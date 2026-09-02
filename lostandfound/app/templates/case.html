@@ -120,9 +120,14 @@
         .close-btn { position: absolute; top: 1.25rem; right: 1.25rem; font-size: 1.25rem; color: var(--stone-muted); }
         
         .flash-messages { position: fixed; top: 0.75rem; left: 50%; transform: translateX(-50%); z-index: 200; display: flex; flex-direction: column; gap: 0.5rem; width: 90%; max-width: 32rem; }
-        .flash-msg { padding: 0.75rem 1.25rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+        .flash-msg { padding: 0.75rem 1.25rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; animation: slideDown 0.3s ease; }
         .flash-msg.success { background: #d1fae5; color: #065f46; border: 1px solid #10b981; }
         .flash-msg.error { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
+        .flash-msg.warning { background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; }
+        .flash-msg.info { background: #dbeafe; color: #1e40af; border: 1px solid #3b82f6; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-10px); } }
+
     </style>
 </head>
 <body>
@@ -130,9 +135,9 @@
     {% if messages %}
     <div class="flash-messages">
         {% for message in messages %}
-        <div class="flash-msg {{ message.tags }}" onclick="this.remove()">
+        <div class="flash-msg {{ message.tags }}">
             <span>{{ message }}</span>
-            <button onclick="this.parentElement.remove()" style="font-size: 1rem; color: inherit;">&times;</button>
+            <button class="flash-close" style="font-size: 1rem; color: inherit; cursor:pointer;">&times;</button>
         </div>
         {% endfor %}
     </div>
@@ -678,6 +683,26 @@
                 if(!allValid){ formMsg.textContent='Please fix highlighted fields.'; formMsg.style.color='#dc2626'; formMsg.style.display='block'; } else { formMsg.style.display='none'; }
             }
         }
+    
+        // Auto-dismiss toasts after 4s with fade
+        (function(){
+            function dismissFlash(msg){
+                msg.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                msg.style.opacity = '0';
+                msg.style.transform = 'translateY(-10px)';
+                setTimeout(()=>msg.remove(), 400);
+            }
+            document.querySelectorAll('.flash-msg').forEach(msg=>{
+                // click anywhere on toast dismisses
+                msg.addEventListener('click', ()=>dismissFlash(msg));
+                const btn = msg.querySelector('button');
+                if(btn) btn.addEventListener('click', (e)=>{ e.stopPropagation(); dismissFlash(msg); });
+            });
+            setTimeout(()=>{
+                document.querySelectorAll('.flash-msg').forEach(dismissFlash);
+            }, 4000);
+        })();
+
     </script>
 </body>
 </html>
