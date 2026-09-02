@@ -184,13 +184,14 @@
                 </p>
             </div>
 
-            <!-- AI Image Search Dropzone Panel -->
+            {% if user.is_authenticated %}
+            <!-- AI Image Search Dropzone Panel (Authenticated Only) -->
             <div class="ai-dropzone-panel" id="ai-dropzone">
                 <input type="file" id="ai-file-input" accept="image/*" multiple style="display: none;" onchange="handleAiImageUpload(event)">
                 
                 <div id="dropzone-content" style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; cursor: pointer;" onclick="document.getElementById('ai-file-input').click();">
                     <div style="width: 3rem; height: 3rem; border-radius: 50%; background: var(--stone-light); display: flex; align-items: center; justify-content: center; box-shadow: 3px 3px 8px #c7c4bf, -3px -3px 8px #ffffff;">
-                        <i class="fa-regular fa-image" style="font-size: 1.25rem; color: var(--stone-dark);"></i>
+                        <i class="fas fa-image" style="font-size: 1.25rem; color: var(--stone-dark);"></i>
                     </div>
                     <div>
                         <h4 class="font-display" style="font-size: 0.95rem; font-weight: 700;">RUN AI VISUAL VECTOR SEARCH</h4>
@@ -199,15 +200,26 @@
                         </p>
                     </div>
                     <span style="font-size: 0.65rem; color: var(--emerald-accent); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; background: #d1fae5; padding: 0.2rem 0.6rem; border-radius: 9999px; margin-top: 0.25rem;">
-                        <i class="fa-regular fa-compass"></i> Real CLIP &amp; FAISS Vector Engine Active
+                        <i class="fas fa-compass"></i> Real CLIP &amp; FAISS Vector Engine Active
                     </span>
                 </div>
 
                 <div id="dropzone-loading" style="display: none; flex-direction: column; align-items: center; gap: 0.75rem;">
-                    <i class="fa-regular fa-compass fa-spin" style="font-size: 2rem; color: var(--emerald-accent);"></i>
+                    <i class="fas fa-compass fa-spin" style="font-size: 2rem; color: var(--emerald-accent);"></i>
                     <p id="loading-text" style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Extracting visual vector embeddings &amp; querying cases index...</p>
                 </div>
             </div>
+            {% else %}
+            <div class="ai-dropzone-panel" style="opacity:0.85; border-style: solid;">
+                <div style="display:flex; flex-direction:column; align-items:center; gap:0.5rem; text-align:center;">
+                    <div style="width:3rem; height:3rem; border-radius:50%; background:var(--stone-light); display:flex; align-items:center; justify-content:center; box-shadow:3px 3px 8px #c7c4bf, -3px -3px 8px #ffffff;">
+                        <i class="fas fa-lock" style="font-size:1.25rem; color:var(--stone-muted);"></i>
+                    </div>
+                    <h4 class="font-display" style="font-size:0.95rem; font-weight:700;">LOGIN TO USE AI VISUAL SEARCH</h4>
+                    <p style="font-size:0.75rem; color:var(--stone-muted);">Please <button onclick="openModal('modal-login')" style="text-decoration:underline; font-weight:700; color:var(--stone-dark);">Log In</button> or <button onclick="openModal('modal-signup')" style="text-decoration:underline; font-weight:700; color:var(--stone-dark);">Sign Up</button> to run AI vector image matching.</p>
+                </div>
+            </div>
+            {% endif %}
         </div>
     </header>
 
@@ -218,8 +230,8 @@
                 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
                     <div class="tab-group">
                         <a href="{% url 'case_list' %}" class="tab-btn {% if not current_type %}active{% endif %}">ALL CASES</a>
-                        <a href="{% url 'case_list' %}?type=LOST" class="tab-btn {% if current_type == 'LOST' %}active{% endif %}"><i class="fa-regular fa-bell"></i> LOST ONLY</a>
-                        <a href="{% url 'case_list' %}?type=FOUND" class="tab-btn {% if current_type == 'FOUND' %}active{% endif %}"><i class="fa-regular fa-heart"></i> FOUND ONLY</a>
+                        <a href="{% url 'case_list' %}?type=LOST" class="tab-btn {% if current_type == 'LOST' %}active{% endif %}"><i class="fas fa-bell"></i> LOST ONLY</a>
+                        <a href="{% url 'case_list' %}?type=FOUND" class="tab-btn {% if current_type == 'FOUND' %}active{% endif %}"><i class="fas fa-heart"></i> FOUND ONLY</a>
                     </div>
 
                     <div style="font-size: 0.75rem; color: var(--stone-muted);">
@@ -270,7 +282,7 @@
 
             <div class="ai-status-banner" id="ai-banner">
                 <span style="display: flex; align-items: center; gap: 0.5rem;">
-                    <i class="fa-regular fa-circle-check" style="font-size: 1rem;"></i>
+                    <i class="fas fa-circle-check" style="font-size: 1rem;"></i>
                     <span id="ai-status-msg">AI Image Visual Match Active — Cards ranked by visual feature similarity.</span>
                 </span>
                 <button onclick="clearAiSearch()" style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; text-decoration: underline; color: #065f46;">Clear AI Search</button>
@@ -302,17 +314,17 @@
 
                             <!-- TOP RIGHT BADGE (CATEGORY DEFAULT, REPLACED BY MATCH % DURING AI SEARCH) -->
                             <span class="badge-cat" id="badge-cat-{{ case.pk }}" data-original-text="{{ case.get_category_display }}">
-                                <i class="fa-regular fa-tag"></i> {{ case.get_category_display }}
+                                <i class="fas fa-tag"></i> {{ case.get_category_display }}
                             </span>
 
                             {% if case.reward > 0 %}
-                            <span class="reward-pill">${{ case.reward|floatformat:0|intcomma }} Reward</span>
+                            <span class="reward-pill">₹{{ case.reward|floatformat:0|intcomma }} Reward</span>
                             {% endif %}
                         </div>
 
                         <div style="margin-top: 0.85rem;">
                             <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.65rem; color: var(--stone-muted);">
-                                <span><i class="fa-regular fa-compass"></i> {{ case.location|upper }}</span>
+                                <span><i class="fas fa-compass"></i> {{ case.location|upper }}</span>
                                 <span>{{ case.created_at|timesince|upper }} AGO</span>
                             </div>
                             <h3 class="font-display" style="font-size: 0.95rem; font-weight: 700; margin-top: 0.35rem;">{{ case.title }}</h3>
@@ -325,9 +337,9 @@
                     <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 0.65rem; font-weight: 600; color: var(--amber-accent);">
                             {% if case.assigned_detective %}
-                            <i class="fa-regular fa-id-badge"></i> Det. Assigned
+                            <i class="fas fa-id-badge"></i> Det. Assigned
                             {% else %}
-                            <i class="fa-regular fa-bell"></i> {{ case.get_status_display }}
+                            <i class="fas fa-bell"></i> {{ case.get_status_display }}
                             {% endif %}
                         </span>
                         <a href="{% url 'case_detail' pk=case.pk %}" class="neu-button" style="padding: 0.4rem 0.75rem; font-size: 0.65rem;">View Details ↗</a>
@@ -371,7 +383,7 @@
     <div id="modal-overlay" class="modal-overlay">
         <!-- LOGIN MODAL -->
         <div id="modal-login" class="neu-card modal-body hidden">
-            <button onclick="closeModals()" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
+            <button onclick="closeModals()" class="close-btn"><i class="fas fa-circle-xmark"></i></button>
             <div style="text-align: center; margin-bottom: 1.25rem;">
                 <h3 class="font-display" style="font-size: 1.5rem; font-weight: 700;">Welcome Back</h3>
             </div>
@@ -391,16 +403,26 @@
 
         <!-- SIGNUP MODAL -->
         <div id="modal-signup" class="neu-card modal-body lg hidden">
-            <button onclick="closeModals()" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
+            <button onclick="closeModals()" class="close-btn"><i class="fas fa-circle-xmark"></i></button>
             <div style="text-align: center; margin-bottom: 1rem;">
                 <h3 class="font-display" style="font-size: 1.5rem; font-weight: 700;">Create Account</h3>
+                <p style="font-size:0.75rem; color:var(--stone-muted);">Register as Citizen or Licensed Detective</p>
             </div>
             <form action="{% url 'signup' %}" method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
                 {% csrf_token %}
+                <div>
+                    <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Profile Picture</label>
+                    <div class="neu-input" style="padding: 0.65rem; text-align: center; cursor: pointer;" onclick="document.getElementById('signup-avatar-file-case').click()">
+                        <i class="fas fa-user-circle" style="font-size: 1.25rem; color: var(--stone-muted);"></i>
+                        <p id="signup-avatar-label-case" style="font-size: 0.7rem; font-weight: 600; margin-top: 0.15rem;">Click to upload profile photo</p>
+                    </div>
+                    <input type="file" name="avatar" id="signup-avatar-file-case" accept="image/*" style="display: none;" onchange="document.getElementById('signup-avatar-label-case').textContent = this.files[0] ? '✓ '+this.files[0].name : 'Click to upload profile photo';">
+                </div>
                 <div class="grid-2">
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Username</label>
-                        <input type="text" name="username" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                        <input type="text" name="username" id="signup-username-case" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;" onblur="validateFieldCase('username', this.value)">
+                        <span id="signup-username-msg-case" style="font-size:0.65rem; font-weight:600; display:none; margin-top:0.2rem;"></span>
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Full Name</label>
@@ -414,13 +436,14 @@
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Email Address</label>
-                        <input type="email" name="email" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                        <input type="email" name="email" id="signup-email-case" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;" onblur="validateFieldCase('email', this.value)">
+                        <span id="signup-email-msg-case" style="font-size:0.65rem; font-weight:600; display:none; margin-top:0.2rem;"></span>
                     </div>
                 </div>
                 <div class="grid-2">
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Account Role</label>
-                        <select name="role" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                        <select name="role" id="signup-role-case" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;" onchange="toggleDetectiveFieldsCase(this.value)">
                             <option value="citizen">Citizen / Family Member</option>
                             <option value="detective">Licensed Private Detective</option>
                         </select>
@@ -430,7 +453,29 @@
                         <input type="password" name="password" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
                     </div>
                 </div>
-                <button type="submit" class="neu-button-dark" style="padding: 0.8rem; font-size: 0.75rem;">REGISTER ACCOUNT</button>
+                <div id="detective-extra-fields-case" class="hidden" style="display: flex; flex-direction: column; gap: 0.75rem; background: var(--stone-light); padding: 0.85rem; border-radius: 8px; border: 1px solid var(--stone-border); margin-top: 0.25rem;">
+                    <span style="font-size: 0.65rem; font-weight: 700; color: var(--amber-accent); text-transform: uppercase;"><i class="fas fa-id-badge"></i> Detective Vetting Credentials</span>
+                    <div class="grid-2">
+                        <div>
+                            <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">License Number</label>
+                            <input type="text" name="license_number" placeholder="e.g. #PD-88219" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Years Experience</label>
+                            <input type="number" name="experience_years" placeholder="e.g. 10" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
+                        </div>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Operating Region / Territory</label>
+                        <input type="text" name="operating_region" placeholder="e.g. Thrissur, Kerala" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Specialization Summary</label>
+                        <textarea rows="2" name="specialization" placeholder="e.g. K9 Scent Tracking..." class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;"></textarea>
+                    </div>
+                </div>
+                <button type="submit" id="signup-submit-btn-case" class="neu-button-dark" style="padding: 0.8rem; font-size: 0.75rem;">REGISTER ACCOUNT</button>
+                <p id="signup-form-msg-case" style="font-size:0.7rem; font-weight:600; text-align:center; display:none;"></p>
             </form>
         </div>
     </div>
@@ -495,7 +540,7 @@
 
                 if (!data.results || data.results.length === 0) {
                     // ZERO matches above 95% threshold (e.g. nature picture / unrelated object uploaded)
-                    aiStatusMsg.innerHTML = `<i class="fa-regular fa-circle-xmark" style="font-size: 1rem; color: var(--red-accent);"></i> <strong>NO SIMILARITY MATCHES FOUND:</strong> Uploaded photo does not match any active cases in database (0 Cases &ge; 95% Similarity Threshold).`;
+                    aiStatusMsg.innerHTML = `<i class="fas fa-circle-xmark" style="font-size: 1rem; color: var(--red-accent);"></i> <strong>NO SIMILARITY MATCHES FOUND:</strong> Uploaded photo does not match any active cases in database (0 Cases &ge; 95% Similarity Threshold).`;
 
                     cards.forEach(card => {
                         card.style.display = 'none';
@@ -506,7 +551,7 @@
                     emptyNotice.className = 'card-box';
                     emptyNotice.style.cssText = 'grid-column: 1 / -1; text-align: center; padding: 3rem;';
                     emptyNotice.innerHTML = `
-                        <div style="font-size: 2.25rem; color: var(--amber-accent); margin-bottom: 0.5rem;"><i class="fa-regular fa-image"></i></div>
+                        <div style="font-size: 2.25rem; color: var(--amber-accent); margin-bottom: 0.5rem;"><i class="fas fa-image"></i></div>
                         <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700;">No Visual Similarity Matches Found (95% - 100% Threshold)</h3>
                         <p style="font-size: 0.8rem; color: var(--stone-muted); margin-top: 0.5rem; max-width: 32rem; margin-left: auto; margin-right: auto; line-height: 1.5;">
                             The uploaded image (nature, background, or unrelated object) does not match any active missing person, pet, or found report with 95% - 100% similarity.
@@ -524,7 +569,7 @@
                     if (r.match_score > topScore) topScore = r.match_score;
                 });
 
-                aiStatusMsg.innerHTML = `<i class="fa-regular fa-circle-check" style="font-size: 1rem; color: var(--emerald-accent);"></i> <strong>HIGH SIMILARITY MATCHES FOUND:</strong> ${data.results.length} case(s) match uploaded photo with <strong>${topScore}% SIMILARITY FOUND</strong>.`;
+                aiStatusMsg.innerHTML = `<i class="fas fa-circle-check" style="font-size: 1rem; color: var(--emerald-accent);"></i> <strong>HIGH SIMILARITY MATCHES FOUND:</strong> ${data.results.length} case(s) match uploaded photo with <strong>${topScore}% SIMILARITY FOUND</strong>.`;
 
                 cards.forEach(card => {
                     const caseId = card.getAttribute('data-case-id');
@@ -538,7 +583,7 @@
 
                         badgeCat.style.backgroundColor = 'var(--emerald-accent)';
                         badgeCat.style.color = '#ffffff';
-                        badgeCat.innerHTML = `<i class="fa-regular fa-compass"></i> ${score}% SIMILARITY FOUND`;
+                        badgeCat.innerHTML = `<i class="fas fa-compass"></i> ${score}% SIMILARITY FOUND`;
                     } else {
                         // Hide non-matching cases
                         card.style.display = 'none';
@@ -580,7 +625,7 @@
                     const origText = badgeCat.getAttribute('data-original-text');
                     badgeCat.style.backgroundColor = 'rgba(26, 26, 26, 0.85)';
                     badgeCat.style.color = '#ffffff';
-                    badgeCat.innerHTML = `<i class="fa-regular fa-tag"></i> ${origText}`;
+                    badgeCat.innerHTML = `<i class="fas fa-tag"></i> ${origText}`;
                 }
                 card.removeAttribute('data-ai-score');
             });
@@ -593,7 +638,45 @@
             });
 
             cards.forEach(card => container.appendChild(card));
-            document.getElementById('ai-file-input').value = '';
+            const inp=document.getElementById('ai-file-input'); if(inp) inp.value='';
+        }
+        // Toggle detective extra fields on case page
+        function toggleDetectiveFieldsCase(val){
+            const el=document.getElementById('detective-extra-fields-case');
+            if(!el) return;
+            if(val==='detective') el.classList.remove('hidden'); else el.classList.add('hidden');
+        }
+        // Live validation for case page signup
+        let signupValidCase={ username:true, email:true };
+        async function validateFieldCase(field,value){
+            if(!value||!value.trim()) return;
+            const msgEl=document.getElementById('signup-'+field+'-msg-case');
+            const inputEl=document.getElementById('signup-'+field+'-case');
+            const submitBtn=document.getElementById('signup-submit-btn-case');
+            const formMsg=document.getElementById('signup-form-msg-case');
+            try{
+                const res=await fetch('/api/check-availability/?'+field+'='+encodeURIComponent(value.trim()));
+                const data=await res.json();
+                const existsKey=field+'_exists';
+                if(data[existsKey]){
+                    msgEl.textContent=(field==='username'?'Username already taken':'Email already registered')+' — choose another.';
+                    msgEl.style.color='#dc2626'; msgEl.style.display='block';
+                    inputEl.style.borderColor='#dc2626';
+                    signupValidCase[field]=false;
+                } else {
+                    msgEl.textContent='✓ Available'; msgEl.style.color='#047857'; msgEl.style.display='block';
+                    inputEl.style.borderColor='#047857';
+                    signupValidCase[field]=true;
+                    setTimeout(()=>{msgEl.style.display='none'; inputEl.style.borderColor='';},2000);
+                }
+            }catch(e){}
+            if(submitBtn){
+                const allValid=signupValidCase.username && signupValidCase.email;
+                submitBtn.disabled=!allValid;
+                submitBtn.style.opacity=allValid?'1':'0.6';
+                submitBtn.style.cursor=allValid?'pointer':'not-allowed';
+                if(!allValid){ formMsg.textContent='Please fix highlighted fields.'; formMsg.style.color='#dc2626'; formMsg.style.display='block'; } else { formMsg.style.display='none'; }
+            }
         }
     </script>
 </body>

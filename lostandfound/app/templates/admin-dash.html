@@ -485,7 +485,7 @@
         <div class="container">
             <div>
                 <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
-                    <span class="badge-tag bg-amber"><i class="fa-regular fa-folder-open"></i> MASTER ADMIN PANEL</span>
+                    <span class="badge-tag bg-amber"><i class="fas fa-folder-open"></i> MASTER ADMIN PANEL</span>
                     <span style="font-size: 0.65rem; font-family: monospace; color: var(--stone-muted);">STATUS: ALL SYSTEMS OPERATIONAL</span>
                 </div>
                 <h1 class="page-title font-display">SYSTEM GOVERNANCE &amp; CONTROL</h1>
@@ -497,37 +497,37 @@
             <!-- DASHBOARD STATISTICS (6 METRICS) -->
             <div class="metrics-grid">
                 <div class="stat-card">
-                    <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-user"></i> Total Users</span>
+                    <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fas fa-user"></i> Total Users</span>
                     <div class="stat-number font-display">{{ total_users }}</div>
                     <span style="font-size: 0.6rem; color: var(--emerald-accent); font-weight: 600;">Registered Members</span>
                 </div>
 
                 <div class="stat-card">
-                    <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-id-badge"></i> Total Detectives</span>
+                    <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fas fa-id-badge"></i> Total Detectives</span>
                     <div class="stat-number font-display">{{ total_detectives }}</div>
                     <span style="font-size: 0.6rem; color: var(--stone-dark); font-weight: 600;">Licensed &amp; Vetted</span>
                 </div>
 
                 <div class="stat-card">
-                    <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-bell"></i> Lost Cases</span>
+                    <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fas fa-bell"></i> Lost Cases</span>
                     <div class="stat-number font-display">{{ total_lost }}</div>
                     <span style="font-size: 0.6rem; color: var(--amber-accent); font-weight: 600;">Monitored active</span>
                 </div>
 
                 <div class="stat-card">
-                    <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-circle-check"></i> Solved Cases</span>
+                    <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fas fa-circle-check"></i> Solved Cases</span>
                     <div class="stat-number font-display">{{ solved_cases }}</div>
                     <span style="font-size: 0.6rem; color: var(--emerald-accent); font-weight: 600;">Reunited Safely</span>
                 </div>
 
                 <div class="stat-card">
-                    <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-newspaper"></i> Articles</span>
+                    <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fas fa-newspaper"></i> Articles</span>
                     <div class="stat-number font-display">{{ total_blogs }}</div>
                     <span style="font-size: 0.6rem; color: var(--emerald-accent); font-weight: 600;">Published Blogs</span>
                 </div>
 
                 <div class="stat-card">
-                    <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-clock"></i> Pending Vetting</span>
+                    <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fas fa-clock"></i> Pending Vetting</span>
                     <div class="stat-number font-display" style="color: var(--amber-accent);">{{ pending_detectives }}</div>
                     <span style="font-size: 0.6rem; color: var(--amber-accent); font-weight: 600;">Requires Approval</span>
                 </div>
@@ -541,25 +541,25 @@
         <div class="container">
             <div class="tab-container">
                 <a class="dash-tab-btn" href="#panel-analytics">
-                    <i class="fa-regular fa-chart-bar"></i> Analytics &amp; Metrics
+                    <i class="fas fa-chart-bar"></i> Analytics &amp; Metrics
                 </a>
                 <a class="dash-tab-btn" href="#panel-users">
-                    <i class="fa-regular fa-user"></i> User Management
+                    <i class="fas fa-user"></i> User Management
                 </a>
                 <a class="dash-tab-btn" href="#panel-vetting">
-                    <i class="fa-regular fa-id-badge"></i> Detective Vetting ({{ pending_detectives }})
+                    <i class="fas fa-id-badge"></i> Detective Vetting ({{ pending_detectives }})
                 </a>
                 <a class="dash-tab-btn" href="#panel-cases">
-                    <i class="fa-regular fa-folder-open"></i> Case Database
+                    <i class="fas fa-folder-open"></i> Case Database
                 </a>
                 <a class="dash-tab-btn" href="#panel-assignment">
-                    <i class="fa-regular fa-compass"></i> Detective Requests &amp; Approvals ({{ detective_requests|length }})
+                    <i class="fas fa-compass"></i> Detective Requests &amp; Approvals ({{ detective_requests|length }})
                 </a>
                 <a class="dash-tab-btn" href="#panel-blog">
-                    <i class="fa-regular fa-newspaper"></i> Blog Management
+                    <i class="fas fa-newspaper"></i> Blog Management
                 </a>
                 <a class="dash-tab-btn" href="#panel-feedback">
-                    <i class="fa-regular fa-comment-dots"></i> Feedback Moderation ({{ pending_feedbacks }})
+                    <i class="fas fa-comment-dots"></i> Feedback Moderation ({{ pending_feedbacks }})
                 </a>
             </div>
         </div>
@@ -607,7 +607,7 @@
                             Automated visual feature vectors active. Camera feed similarity scans processing in real-time across database.
                         </p>
                         <div style="margin-top: 1rem; padding: 0.85rem; background: #d1fae5; border: 1px solid #10b981; border-radius: 6px; color: #065f46; font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
-                            <i class="fa-regular fa-circle-check"></i>
+                            <i class="fas fa-circle-check"></i>
                             <span>Vector Index Operational • Response Latency &lt; 120ms</span>
                         </div>
                     </div>
@@ -648,7 +648,7 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <form action="{% url 'admin_toggle_ban' pk=u.pk %}" method="POST" style="display: inline;">
+                                    <form action="{% url 'admin_toggle_ban' pk=u.pk %}" method="POST" onsubmit="return confirm('Are you sure you want to change ban status for this user?');" style="display: inline;">
                                         {% csrf_token %}
                                         {% if u.is_banned %}
                                         <button type="submit" class="neu-button-emerald" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Unban</button>
@@ -676,21 +676,21 @@
                             <div style="display: flex; justify-content: space-between; align-items: flex-start;" class="border-b-line pb-2">
                                 <div>
                                     <h3 class="font-display" style="font-size: 1rem; font-weight: 700;">{{ app.full_name }}</h3>
-                                    <p style="font-size: 0.65rem; color: var(--stone-muted); font-family: monospace;">Lic. {{ app.license_number }} • {{ app.address }}</p>
+                                    <p style="font-size: 0.65rem; color: var(--stone-muted); font-family: monospace;">Lic. {{ app.license_number }} • {{ app.city|default:app.address|default:"—" }} {% if app.city and app.address and app.city != app.address %}({{ app.address }}){% endif %}</p>
                                 </div>
-                                <span class="badge-tag bg-amber"><i class="fa-regular fa-clock"></i> PENDING</span>
+                                <span class="badge-tag bg-amber"><i class="fas fa-clock"></i> PENDING</span>
                             </div>
                             <p style="font-size: 0.75rem; color: var(--stone-dark); margin-top: 0.75rem;">
                                 {{ app.experience_years }} yrs experience. Specialization: {{ app.specialization }}
                             </p>
                         </div>
                         <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.75rem; display: flex; gap: 0.5rem;">
-                            <form action="{% url 'admin_approve_detective' pk=app.pk %}" method="POST" style="flex: 1;">
+                            <form action="{% url 'admin_approve_detective' pk=app.pk %}" method="POST" onsubmit="return confirm('Confirm this detective vetting action?');" style="flex: 1;">
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="approve">
-                                <button type="submit" class="neu-button-emerald" style="width: 100%;"><i class="fa-regular fa-circle-check"></i> Approve</button>
+                                <button type="submit" class="neu-button-emerald" style="width: 100%;"><i class="fas fa-circle-check"></i> Approve</button>
                             </form>
-                            <form action="{% url 'admin_approve_detective' pk=app.pk %}" method="POST" style="flex: 1;">
+                            <form action="{% url 'admin_approve_detective' pk=app.pk %}" method="POST" onsubmit="return confirm('Confirm this detective vetting action?');" style="flex: 1;">
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="reject">
                                 <button type="submit" class="neu-button-danger" style="width: 100%;">Reject</button>
@@ -731,7 +731,7 @@
                                 <td><strong>{{ c.title }}</strong></td>
                                 <td><span class="badge-tag {% if c.case_type == 'LOST' %}bg-red{% else %}bg-emerald{% endif %}">{{ c.get_case_type_display }}</span></td>
                                 <td>{{ c.location }}</td>
-                                <td>${{ c.reward|floatformat:0 }}</td>
+                                <td>₹{{ c.reward|floatformat:0 }}</td>
                                 <td>
                                     {% if c.status == 'CLOSED' or c.status == 'FOUND' %}
                                     <span class="badge-tag bg-emerald">Solved / Reunited</span>
@@ -745,15 +745,15 @@
                                     <a href="{% url 'case_detail' pk=c.pk %}" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Inspect</a>
                                     
                                     {% if c.status != 'CLOSED' and c.status != 'FOUND' %}
-                                    <form action="{% url 'admin_mark_case_solved' pk=c.pk %}" method="POST" style="display: inline;">
+                                    <form action="{% url 'admin_mark_case_solved' pk=c.pk %}" method="POST" onsubmit="return confirm('Mark this case as solved/closed?');" style="display: inline;">
                                         {% csrf_token %}
                                         <button type="submit" class="neu-button-emerald" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Mark Solved</button>
                                     </form>
                                     {% else %}
-                                    <span style="font-size: 0.65rem; color: var(--emerald-accent); font-weight: 700; padding: 0.2rem 0.4rem;"><i class="fa-regular fa-circle-check"></i> Solved</span>
+                                    <span style="font-size: 0.65rem; color: var(--emerald-accent); font-weight: 700; padding: 0.2rem 0.4rem;"><i class="fas fa-circle-check"></i> Solved</span>
                                     {% endif %}
 
-                                    <form action="{% url 'admin_delete_case' pk=c.pk %}" method="POST" style="display: inline;">
+                                    <form action="{% url 'admin_delete_case' pk=c.pk %}" method="POST" onsubmit="return confirm('Permanently delete this case? This cannot be undone.');" style="display: inline;">
                                         {% csrf_token %}
                                         <button type="submit" class="neu-button-danger" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Delete</button>
                                     </form>
@@ -780,14 +780,14 @@
                             {% if req.message %}<p style="font-size: 0.75rem; margin-top: 0.5rem;">"{{ req.message }}"</p>{% endif %}
                         </div>
 
-                        <form action="{% url 'admin_assign_detective' %}" method="POST" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                        <form action="{% url 'admin_assign_detective' %}" method="POST" onsubmit="return confirm('Assign selected detective to this case?');" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
                             {% csrf_token %}
                             <input type="hidden" name="case_id" value="{{ req.case.pk }}">
                             <input type="hidden" name="request_id" value="{{ req.pk }}">
                             <select name="detective_id" class="neu-input" style="width: 100%; padding: 0.5rem;" required>
                                 <option value="">Select Approved Detective to Assign...</option>
                                 {% for det in approved_detectives %}
-                                <option value="{{ det.pk }}">{{ det.full_name }} ({{ det.city }})</option>
+                                <option value="{{ det.pk }}">{{ det.full_name }} ({{ det.city|default:det.address|default:"—" }})</option>
                                 {% endfor %}
                             </select>
                             <button type="submit" class="neu-button-emerald">Assign Detective</button>
@@ -805,7 +805,7 @@
             <div id="panel-blog" class="dash-panel">
                 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.25rem;" class="border-b-line pb-3">
                     <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800;">BLOG ARTICLE MANAGEMENT</h2>
-                    <button onclick="openModal('modal-create-blog')" class="neu-button-dark"><i class="fa-regular fa-newspaper"></i> Publish Article</button>
+                    <button onclick="openModal('modal-create-blog')" class="neu-button-dark"><i class="fas fa-newspaper"></i> Publish Article</button>
                 </div>
 
                 <div class="grid-2">
@@ -816,7 +816,7 @@
                             <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.25rem;">Published {{ blog.created_at|date:"M d, Y" }}</p>
                             <p style="font-size: 0.75rem; margin-top: 0.5rem;">{{ blog.content|truncatewords:25 }}</p>
                         </div>
-                        <form action="{% url 'admin_manage_blog' %}" method="POST" style="margin-top: 1rem;">
+                        <form action="{% url 'admin_manage_blog' %}" method="POST" onsubmit="return confirm('Delete this blog article permanently?');" style="margin-top: 1rem;">
                             {% csrf_token %}
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="blog_id" value="{{ blog.pk }}">
@@ -847,13 +847,13 @@
                         </div>
                         <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.75rem; display: flex; gap: 0.5rem;">
                             {% if not fb.is_approved %}
-                            <form action="{% url 'admin_manage_feedback' pk=fb.pk %}" method="POST" style="flex: 1;">
+                            <form action="{% url 'admin_manage_feedback' pk=fb.pk %}" method="POST" onsubmit="return confirm('Confirm this feedback action?');" style="flex: 1;">
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="approve">
                                 <button type="submit" class="neu-button-emerald" style="width: 100%;">Approve</button>
                             </form>
                             {% endif %}
-                            <form action="{% url 'admin_manage_feedback' pk=fb.pk %}" method="POST" style="flex: 1;">
+                            <form action="{% url 'admin_manage_feedback' pk=fb.pk %}" method="POST" onsubmit="return confirm('Confirm this feedback action?');" style="flex: 1;">
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="delete">
                                 <button type="submit" class="neu-button-danger" style="width: 100%;">Delete</button>
@@ -875,14 +875,14 @@
     <div id="modal-overlay" class="modal-overlay">
         <!-- CREATE BLOG MODAL -->
         <div id="modal-create-blog" class="neu-card modal-body lg hidden">
-            <button onclick="closeModals()" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
+            <button onclick="closeModals()" class="close-btn"><i class="fas fa-circle-xmark"></i></button>
 
             <div style="margin-bottom: 1rem;">
-                <span class="badge-tag bg-emerald"><i class="fa-regular fa-newspaper"></i> NEW ARTICLE</span>
+                <span class="badge-tag bg-emerald"><i class="fas fa-newspaper"></i> NEW ARTICLE</span>
                 <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700; margin-top: 0.35rem;">Publish Blog / Recovery Guide</h3>
             </div>
 
-            <form action="{% url 'admin_manage_blog' %}" method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.75rem;">
+            <form action="{% url 'admin_manage_blog' %}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('Publish this blog article?');" style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.75rem;">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="create">
                 <div>
