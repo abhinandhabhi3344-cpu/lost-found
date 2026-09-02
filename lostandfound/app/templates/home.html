@@ -297,9 +297,9 @@
     {% if messages %}
     <div class="flash-messages">
         {% for message in messages %}
-        <div class="flash-msg {{ message.tags }}" onclick="this.remove()">
+        <div class="flash-msg {{ message.tags }}">
             <span>{{ message }}</span>
-            <button onclick="this.parentElement.remove()" style="font-size: 1rem; color: inherit;">&times;</button>
+            <button class="flash-close" style="font-size: 1rem; color: inherit; cursor:pointer;">&times;</button>
         </div>
         {% endfor %}
     </div>
@@ -1188,6 +1188,26 @@
         setTimeout(() => {
             document.querySelectorAll('.flash-msg').forEach(msg => msg.remove());
         }, 5000);
+    
+        // Auto-dismiss toasts after 4s with fade
+        (function(){
+            function dismissFlash(msg){
+                msg.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                msg.style.opacity = '0';
+                msg.style.transform = 'translateY(-10px)';
+                setTimeout(()=>msg.remove(), 400);
+            }
+            document.querySelectorAll('.flash-msg').forEach(msg=>{
+                // click anywhere on toast dismisses
+                msg.addEventListener('click', ()=>dismissFlash(msg));
+                const btn = msg.querySelector('button');
+                if(btn) btn.addEventListener('click', (e)=>{ e.stopPropagation(); dismissFlash(msg); });
+            });
+            setTimeout(()=>{
+                document.querySelectorAll('.flash-msg').forEach(dismissFlash);
+            }, 4000);
+        })();
+
     </script>
 </body>
 </html>

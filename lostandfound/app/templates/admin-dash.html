@@ -441,6 +441,11 @@
 
         .flash-msg.success { background: #d1fae5; color: #065f46; border: 1px solid #10b981; }
         .flash-msg.error { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
+        .flash-msg.warning { background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; }
+        .flash-msg.info { background: #dbeafe; color: #1e40af; border: 1px solid #3b82f6; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-10px); } }
+
 
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 4px; }
@@ -453,9 +458,9 @@
     {% if messages %}
     <div class="flash-messages">
         {% for message in messages %}
-        <div class="flash-msg {{ message.tags }}" onclick="this.remove()">
+        <div class="flash-msg {{ message.tags }}">
             <span>{{ message }}</span>
-            <button onclick="this.parentElement.remove()" style="font-size: 1rem; color: inherit;">&times;</button>
+            <button class="flash-close" style="font-size: 1rem; color: inherit; cursor:pointer;">&times;</button>
         </div>
         {% endfor %}
     </div>
@@ -926,6 +931,26 @@
             document.querySelectorAll('.modal-body').forEach(b => b.classList.add('hidden'));
         }
         if (modalOverlay) modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModals(); });
+    
+        // Auto-dismiss toasts after 4s with fade
+        (function(){
+            function dismissFlash(msg){
+                msg.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                msg.style.opacity = '0';
+                msg.style.transform = 'translateY(-10px)';
+                setTimeout(()=>msg.remove(), 400);
+            }
+            document.querySelectorAll('.flash-msg').forEach(msg=>{
+                // click anywhere on toast dismisses
+                msg.addEventListener('click', ()=>dismissFlash(msg));
+                const btn = msg.querySelector('button');
+                if(btn) btn.addEventListener('click', (e)=>{ e.stopPropagation(); dismissFlash(msg); });
+            });
+            setTimeout(()=>{
+                document.querySelectorAll('.flash-msg').forEach(dismissFlash);
+            }, 4000);
+        })();
+
     </script>
 </body>
 </html>
