@@ -57,6 +57,10 @@ def signup_view(request):
         profile = user.profile
         profile.full_name = full_name
         profile.phone = phone
+        # Handle avatar upload during signup
+        avatar_file = request.FILES.get('avatar')
+        if avatar_file:
+            profile.avatar = avatar_file
 
         if role == 'detective':
             profile.is_detective = True
@@ -64,7 +68,11 @@ def signup_view(request):
             profile.license_number = request.POST.get('license_number', '')
             profile.specialization = request.POST.get('specialization', '')
             profile.experience_years = int(request.POST.get('experience_years', 0) or 0)
-            profile.address = request.POST.get('operating_region', '')
+            operating_region = request.POST.get('operating_region', '').strip()
+            # Store operating region in both address and city for compatibility (admin expects either)
+            profile.address = operating_region
+            if operating_region:
+                profile.city = operating_region
 
         profile.save()
         login(request, user)
@@ -98,6 +106,20 @@ def login_view(request):
         else:
             messages.error(request, 'Invalid username or password.')
     return redirect('home')
+
+
+def check_availability(request):
+    """AJAX endpoint for live signup validation — checks username/email existence."""
+    username = request.GET.get('username', '').strip()
+    email = request.GET.get('email', '').strip()
+    data = {}
+    if username:
+        data['username_exists'] = User.objects.filter(username=username).exists()
+        data['username'] = username
+    if email:
+        data['email_exists'] = User.objects.filter(email=email).exists()
+        data['email'] = email
+    return JsonResponse(data)
 
 
 def logout_view(request):
@@ -352,6 +374,15 @@ def user_dashboard(request):
 
     notifications = Notification.objects.filter(user=user).order_by('-created_at')[:10]
 
+    # IDs of cases that already have a detective assigned (prevent multiple detectives per case)
+    assigned_case_ids = set(CaseAssignment.objects.filter(case__owner=user).values_list('case_id', flat=True))
+    assigned_via_field = set(Case.objects.filter(owner=user, assigned_detective__isnull=False).values_list('id', flat=True))
+    all_assigned_case_ids = assigned_case_ids.union(assigned_via_field)
+    pending_request_case_ids = set(DetectiveRequest.objects.filter(requested_by=user, status='PENDING').values_list('case_id', flat=True))
+
+    # Cases eligible for new detective request (not yet assigned)
+    unassigned_cases = my_cases.filter(case_type='LOST').exclude(id__in=all_assigned_case_ids)
+
     context = {
         'lost_cases': lost_cases,
         'found_cases': found_cases,
@@ -363,6 +394,9 @@ def user_dashboard(request):
         'assignments': assignments,
         'notifications': notifications,
         'detective_request_count': detective_requests.count(),
+        'assigned_case_ids': all_assigned_case_ids,
+        'pending_request_case_ids': pending_request_case_ids,
+        'unassigned_cases': unassigned_cases,
     }
     return render(request, 'user-dash.html', context)
 
@@ -401,6 +435,13 @@ def profile_update(request):
         city = request.POST.get('city', '').strip()
         if city:
             profile.city = city
+
+        # Keep city/address in sync for detectives (admin shows city|default:address)
+        if profile.is_detective:
+            if profile.city and not profile.address:
+                profile.address = profile.city
+            if profile.address and not profile.city:
+                profile.city = profile.address
 
         user.save()
         profile.save()
@@ -486,6 +527,9 @@ def detective_dashboard(request):
     achievements = DetectiveAchievement.objects.filter(detective=user).order_by('-created_at')
     notifications = Notification.objects.filter(user=user).order_by('-created_at')[:10]
 
+    # All investigation updates across assigned cases, newest first — so detective can see just-updated data
+    all_updates = InvestigationUpdate.objects.filter(assignment__detective=user).select_related('assignment', 'assignment__case').order_by('-created_at')[:20]
+
     context = {
         'assignments': assignments,
         'active_assignments': active_assignments,
@@ -495,6 +539,7 @@ def detective_dashboard(request):
         'active_count': active_assignments.count(),
         'completed_count': completed_assignments.count(),
         'total_count': assignments.count(),
+        'all_updates': all_updates,
     }
     return render(request, 'dictative-dash.html', context)
 
@@ -573,6 +618,11 @@ def detective_request_create(request):
     message_text = request.POST.get('message', '').strip()
 
     case = get_object_or_404(Case, pk=case_pk, owner=request.user)
+
+    # Prevent multiple detectives per case: if already assigned, block request
+    if CaseAssignment.objects.filter(case=case).exists() or case.assigned_detective is not None:
+        messages.error(request, 'A detective is already assigned to this case. Cannot request another.')
+        return redirect('user_dashboard')
 
     if DetectiveRequest.objects.filter(case=case, status='PENDING').exists():
         messages.warning(request, 'A detective request is already pending for this case.')
@@ -701,6 +751,11 @@ def admin_assign_detective(request):
 
     case = get_object_or_404(Case, pk=case_pk)
     detective_profile = get_object_or_404(Profile, pk=detective_pk, is_detective=True, detective_status='APPROVED')
+
+    # Prevent multiple detectives for a single case
+    if CaseAssignment.objects.filter(case=case).exists() or case.assigned_detective is not None:
+        messages.error(request, f'Case {case.case_number} already has a detective assigned. Multiple detectives per case is not allowed.')
+        return redirect('admin_dashboard')
 
     # Create assignment
     assignment = CaseAssignment.objects.create(
@@ -910,6 +965,11 @@ def feedback_create(request):
 @require_POST
 def sighting_create(request, case_pk):
     case = get_object_or_404(Case, pk=case_pk)
+
+    # Prevent case owner from reporting sighting on own case (meant for other users)
+    if case.owner == request.user:
+        messages.error(request, 'You cannot report a sighting on your own case. This feature is for other users.')
+        return redirect('case_detail', pk=case_pk)
 
     location = request.POST.get('location', '').strip()
     description = request.POST.get('description', '').strip()

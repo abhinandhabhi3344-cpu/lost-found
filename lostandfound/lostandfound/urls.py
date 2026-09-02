@@ -15,6 +15,7 @@ urlpatterns = [
     path('signup/', views.signup_view, name='signup'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
+    path('api/check-availability/', views.check_availability, name='check_availability'),
 
     # Cases
     path('cases/', views.case_list, name='case_list'),

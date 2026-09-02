@@ -377,20 +377,20 @@
                     <div class="hero-actions">
                         {% if user.is_authenticated %}
                         <button onclick="openModal('modal-report-missing')" class="neu-button-dark action-btn">
-                            <i class="fa-regular fa-bell"></i>
+                            <i class="fas fa-bell"></i>
                             <span>REPORT MISSING</span>
                         </button>
                         <button onclick="openModal('modal-report-found')" class="neu-button action-btn" style="color: var(--stone-dark);">
-                            <i class="fa-regular fa-heart"></i>
+                            <i class="fas fa-heart"></i>
                             <span>I FOUND SOMEONE / PET</span>
                         </button>
                         {% else %}
                         <button onclick="openModal('modal-login')" class="neu-button-dark action-btn">
-                            <i class="fa-regular fa-bell"></i>
+                            <i class="fas fa-bell"></i>
                             <span>REPORT MISSING</span>
                         </button>
                         <button onclick="openModal('modal-login')" class="neu-button action-btn" style="color: var(--stone-dark);">
-                            <i class="fa-regular fa-heart"></i>
+                            <i class="fas fa-heart"></i>
                             <span>I FOUND SOMEONE / PET</span>
                         </button>
                         {% endif %}
@@ -399,7 +399,7 @@
 
                 <div class="border-t-line" style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--stone-muted); padding-top: 0.75rem;">
                     <span>INSTANT VECTOR MATCHING • REAL-TIME INVESTIGATION LOGS</span>
-                    <span style="display: flex; align-items: center; gap: 0.4rem;">SCROLL TO DISCOVER <i class="fa-regular fa-compass" style="font-size: 0.7rem;"></i></span>
+                    <span style="display: flex; align-items: center; gap: 0.4rem;">SCROLL TO DISCOVER <i class="fas fa-compass" style="font-size: 0.7rem;"></i></span>
                 </div>
             </div>
         </section>
@@ -413,7 +413,7 @@
                         <h2 class="font-display" style="font-size: clamp(1.5rem, 3vw, 2.5rem); font-weight: 500;">ACTIVE SEARCHES &amp; LATEST CASES</h2>
                     </div>
                     <a href="{% url 'case_list' %}" style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; display: inline-flex; align-items: center; gap: 0.25rem;">
-                        VIEW ALL CASES <i class="fa-regular fa-square-plus"></i>
+                        VIEW ALL CASES <i class="fas fa-square-plus"></i>
                     </a>
                 </div>
 
@@ -485,7 +485,7 @@
                             <p style="font-size: 0.78rem; color: var(--stone-muted); margin-top: 0.5rem;">{{ blog.content|truncatewords:20 }}</p>
                         </div>
                         <div class="border-t-line" style="margin-top: 1.25rem; padding-top: 0.75rem; display: flex; justify-content: space-between; font-size: 0.7rem;">
-                            <span><i class="fa-regular fa-clock"></i> {{ blog.created_at|date:"M d, Y" }}</span>
+                            <span><i class="fas fa-clock"></i> {{ blog.created_at|date:"M d, Y" }}</span>
                             <span style="font-weight: 700;">By {{ blog.author.first_name|default:blog.author.username }}</span>
                         </div>
                     </div>
@@ -500,7 +500,7 @@
                             <p style="font-size: 0.78rem; color: var(--stone-muted); margin-top: 0.5rem;">Essential steps from licensed investigators on securing camera footage and establishing perimeters.</p>
                         </div>
                         <div class="border-t-line" style="margin-top: 1.25rem; padding-top: 0.75rem; display: flex; justify-content: space-between; font-size: 0.7rem;">
-                            <span><i class="fa-regular fa-clock"></i> 5 min read</span>
+                            <span><i class="fas fa-clock"></i> 5 min read</span>
                             <span style="font-weight: 700; text-transform: uppercase;">Read Guide ↗</span>
                         </div>
                     </div>
@@ -514,7 +514,7 @@
                             <p style="font-size: 0.78rem; color: var(--stone-muted); margin-top: 0.5rem;">Learn how dimensional image embeddings index unique visual features in seconds.</p>
                         </div>
                         <div class="border-t-line" style="margin-top: 1.25rem; padding-top: 0.75rem; display: flex; justify-content: space-between; font-size: 0.7rem;">
-                            <span><i class="fa-regular fa-clock"></i> 7 min read</span>
+                            <span><i class="fas fa-clock"></i> 7 min read</span>
                             <span style="font-weight: 700; text-transform: uppercase;">Read Article ↗</span>
                         </div>
                     </div>
@@ -528,7 +528,7 @@
                             <p style="font-size: 0.78rem; color: var(--stone-muted); margin-top: 0.5rem;">A practical breakdown of how platform users collaborate with assigned private investigators.</p>
                         </div>
                         <div class="border-t-line" style="margin-top: 1.25rem; padding-top: 0.75rem; display: flex; justify-content: space-between; font-size: 0.7rem;">
-                            <span><i class="fa-regular fa-clock"></i> 4 min read</span>
+                            <span><i class="fas fa-clock"></i> 4 min read</span>
                             <span style="font-weight: 700; text-transform: uppercase;">Read Guide ↗</span>
                         </div>
                     </div>
@@ -558,7 +558,7 @@
                             <p style="font-size: 0.8rem; color: var(--stone-muted); line-height: 1.5;">Post lost/found reports with images, trigger instant AI vector searches, offer investigation rewards, and track detective updates.</p>
                         </div>
                         <div style="height: 5rem; margin-top: 1.5rem; background: var(--stone-bg); border: 1px solid rgba(210, 205, 199, 0.6); border-radius: 4px; display: flex; align-items: center; justify-content: center;">
-                            <i class="fa-regular fa-user" style="font-size: 2rem; color: var(--stone-muted);"></i>
+                            <i class="fas fa-user" style="font-size: 2rem; color: var(--stone-muted);"></i>
                         </div>
                     </div>
 
@@ -569,7 +569,7 @@
                             <p style="font-size: 0.8rem; color: var(--stone-muted); line-height: 1.5;">Apply for verified onboarding, share achievement portfolios, accept user requests, and publish field investigation logs.</p>
                         </div>
                         <div style="height: 5rem; margin-top: 1.5rem; background: var(--stone-bg); border: 1px solid rgba(210, 205, 199, 0.6); border-radius: 4px; display: flex; align-items: center; justify-content: center;">
-                            <i class="fa-regular fa-id-badge" style="font-size: 2rem; color: var(--stone-muted);"></i>
+                            <i class="fas fa-id-badge" style="font-size: 2rem; color: var(--stone-muted);"></i>
                         </div>
                     </div>
 
@@ -580,7 +580,7 @@
                             <p style="font-size: 0.8rem; color: var(--stone-muted); line-height: 1.5;">Vet detective applications, moderate community posts, assign top investigators, and curate platform safety standards.</p>
                         </div>
                         <div style="height: 5rem; margin-top: 1.5rem; background: var(--stone-bg); border: 1px solid rgba(210, 205, 199, 0.6); border-radius: 4px; display: flex; align-items: center; justify-content: center;">
-                            <i class="fa-regular fa-folder-open" style="font-size: 2rem; color: var(--stone-muted);"></i>
+                            <i class="fas fa-folder-open" style="font-size: 2rem; color: var(--stone-muted);"></i>
                         </div>
                     </div>
                 </div>
@@ -600,7 +600,7 @@
                         <h2 class="font-display" style="font-size: clamp(1.5rem, 3.5vw, 2.75rem); font-weight: 500;">ASSOCIATED PRIVATE DETECTIVES</h2>
                     </div>
                     <a href="{% url 'detective_list' %}" style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; display: inline-flex; align-items: center; gap: 0.25rem;">
-                        VIEW ALL <i class="fa-regular fa-paper-plane"></i>
+                        VIEW ALL <i class="fas fa-paper-plane"></i>
                     </a>
                 </div>
 
@@ -614,11 +614,11 @@
                                 {% else %}
                                 <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=600" alt="{{ det.full_name }}">
                                 {% endif %}
-                                <span class="badge-tag bg-emerald"><i class="fa-regular fa-circle-check"></i> VETTED</span>
+                                <span class="badge-tag bg-emerald"><i class="fas fa-circle-check"></i> VETTED</span>
                             </div>
                             <div style="margin-top: 0.75rem;">
                                 <h3 class="font-display" style="font-size: 1rem; font-weight: 600;">{{ det.full_name }}</h3>
-                                <p style="font-size: 0.65rem; color: var(--stone-muted); font-family: monospace;">Lic. {{ det.license_number }} • {{ det.city|upper|default:"GLOBAL" }}</p>
+                                <p style="font-size: 0.65rem; color: var(--stone-muted); font-family: monospace;">Lic. {{ det.license_number }} • {{ det.city|default:det.address|default:"GLOBAL"|upper }}</p>
                                 <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.5rem;">{{ det.specialization|truncatewords:10|default:"Expert investigator" }}</p>
                             </div>
                         </div>
@@ -632,7 +632,7 @@
                         <div>
                             <div class="img-hover-zoom" style="aspect-ratio: 1/1; border-radius: 2px;">
                                 <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=600" alt="Sarah Vance">
-                                <span class="badge-tag bg-emerald"><i class="fa-regular fa-circle-check"></i> VETTED</span>
+                                <span class="badge-tag bg-emerald"><i class="fas fa-circle-check"></i> VETTED</span>
                             </div>
                             <div style="margin-top: 0.75rem;">
                                 <h3 class="font-display" style="font-size: 1rem; font-weight: 600;">Sarah Vance</h3>
@@ -666,12 +666,12 @@
 
                     {% if user.is_authenticated %}
                     <button onclick="openModal('modal-give-feedback')" class="neu-button-dark" style="padding: 0.65rem 1.25rem; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; gap: 0.4rem;">
-                        <i class="fa-regular fa-pen-to-square"></i>
+                        <i class="fas fa-pen-to-square"></i>
                         <span>+ GIVE FEEDBACK</span>
                     </button>
                     {% else %}
                     <button onclick="openModal('modal-login')" class="neu-button-dark" style="padding: 0.65rem 1.25rem; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; gap: 0.4rem;">
-                        <i class="fa-regular fa-pen-to-square"></i>
+                        <i class="fas fa-pen-to-square"></i>
                         <span>+ GIVE FEEDBACK</span>
                     </button>
                     {% endif %}
@@ -771,12 +771,12 @@
                             {% if user.is_authenticated %}
                             <button onclick="openModal('modal-report-missing')" class="neu-button-dark" style="padding: 0.85rem 1.5rem; font-size: 0.7rem; display: flex; align-items: center; gap: 0.5rem;">
                                 <span>CREATE A POST</span>
-                                <i class="fa-regular fa-paper-plane"></i>
+                                <i class="fas fa-paper-plane"></i>
                             </button>
                             {% else %}
                             <button onclick="openModal('modal-signup')" class="neu-button-dark" style="padding: 0.85rem 1.5rem; font-size: 0.7rem; display: flex; align-items: center; gap: 0.5rem;">
                                 <span>CREATE A POST</span>
-                                <i class="fa-regular fa-paper-plane"></i>
+                                <i class="fas fa-paper-plane"></i>
                             </button>
                             {% endif %}
                         </div>
@@ -801,7 +801,7 @@
         
         <!-- 1. LOGIN MODAL -->
         <div id="modal-login" class="neu-card modal-body hidden">
-            <button onclick="closeModals()" aria-label="Close" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
+            <button onclick="closeModals()" aria-label="Close" class="close-btn"><i class="fas fa-circle-xmark"></i></button>
 
             <div style="text-align: center; margin-bottom: 1.25rem;">
                 <h3 class="font-display" style="font-size: 1.5rem; font-weight: 700;">Welcome Back</h3>
@@ -834,7 +834,7 @@
 
         <!-- 2. SIGNUP MODAL -->
         <div id="modal-signup" class="neu-card modal-body lg hidden">
-            <button onclick="closeModals()" aria-label="Close" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
+            <button onclick="closeModals()" aria-label="Close" class="close-btn"><i class="fas fa-circle-xmark"></i></button>
 
             <div style="text-align: center; margin-bottom: 1rem;">
                 <h3 class="font-display" style="font-size: 1.5rem; font-weight: 700;">Create Account</h3>
@@ -847,7 +847,7 @@
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Profile Picture</label>
                     <div class="neu-input" style="padding: 0.65rem; text-align: center; cursor: pointer;" onclick="document.getElementById('signup-avatar-file').click()">
-                        <i class="fa-regular fa-user-circle" style="font-size: 1.25rem; color: var(--stone-muted);"></i>
+                        <i class="fas fa-user-circle" style="font-size: 1.25rem; color: var(--stone-muted);"></i>
                         <p id="signup-avatar-label" style="font-size: 0.7rem; font-weight: 600; margin-top: 0.15rem;">Click to upload profile photo</p>
                     </div>
                     <input type="file" name="avatar" id="signup-avatar-file" accept="image/*" style="display: none;" onchange="document.getElementById('signup-avatar-label').textContent = this.files[0] ? this.files[0].name : 'Photo selected';">
@@ -856,7 +856,8 @@
                 <div class="grid-2">
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Username</label>
-                        <input type="text" name="username" placeholder="johndoe" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                        <input type="text" name="username" id="signup-username" placeholder="johndoe" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;" onblur="validateField('username', this.value)">
+                        <span id="signup-username-msg" style="font-size:0.65rem; font-weight:600; display:none; margin-top:0.2rem;"></span>
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Full Name</label>
@@ -871,7 +872,8 @@
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Email Address</label>
-                        <input type="email" name="email" placeholder="john@example.com" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                        <input type="email" name="email" id="signup-email" placeholder="john@example.com" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;" onblur="validateField('email', this.value)">
+                        <span id="signup-email-msg" style="font-size:0.65rem; font-weight:600; display:none; margin-top:0.2rem;"></span>
                     </div>
                 </div>
 
@@ -890,7 +892,7 @@
                 </div>
 
                 <div id="detective-extra-fields" class="hidden" style="display: flex; flex-direction: column; gap: 0.75rem; background: var(--stone-light); padding: 0.85rem; border-radius: 8px; border: 1px solid var(--stone-border); margin-top: 0.25rem;">
-                    <span style="font-size: 0.65rem; font-weight: 700; color: var(--amber-accent); text-transform: uppercase;"><i class="fa-regular fa-id-badge"></i> Detective Vetting Credentials</span>
+                    <span style="font-size: 0.65rem; font-weight: 700; color: var(--amber-accent); text-transform: uppercase;"><i class="fas fa-id-badge"></i> Detective Vetting Credentials</span>
                     
                     <div class="grid-2">
                         <div>
@@ -914,24 +916,25 @@
                     </div>
                 </div>
 
-                <button type="submit" class="neu-button-dark" style="padding: 0.8rem; font-size: 0.75rem; margin-top: 0.25rem;">
+                <button type="submit" id="signup-submit-btn" class="neu-button-dark" style="padding: 0.8rem; font-size: 0.75rem; margin-top: 0.25rem;">
                     REGISTER ACCOUNT NOW
                 </button>
+                <p id="signup-form-msg" style="font-size:0.7rem; font-weight:600; text-align:center; display:none; margin-top:0.25rem;"></p>
             </form>
         </div>
 
 
         <!-- 3. REPORT MISSING MODAL -->
         <div id="modal-report-missing" class="neu-card modal-body lg hidden">
-            <button onclick="closeModals()" aria-label="Close" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
+            <button onclick="closeModals()" aria-label="Close" class="close-btn"><i class="fas fa-circle-xmark"></i></button>
 
             <div style="margin-bottom: 0.75rem;">
-                <span class="badge-tag bg-red" style="position: static;"><i class="fa-regular fa-bell"></i> Emergency Case Report</span>
+                <span class="badge-tag bg-red" style="position: static;"><i class="fas fa-bell"></i> Emergency Case Report</span>
                 <h3 class="font-display" style="font-size: 1.35rem; font-weight: 700; margin-top: 0.35rem;">Report Missing Subject / Pet</h3>
                 <p style="font-size: 0.72rem; color: var(--stone-muted);">Provide complete specs to allow automated CLIP visual vector matching.</p>
             </div>
 
-            <form action="{% url 'case_create' %}" method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 0.65rem; font-size: 0.75rem;">
+            <form action="{% url 'case_create' %}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('Submit this missing case report?');" style="display: flex; flex-direction: column; gap: 0.65rem; font-size: 0.75rem;">
                 {% csrf_token %}
                 <input type="hidden" name="case_type" value="LOST">
                 
@@ -956,7 +959,7 @@
                         <input type="text" name="location" placeholder="e.g. Gion District, Kyoto, Japan" required class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                     </div>
                     <div>
-                        <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Bounty / Reward Offer ($)</label>
+                        <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Bounty / Reward Offer (₹) <span style="text-transform:none; font-weight:400;">(Optional)</span></label>
                         <input type="number" name="reward" placeholder="e.g. 1500" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                     </div>
                 </div>
@@ -980,15 +983,15 @@
 
         <!-- 4. REPORT FOUND MODAL -->
         <div id="modal-report-found" class="neu-card modal-body lg hidden">
-            <button onclick="closeModals()" aria-label="Close" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
+            <button onclick="closeModals()" aria-label="Close" class="close-btn"><i class="fas fa-circle-xmark"></i></button>
 
             <div style="margin-bottom: 1rem;">
-                <span class="badge-tag bg-emerald" style="position: static;"><i class="fa-regular fa-heart"></i> Found Alert</span>
+                <span class="badge-tag bg-emerald" style="position: static;"><i class="fas fa-heart"></i> Found Alert</span>
                 <h3 class="font-display" style="font-size: 1.35rem; font-weight: 700; margin-top: 0.35rem;">Report Found Subject / Pet</h3>
                 <p style="font-size: 0.72rem; color: var(--stone-muted);">Upload a photo to notify matching open lost cases instantly.</p>
             </div>
 
-            <form action="{% url 'case_create' %}" method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
+            <form action="{% url 'case_create' %}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('Submit this found report?');" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
                 {% csrf_token %}
                 <input type="hidden" name="case_type" value="FOUND">
 
@@ -1031,10 +1034,10 @@
 
         <!-- 5. USER FEEDBACK MODAL -->
         <div id="modal-give-feedback" class="neu-card modal-body hidden">
-            <button onclick="closeModals()" aria-label="Close" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
+            <button onclick="closeModals()" aria-label="Close" class="close-btn"><i class="fas fa-circle-xmark"></i></button>
 
             <div style="margin-bottom: 1rem;">
-                <span class="badge-tag bg-emerald" style="position: static;"><i class="fa-regular fa-star"></i> PLATFORM TESTIMONIAL</span>
+                <span class="badge-tag bg-emerald" style="position: static;"><i class="fas fa-star"></i> PLATFORM TESTIMONIAL</span>
                 <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700; margin-top: 0.35rem;">Share Your Experience</h3>
                 <p style="font-size: 0.72rem; color: var(--stone-muted);">Your feedback helps maintain community trust and detective quality.</p>
             </div>
@@ -1126,6 +1129,60 @@
         }, { root: document.getElementById('main-scroll'), threshold: 0.4 });
 
         sections.forEach(sec => observer.observe(sec));
+
+        // Live availability check for signup (username/email) — validates on blur instead of after submit
+        let signupValid = { username: true, email: true };
+        async function validateField(field, value) {
+            if (!value || !value.trim()) return;
+            const msgEl = document.getElementById('signup-' + field + '-msg');
+            const inputEl = document.getElementById('signup-' + field);
+            const submitBtn = document.getElementById('signup-submit-btn');
+            const formMsg = document.getElementById('signup-form-msg');
+            try {
+                const res = await fetch('/api/check-availability/?' + field + '=' + encodeURIComponent(value.trim()));
+                const data = await res.json();
+                const existsKey = field + '_exists';
+                if (data[existsKey]) {
+                    msgEl.textContent = (field === 'username' ? 'Username already taken' : 'Email already registered') + ' — please choose another.';
+                    msgEl.style.color = '#dc2626';
+                    msgEl.style.display = 'block';
+                    inputEl.style.borderColor = '#dc2626';
+                    signupValid[field] = false;
+                } else {
+                    msgEl.textContent = '✓ Available';
+                    msgEl.style.color = '#047857';
+                    msgEl.style.display = 'block';
+                    inputEl.style.borderColor = '#047857';
+                    signupValid[field] = true;
+                    setTimeout(()=>{ msgEl.style.display='none'; inputEl.style.borderColor=''; }, 2000);
+                }
+            } catch(e) { /* network error silent */ }
+            // toggle submit
+            if (submitBtn) {
+                const allValid = signupValid.username && signupValid.email;
+                submitBtn.disabled = !allValid;
+                submitBtn.style.opacity = allValid ? '1' : '0.6';
+                submitBtn.style.cursor = allValid ? 'pointer' : 'not-allowed';
+                if (!allValid) {
+                    formMsg.textContent = 'Please fix the highlighted fields before registering.';
+                    formMsg.style.color = '#dc2626';
+                    formMsg.style.display = 'block';
+                } else {
+                    formMsg.style.display = 'none';
+                }
+            }
+        }
+        // Preview avatar filename and image
+        const signupAvatarInput = document.getElementById('signup-avatar-file');
+        if (signupAvatarInput) {
+            signupAvatarInput.addEventListener('change', function() {
+                const label = document.getElementById('signup-avatar-label');
+                if (this.files && this.files[0]) {
+                    label.textContent = '✓ ' + this.files[0].name;
+                    label.style.color = '#047857';
+                }
+            });
+        }
 
         // Auto-dismiss flash messages after 5 seconds
         setTimeout(() => {

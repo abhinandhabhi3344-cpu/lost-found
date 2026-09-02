@@ -124,7 +124,7 @@
                 <div style="flex: 1;">
                     <div>
                         <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
-                            <span class="badge-tag bg-emerald"><i class="fa-regular fa-circle-check"></i> VETTED DETECTIVE</span>
+                            <span class="badge-tag bg-emerald"><i class="fas fa-circle-check"></i> VETTED DETECTIVE</span>
                             <span style="font-size: 0.65rem; font-family: monospace; color: var(--stone-muted);">LIC. {{ detective.license_number|default:"#PD-OFFICIAL" }}</span>
                         </div>
                         <h1 class="font-display" style="font-size: 1.85rem; font-weight: 800;">Detective {{ detective.full_name }}</h1>
@@ -145,17 +145,17 @@
             <!-- METRICS -->
             <div class="metrics-grid">
                 <div class="stat-card">
-                    <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-clock"></i> Experience</span>
+                    <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fas fa-clock"></i> Experience</span>
                     <div class="stat-number font-display">{{ detective.experience_years }} Yrs</div>
                 </div>
 
                 <div class="stat-card">
-                    <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-circle-check"></i> Solved Cases</span>
+                    <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fas fa-circle-check"></i> Solved Cases</span>
                     <div class="stat-number font-display">{{ solved_count }}</div>
                 </div>
 
                 <div class="stat-card">
-                    <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-folder-open"></i> Active Assignments</span>
+                    <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fas fa-folder-open"></i> Active Assignments</span>
                     <div class="stat-number font-display" style="color: var(--emerald-accent);">{{ active_count }}</div>
                 </div>
             </div>

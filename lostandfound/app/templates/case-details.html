@@ -134,7 +134,7 @@
     <header class="page-header">
         <div class="container">
             <div class="breadcrumb">
-                <a href="{% url 'case_list' %}"><i class="fa-regular fa-arrow-left"></i> Back to All Cases</a>
+                <a href="{% url 'case_list' %}"><i class="fas fa-arrow-left"></i> Back to All Cases</a>
                 <span>/</span>
                 <span>Case #{{ case.case_number }}</span>
             </div>
@@ -143,27 +143,31 @@
                 <div>
                     <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
                         {% if case.case_type == 'LOST' %}
-                        <span class="badge-tag bg-red"><i class="fa-regular fa-bell"></i> URGENT LOST</span>
+                        <span class="badge-tag bg-red"><i class="fas fa-bell"></i> URGENT LOST</span>
                         {% else %}
-                        <span class="badge-tag bg-emerald"><i class="fa-regular fa-heart"></i> FOUND</span>
+                        <span class="badge-tag bg-emerald"><i class="fas fa-heart"></i> FOUND</span>
                         {% endif %}
-                        <span class="badge-tag" style="background-color: var(--stone-dark);"><i class="fa-regular fa-tag"></i> {{ case.get_category_display }}</span>
+                        <span class="badge-tag" style="background-color: var(--stone-dark);"><i class="fas fa-tag"></i> {{ case.get_category_display }}</span>
                     </div>
                     <h1 class="font-display" style="font-size: clamp(1.75rem, 4vw, 2.75rem); font-weight: 800;">
                         {{ case.title }}
                     </h1>
                     <p style="font-size: 0.8rem; color: var(--stone-muted); margin-top: 0.2rem;">
-                        <i class="fa-regular fa-compass"></i> Last Known Location: {{ case.location }} • Filed {{ case.created_at|timesince }} ago
+                        <i class="fas fa-compass"></i> Last Known Location: {{ case.location }} • Filed {{ case.created_at|timesince }} ago
                     </p>
                 </div>
 
                 {% if user.is_authenticated %}
-                <button onclick="openModal('modal-report-sighting')" class="neu-button-dark" style="padding: 0.9rem 1.5rem; font-size: 0.8rem;">
-                    <i class="fa-regular fa-eye"></i> REPORT A SIGHTING
-                </button>
+                    {% if case.owner != user %}
+                    <button onclick="openModal('modal-report-sighting')" class="neu-button-dark" style="padding: 0.9rem 1.5rem; font-size: 0.8rem;">
+                        <i class="fas fa-eye"></i> REPORT A SIGHTING
+                    </button>
+                    {% else %}
+                    <span style="font-size:0.7rem; color:var(--stone-muted); font-weight:600; padding:0.9rem 1rem; border:1px dashed var(--stone-border); border-radius:8px; background:var(--stone-light);">You posted this case — sightings are for other users</span>
+                    {% endif %}
                 {% else %}
                 <button onclick="openModal('modal-login')" class="neu-button-dark" style="padding: 0.9rem 1.5rem; font-size: 0.8rem;">
-                    <i class="fa-regular fa-eye"></i> REPORT A SIGHTING
+                    <i class="fas fa-eye"></i> REPORT A SIGHTING
                 </button>
                 {% endif %}
             </div>
@@ -245,7 +249,7 @@
                             {% for report in sightings %}
                             <div style="background: var(--stone-bg); padding: 1rem; border-radius: 6px; border: 1px solid var(--stone-border);">
                                 <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--stone-muted);">
-                                    <span><i class="fa-regular fa-compass"></i> {{ report.location }}</span>
+                                    <span><i class="fas fa-compass"></i> {{ report.location }}</span>
                                     <span>{{ report.created_at|date:"M d, Y h:i A" }}</span>
                                 </div>
                                 <p style="font-size: 0.8rem; color: var(--stone-dark); margin-top: 0.4rem;">{{ report.description }}</p>
@@ -273,7 +277,7 @@
                     {% if case.reward > 0 %}
                     <div style="background-color: var(--stone-dark); color: #fff; padding: 1.5rem; border-radius: 6px; margin-bottom: 1.5rem; text-align: center;">
                         <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #fbbf24;">BOUNTY OFFERED</span>
-                        <h2 class="font-display" style="font-size: 2.25rem; font-weight: 900; color: #fbbf24; margin-top: 0.25rem;">${{ case.reward|floatformat:0|intcomma }} REWARD</h2>
+                        <h2 class="font-display" style="font-size: 2.25rem; font-weight: 900; color: #fbbf24; margin-top: 0.25rem;">₹{{ case.reward|floatformat:0|intcomma }} REWARD</h2>
                         <p style="font-size: 0.75rem; color: rgba(255,255,255,0.7); font-weight: 300; margin-top: 0.25rem;">
                             Offered by case owner for confirmed recovery or direct sighting.
                         </p>
@@ -328,14 +332,14 @@
                             </div>
                             <div>
                                 <h4 style="font-size: 0.85rem; font-weight: 700;">{{ case.owner.profile.full_name|default:case.owner.username }}</h4>
-                                <p style="font-size: 0.7rem; color: var(--stone-muted);">Verified Owner • {{ case.owner.profile.city|default:"Platform Member" }}</p>
+                                <p style="font-size: 0.7rem; color: var(--stone-muted);">Verified Owner • {{ case.owner.profile.city|default:case.owner.profile.address|default:"Platform Member" }}</p>
                             </div>
                         </div>
 
                         {% if case.owner.profile.phone %}
                         <div style="margin-top: 1rem;">
                             <button onclick="alert('Contact Number: {{ case.owner.profile.phone|escapejs }}');" class="neu-button-dark" style="width: 100%;">
-                                <i class="fa-regular fa-paper-plane"></i> SHOW CONTACT PHONE
+                                <i class="fas fa-paper-plane"></i> SHOW CONTACT PHONE
                             </button>
                         </div>
                         {% endif %}
@@ -367,14 +371,14 @@
     <div id="modal-overlay" class="modal-overlay">
         <!-- REPORT SIGHTING MODAL -->
         <div id="modal-report-sighting" class="neu-card modal-body lg hidden">
-            <button onclick="closeModals()" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
+            <button onclick="closeModals()" class="close-btn"><i class="fas fa-circle-xmark"></i></button>
 
             <div style="margin-bottom: 1rem;">
-                <span class="badge-tag bg-emerald"><i class="fa-regular fa-eye"></i> SUBMIT SIGHTING</span>
+                <span class="badge-tag bg-emerald"><i class="fas fa-eye"></i> SUBMIT SIGHTING</span>
                 <h3 class="font-display" style="font-size: 1.35rem; font-weight: 700; margin-top: 0.4rem;">Report a Sighting for {{ case.title }}</h3>
             </div>
 
-            <form action="{% url 'sighting_create' case_pk=case.pk %}" method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
+            <form action="{% url 'sighting_create' case_pk=case.pk %}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('Submit this sighting report?');" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
                 {% csrf_token %}
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Location Spotted</label>
@@ -410,7 +414,7 @@
 
         <!-- LOGIN MODAL -->
         <div id="modal-login" class="neu-card modal-body hidden">
-            <button onclick="closeModals()" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
+            <button onclick="closeModals()" class="close-btn"><i class="fas fa-circle-xmark"></i></button>
             <div style="text-align: center; margin-bottom: 1.25rem;">
                 <h3 class="font-display" style="font-size: 1.5rem; font-weight: 700;">Welcome Back</h3>
             </div>
@@ -430,7 +434,7 @@
 
         <!-- SIGNUP MODAL -->
         <div id="modal-signup" class="neu-card modal-body lg hidden">
-            <button onclick="closeModals()" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
+            <button onclick="closeModals()" class="close-btn"><i class="fas fa-circle-xmark"></i></button>
             <div style="text-align: center; margin-bottom: 1.25rem;">
                 <h3 class="font-display" style="font-size: 1.5rem; font-weight: 700;">Create Account</h3>
             </div>
