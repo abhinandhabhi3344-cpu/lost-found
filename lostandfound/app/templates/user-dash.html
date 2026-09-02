@@ -136,7 +136,7 @@
         <div class="container">
             <div>
                 <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
-                    <span class="badge-tag bg-emerald"><i class="fa-regular fa-folder-open"></i> MY DASHBOARD</span>
+                    <span class="badge-tag bg-emerald"><i class="fas fa-folder-open"></i> MY DASHBOARD</span>
                 </div>
                 <h1 class="page-title font-display">MY CASES &amp; OPERATIONS</h1>
                 <p style="font-size: 0.85rem; color: var(--stone-muted); font-weight: 300; margin-top: 0.2rem;">
@@ -146,22 +146,22 @@
 
             <div class="metrics-grid">
                 <div class="stat-card">
-                    <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-bell"></i> Lost Reports</span>
+                    <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fas fa-bell"></i> Lost Reports</span>
                     <div class="stat-number font-display">{{ lost_count }}</div>
                     <span style="font-size: 0.6rem; color: var(--amber-accent); font-weight: 600;">Active Tracking</span>
                 </div>
                 <div class="stat-card">
-                    <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-heart"></i> Found Reports</span>
+                    <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fas fa-heart"></i> Found Reports</span>
                     <div class="stat-number font-display">{{ found_count }}</div>
                     <span style="font-size: 0.6rem; color: var(--emerald-accent); font-weight: 600;">Pending Claim</span>
                 </div>
                 <div class="stat-card">
-                    <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-circle-check"></i> Solved Cases</span>
+                    <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fas fa-circle-check"></i> Solved Cases</span>
                     <div class="stat-number font-display">{{ solved_count }}</div>
                     <span style="font-size: 0.6rem; color: var(--emerald-accent); font-weight: 600;">Reunited</span>
                 </div>
                 <div class="stat-card">
-                    <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fa-regular fa-id-badge"></i> Det. Requests</span>
+                    <span style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--stone-muted);"><i class="fas fa-id-badge"></i> Det. Requests</span>
                     <div class="stat-number font-display">{{ detective_request_count }}</div>
                     <span style="font-size: 0.6rem; color: var(--stone-muted); font-weight: 600;">Submitted</span>
                 </div>
@@ -173,11 +173,11 @@
     <section class="tab-bar-section">
         <div class="container">
             <div class="tab-container">
-                <a class="dash-tab-btn" href="#panel-lost"><i class="fa-regular fa-bell"></i> My Lost Cases ({{ lost_count }})</a>
-                <a class="dash-tab-btn" href="#panel-found"><i class="fa-regular fa-heart"></i> My Found Reports ({{ found_count }})</a>
-                <a class="dash-tab-btn" href="#panel-detective"><i class="fa-regular fa-id-badge"></i> Detective Activity</a>
-                <a class="dash-tab-btn" href="#panel-activity"><i class="fa-regular fa-clock"></i> Recent Activity</a>
-                <a class="dash-tab-btn" href="#panel-profile"><i class="fa-regular fa-user"></i> Profile Settings</a>
+                <a class="dash-tab-btn" href="#panel-lost"><i class="fas fa-bell"></i> My Lost Cases ({{ lost_count }})</a>
+                <a class="dash-tab-btn" href="#panel-found"><i class="fas fa-heart"></i> My Found Reports ({{ found_count }})</a>
+                <a class="dash-tab-btn" href="#panel-detective"><i class="fas fa-id-badge"></i> Detective Activity</a>
+                <a class="dash-tab-btn" href="#panel-activity"><i class="fas fa-clock"></i> Recent Activity</a>
+                <a class="dash-tab-btn" href="#panel-profile"><i class="fas fa-user"></i> Profile Settings</a>
             </div>
         </div>
     </section>
@@ -190,7 +190,7 @@
             <div id="panel-lost" class="dash-panel">
                 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.25rem;" class="border-b-line pb-3">
                     <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800;">MY LOST CASE REPORTS</h2>
-                    <button onclick="openModal('modal-report-missing')" class="neu-button-dark"><i class="fa-regular fa-bell"></i> New Lost Report</button>
+                    <button onclick="openModal('modal-report-missing')" class="neu-button-dark"><i class="fas fa-bell"></i> New Lost Report</button>
                 </div>
 
                 <div class="card-box" style="padding: 0.5rem; overflow-x: auto;">
@@ -208,14 +208,16 @@
                         </thead>
                         <tbody>
                             {% for case in lost_cases %}
-                            <tr>
+                            <tr style="{% if case.pk in assigned_case_ids %} background: #f3f0ec; opacity:0.95; {% endif %}">
                                 <td><code>{{ case.case_number }}</code></td>
-                                <td><strong>{{ case.title }}</strong></td>
+                                <td><strong>{{ case.title }}</strong>{% if case.pk in assigned_case_ids %}<br><span style="font-size:0.6rem; font-weight:700; color:var(--emerald-accent);"><i class="fas fa-id-badge"></i> Detective Assigned — Request Disabled</span>{% elif case.pk in pending_request_case_ids %}<br><span style="font-size:0.6rem; font-weight:700; color:var(--amber-accent);"><i class="fas fa-clock"></i> Detective Request Pending</span>{% endif %}</td>
                                 <td>{{ case.get_category_display }}</td>
                                 <td>{{ case.location }}</td>
-                                <td>${{ case.reward|floatformat:0|intcomma }}</td>
+                                <td>₹{{ case.reward|floatformat:0|intcomma }}</td>
                                 <td>
-                                    {% if case.status == 'OPEN' %}
+                                    {% if case.pk in assigned_case_ids %}
+                                    <span class="badge-tag bg-emerald"><i class="fas fa-id-badge"></i> Detective Assigned</span>
+                                    {% elif case.status == 'OPEN' %}
                                     <span class="badge-tag bg-amber">Active</span>
                                     {% elif case.status == 'INVESTIGATING' %}
                                     <span class="badge-tag bg-emerald">Investigating</span>
@@ -245,7 +247,7 @@
             <div id="panel-found" class="dash-panel">
                 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.25rem;" class="border-b-line pb-3">
                     <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800;">MY FOUND REPORTS</h2>
-                    <button onclick="openModal('modal-report-found')" class="neu-button-dark"><i class="fa-regular fa-heart"></i> New Found Report</button>
+                    <button onclick="openModal('modal-report-found')" class="neu-button-dark"><i class="fas fa-heart"></i> New Found Report</button>
                 </div>
 
                 <div class="card-box" style="padding: 0.5rem; overflow-x: auto;">
@@ -292,7 +294,7 @@
             <div id="panel-detective" class="dash-panel">
                 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.25rem;" class="border-b-line pb-3">
                     <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800;">DETECTIVE ASSIGNMENTS &amp; REQUESTS</h2>
-                    <button onclick="openModal('modal-request-detective')" class="neu-button-dark"><i class="fa-regular fa-id-badge"></i> Request Detective</button>
+                    <button onclick="openModal('modal-request-detective')" class="neu-button-dark"><i class="fas fa-id-badge"></i> Request Detective</button>
                 </div>
 
                 {% for assignment in assignments %}
@@ -377,7 +379,7 @@
                     <div class="card-box">
                         <h3 class="font-display border-b-line pb-2" style="font-size: 1rem; font-weight: 700;">PERSONAL DETAILS</h3>
                         
-                        <form action="{% url 'profile_update' %}" method="POST" style="display: flex; flex-direction: column; gap: 0.85rem; margin-top: 1rem;">
+                        <form action="{% url 'profile_update' %}" method="POST" onsubmit="return confirm('Save profile changes?');" style="display: flex; flex-direction: column; gap: 0.85rem; margin-top: 1rem;">
                             {% csrf_token %}
                             <div>
                                 <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Username</label>
@@ -402,7 +404,7 @@
                     <div class="card-box">
                         <h3 class="font-display border-b-line pb-2" style="font-size: 1rem; font-weight: 700;">PROFILE AVATAR</h3>
 
-                        <form action="{% url 'avatar_upload' %}" method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem 0; text-align: center;">
+                        <form action="{% url 'avatar_upload' %}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('Upload this avatar?');" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem 0; text-align: center;">
                             {% csrf_token %}
                             <div id="profile-avatar-container" style="width: 6rem; height: 6rem; border-radius: 50%; background: var(--stone-dark); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 2.25rem; font-weight: 800; margin-bottom: 1rem; overflow: hidden;">
                                 {% if user_profile.avatar %}
@@ -413,7 +415,7 @@
                             </div>
 
                             <div class="neu-input" style="padding: 1.25rem; width: 100%; text-align: center; cursor: pointer;" onclick="document.getElementById('avatar-file-input').click()">
-                                <i class="fa-regular fa-image" style="font-size: 1.5rem; color: var(--stone-muted);"></i>
+                                <i class="fas fa-image" style="font-size: 1.5rem; color: var(--stone-muted);"></i>
                                 <p id="avatar-upload-label" style="font-size: 0.75rem; font-weight: 700; margin-top: 0.35rem;">Click to upload new avatar</p>
                                 <span style="font-size: 0.65rem; color: var(--stone-muted);">PNG, JPG up to 5MB</span>
                             </div>
@@ -451,13 +453,13 @@
         
         <!-- EDIT CASE MODAL -->
         <div id="modal-edit-case" class="neu-card modal-body lg hidden">
-            <button onclick="closeModals()" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
+            <button onclick="closeModals()" class="close-btn"><i class="fas fa-circle-xmark"></i></button>
             <div style="margin-bottom: 1rem;">
-                <span class="badge-tag bg-amber"><i class="fa-regular fa-pen-to-square"></i> EDIT POST</span>
+                <span class="badge-tag bg-amber"><i class="fas fa-pen-to-square"></i> EDIT POST</span>
                 <h3 class="font-display" style="font-size: 1.35rem; font-weight: 700; margin-top: 0.4rem;">Edit Case Information</h3>
             </div>
 
-            <form id="edit-case-form" method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
+            <form id="edit-case-form" method="POST" enctype="multipart/form-data" onsubmit="return confirm('Save changes to this case? This will update the case details.');" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
                 {% csrf_token %}
                 <div class="grid-2">
                     <div>
@@ -465,8 +467,8 @@
                         <input type="text" name="title" id="edit-title" required class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;">
                     </div>
                     <div>
-                        <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Reward Amount ($)</label>
-                        <input type="number" name="reward" id="edit-reward" class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;">
+                        <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Reward Amount (₹) <span style="text-transform:none; font-weight:400; color:var(--stone-muted);">(Optional)</span></label>
+                        <input type="number" name="reward" id="edit-reward" class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;" placeholder="e.g. 1500">
                     </div>
                 </div>
                 <div>
@@ -487,9 +489,9 @@
 
         <!-- DELETE CASE MODAL -->
         <div id="modal-delete-case" class="neu-card modal-body hidden" style="text-align: center;">
-            <button onclick="closeModals()" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
+            <button onclick="closeModals()" class="close-btn"><i class="fas fa-circle-xmark"></i></button>
             <div style="width: 3rem; height: 3rem; border-radius: 50%; background: #fee2e2; color: var(--red-accent); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; margin: 0 auto 1rem auto;">
-                <i class="fa-regular fa-trash-can"></i>
+                <i class="fas fa-trash-can"></i>
             </div>
             <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700;">Delete Case Report?</h3>
             <p id="delete-case-title" style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.35rem;"></p>
@@ -504,9 +506,9 @@
 
         <!-- MARK RESOLVED MODAL -->
         <div id="modal-mark-resolved" class="neu-card modal-body hidden" style="text-align: center;">
-            <button onclick="closeModals()" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
+            <button onclick="closeModals()" class="close-btn"><i class="fas fa-circle-xmark"></i></button>
             <div style="width: 3rem; height: 3rem; border-radius: 50%; background: #d1fae5; color: var(--emerald-accent); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; margin: 0 auto 1rem auto;">
-                <i class="fa-regular fa-circle-check"></i>
+                <i class="fas fa-circle-check"></i>
             </div>
             <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700;">Mark Case as Solved?</h3>
             <p id="resolve-case-title" style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.35rem;"></p>
@@ -521,37 +523,52 @@
 
         <!-- REQUEST DETECTIVE MODAL -->
         <div id="modal-request-detective" class="neu-card modal-body lg hidden">
-            <button onclick="closeModals()" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
+            <button onclick="closeModals()" class="close-btn"><i class="fas fa-circle-xmark"></i></button>
             <div style="margin-bottom: 1rem;">
-                <span class="badge-tag bg-emerald"><i class="fa-regular fa-id-badge"></i> DISPATCH REQUEST</span>
+                <span class="badge-tag bg-emerald"><i class="fas fa-id-badge"></i> DISPATCH REQUEST</span>
                 <h3 class="font-display" style="font-size: 1.35rem; font-weight: 700; margin-top: 0.4rem;">Request Private Investigator</h3>
             </div>
-            <form action="{% url 'detective_request_create' %}" method="POST" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
+            <form action="{% url 'detective_request_create' %}" method="POST" onsubmit="return confirm('Submit detective dispatch request for this case?');" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
                 {% csrf_token %}
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Target Case</label>
+                    {% if unassigned_cases %}
                     <select name="case_id" class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;" required>
-                        {% for case in lost_cases %}
-                        <option value="{{ case.pk }}">{{ case.title }} ({{ case.case_number }})</option>
+                        {% for case in unassigned_cases %}
+                        <option value="{{ case.pk }}">{{ case.title }} ({{ case.case_number }}) — {{ case.location }}</option>
                         {% endfor %}
                     </select>
+                    <p style="font-size:0.65rem; color:var(--stone-muted); margin-top:0.25rem;">Only cases without an assigned detective are shown. Assigned cases are hidden to prevent duplicate assignments.</p>
+                    {% else %}
+                    <div style="padding:0.75rem; background:#fef3c7; border:1px solid #f59e0b; border-radius:6px; color:#92400e; font-size:0.7rem; font-weight:600;">
+                        All your cases already have a detective assigned or you have no LOST reports. No new detective request can be made.
+                    </div>
+                    <select name="case_id" class="hidden" disabled><option>No available cases</option></select>
+                    {% endif %}
+                    {% if lost_cases|length != unassigned_cases|length %}
+                    <p style="font-size:0.65rem; color:var(--emerald-accent); font-weight:600; margin-top:0.35rem;"><i class="fas fa-circle-check"></i> {{ assigned_case_ids|length }} case(s) already have a detective and are shown as assigned in the table below (non-selectable).</p>
+                    {% endif %}
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Special Investigation Notes</label>
                     <textarea rows="3" name="message" placeholder="Provide additional private details..." class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;"></textarea>
                 </div>
+                {% if unassigned_cases %}
                 <button type="submit" class="neu-button-dark" style="padding: 0.75rem; margin-top: 0.25rem;">SUBMIT DISPATCH REQUEST</button>
+                {% else %}
+                <button type="button" class="neu-button-dark" style="padding: 0.75rem; margin-top: 0.25rem; opacity:0.5; cursor:not-allowed;" disabled>No Available Cases</button>
+                {% endif %}
             </form>
         </div>
 
         <!-- REPORT MISSING MODAL -->
         <div id="modal-report-missing" class="neu-card modal-body lg hidden">
-            <button onclick="closeModals()" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
+            <button onclick="closeModals()" class="close-btn"><i class="fas fa-circle-xmark"></i></button>
             <div style="margin-bottom: 0.75rem;">
-                <span class="badge-tag bg-red" style="position: static;"><i class="fa-regular fa-bell"></i> Emergency Case Report</span>
+                <span class="badge-tag bg-red" style="position: static;"><i class="fas fa-bell"></i> Emergency Case Report</span>
                 <h3 class="font-display" style="font-size: 1.35rem; font-weight: 700; margin-top: 0.35rem;">Report Missing Subject / Pet</h3>
             </div>
-            <form action="{% url 'case_create' %}" method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 0.65rem; font-size: 0.75rem;">
+            <form action="{% url 'case_create' %}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('Submit this missing case report?');" style="display: flex; flex-direction: column; gap: 0.65rem; font-size: 0.75rem;">
                 {% csrf_token %}
                 <input type="hidden" name="case_type" value="LOST">
                 <div class="grid-2">
@@ -572,7 +589,7 @@
                         <input type="text" name="location" placeholder="e.g. Gion District, Kyoto" required class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                     </div>
                     <div>
-                        <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Reward ($)</label>
+                        <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Reward (₹) <span style="text-transform:none; font-weight:400;">(Optional)</span></label>
                         <input type="number" name="reward" placeholder="e.g. 1500" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                     </div>
                 </div>
@@ -590,12 +607,12 @@
 
         <!-- REPORT FOUND MODAL -->
         <div id="modal-report-found" class="neu-card modal-body lg hidden">
-            <button onclick="closeModals()" class="close-btn"><i class="fa-regular fa-circle-xmark"></i></button>
+            <button onclick="closeModals()" class="close-btn"><i class="fas fa-circle-xmark"></i></button>
             <div style="margin-bottom: 1rem;">
-                <span class="badge-tag bg-emerald" style="position: static;"><i class="fa-regular fa-heart"></i> Found Alert</span>
+                <span class="badge-tag bg-emerald" style="position: static;"><i class="fas fa-heart"></i> Found Alert</span>
                 <h3 class="font-display" style="font-size: 1.35rem; font-weight: 700; margin-top: 0.35rem;">Report Found Subject / Pet</h3>
             </div>
-            <form action="{% url 'case_create' %}" method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
+            <form action="{% url 'case_create' %}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('Submit this found report?');" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
                 {% csrf_token %}
                 <input type="hidden" name="case_type" value="FOUND">
                 <div class="grid-2">
