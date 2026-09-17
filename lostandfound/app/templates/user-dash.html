@@ -201,6 +201,7 @@
                                 <th>Subject</th>
                                 <th>Category</th>
                                 <th>Location</th>
+                                <th>Complaint No.</th>
                                 <th>Reward</th>
                                 <th>Status</th>
                                 <th>Actions</th>
@@ -213,6 +214,7 @@
                                 <td><strong>{{ case.title }}</strong>{% if case.pk in assigned_case_ids %}<br><span style="font-size:0.6rem; font-weight:700; color:var(--emerald-accent);"><i class="fas fa-id-badge"></i> Detective Assigned — Request Disabled</span>{% elif case.pk in pending_request_case_ids %}<br><span style="font-size:0.6rem; font-weight:700; color:var(--amber-accent);"><i class="fas fa-clock"></i> Detective Request Pending</span>{% endif %}</td>
                                 <td>{{ case.get_category_display }}</td>
                                 <td>{{ case.location }}</td>
+                                <td><code style="font-size:0.65rem;">{{ case.complaint_number|default:"—" }}</code></td>
                                 <td>₹{{ case.reward|floatformat:0|intcomma }}</td>
                                 <td>
                                     {% if case.pk in assigned_case_ids %}
@@ -227,7 +229,7 @@
                                 </td>
                                 <td style="display: flex; gap: 0.3rem; flex-wrap: wrap;">
                                     <a href="{% url 'case_detail' pk=case.pk %}" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">View</a>
-                                    <button onclick="openEditModal({{ case.pk }}, '{{ case.title|escapejs }}', '{{ case.location|escapejs }}', '{{ case.description|escapejs }}', '{{ case.reward|floatformat:0 }}', '{{ case.category }}')" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Edit</button>
+                                    <button onclick="openEditModal({{ case.pk }}, '{{ case.title|escapejs }}', '{{ case.location|escapejs }}', '{{ case.description|escapejs }}', '{{ case.reward|floatformat:0 }}', '{{ case.category }}', '{{ case.complaint_number|escapejs }}')" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Edit</button>
                                     <button onclick="openDeleteModal({{ case.pk }}, '{{ case.title|escapejs }}')" class="neu-button-danger" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Delete</button>
                                     {% if case.status == 'OPEN' or case.status == 'INVESTIGATING' %}
                                     <button onclick="openResolveModal({{ case.pk }}, '{{ case.title|escapejs }}')" class="neu-button-emerald" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Solved</button>
@@ -235,7 +237,7 @@
                                 </td>
                             </tr>
                             {% empty %}
-                            <tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--stone-muted);">No lost cases reported yet.</td></tr>
+                            <tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--stone-muted);">No lost cases reported yet.</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -258,6 +260,7 @@
                                 <th>Subject</th>
                                 <th>Category</th>
                                 <th>Location Found</th>
+                                <th>Complaint No.</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -269,6 +272,7 @@
                                 <td><strong>{{ case.title }}</strong></td>
                                 <td>{{ case.get_category_display }}</td>
                                 <td>{{ case.location }}</td>
+                                <td><code style="font-size:0.65rem;">{{ case.complaint_number|default:"—" }}</code></td>
                                 <td>
                                     {% if case.status == 'CLOSED' %}
                                     <span class="badge-tag bg-emerald">Claimed</span>
@@ -278,12 +282,12 @@
                                 </td>
                                 <td style="display: flex; gap: 0.3rem;">
                                     <a href="{% url 'case_detail' pk=case.pk %}" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">View</a>
-                                    <button onclick="openEditModal({{ case.pk }}, '{{ case.title|escapejs }}', '{{ case.location|escapejs }}', '{{ case.description|escapejs }}', '{{ case.reward|floatformat:0 }}', '{{ case.category }}')" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Edit</button>
+                                    <button onclick="openEditModal({{ case.pk }}, '{{ case.title|escapejs }}', '{{ case.location|escapejs }}', '{{ case.description|escapejs }}', '{{ case.reward|floatformat:0 }}', '{{ case.category }}', '{{ case.complaint_number|escapejs }}')" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Edit</button>
                                     <button onclick="openDeleteModal({{ case.pk }}, '{{ case.title|escapejs }}')" class="neu-button-danger" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Delete</button>
                                 </td>
                             </tr>
                             {% empty %}
-                            <tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--stone-muted);">No found reports yet.</td></tr>
+                            <tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--stone-muted);">No found reports yet.</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -510,6 +514,10 @@
                     </select>
                 </div>
                 <div>
+                    <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Police Complaint Registered Number <span style="color:var(--red-accent);">*</span></label>
+                    <input type="text" name="complaint_number" id="edit-complaint" required class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;" placeholder="e.g. FIR No. 123/2026">
+                </div>
+                <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Description</label>
                     <textarea rows="3" name="description" id="edit-description" class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;"></textarea>
                 </div>
@@ -644,6 +652,10 @@
                     </div>
                 </div>
                 <div>
+                    <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Police Complaint Registered Number <span style="color:var(--red-accent);">*</span></label>
+                    <input type="text" name="complaint_number" placeholder="e.g. FIR No. 123/2026, Police Station" required class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
+                </div>
+                <div>
                     <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Upload Photo</label>
                     <input type="file" name="image" accept="image/*" class="neu-input" style="width: 100%; padding: 0.45rem 0.65rem;">
                 </div>
@@ -682,6 +694,10 @@
                     </select>
                 </div>
                 <div>
+                    <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Police Complaint Registered Number <span style="color:var(--red-accent);">*</span></label>
+                    <input type="text" name="complaint_number" placeholder="e.g. FIR No. 123/2026" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                </div>
+                <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Upload Photo</label>
                     <input type="file" name="image" accept="image/*" class="neu-input" style="width: 100%; padding: 0.5rem 0.75rem;">
                 </div>
@@ -714,12 +730,13 @@
         if (modalOverlay) modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModals(); });
         window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModals(); });
 
-        function openEditModal(pk, title, location, description, reward, category) {
+        function openEditModal(pk, title, location, description, reward, category, complaint) {
             document.getElementById('edit-case-form').action = '/case/' + pk + '/edit/';
             document.getElementById('edit-title').value = title;
             document.getElementById('edit-location').value = location;
             document.getElementById('edit-description').value = description;
             document.getElementById('edit-reward').value = reward;
+            if (document.getElementById('edit-complaint')) document.getElementById('edit-complaint').value = complaint || '';
             var catSelect = document.getElementById('edit-category');
             if (catSelect && category) {
                 var upper = category.toUpperCase();

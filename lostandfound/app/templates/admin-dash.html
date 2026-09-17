@@ -787,6 +787,7 @@
                                 <th>Subject</th>
                                 <th>Type</th>
                                 <th>Location</th>
+                                <th>Complaint No.</th>
                                 <th>Reward</th>
                                 <th>Status</th>
                                 <th>Actions</th>
@@ -799,6 +800,7 @@
                                 <td><strong>{{ c.title }}</strong></td>
                                 <td><span class="badge-tag {% if c.case_type == 'LOST' %}bg-red{% else %}bg-emerald{% endif %}">{{ c.get_case_type_display }}</span></td>
                                 <td>{{ c.location }}</td>
+                                <td><code style="font-size:0.65rem;">{{ c.complaint_number|default:"—" }}</code></td>
                                 <td>₹{{ c.reward|floatformat:0 }}</td>
                                 <td>
                                     {% if c.status == 'CLOSED' or c.status == 'FOUND' %}
@@ -828,7 +830,7 @@
                                 </td>
                             </tr>
                             {% empty %}
-                            <tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--stone-muted);">No cases in database.</td></tr>
+                            <tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--stone-muted);">No cases in database.</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>

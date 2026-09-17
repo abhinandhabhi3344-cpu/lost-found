@@ -325,10 +325,15 @@ def case_create(request):
         case_type = request.POST.get('case_type', 'LOST').upper()
         category = request.POST.get('category', 'PET').upper()
         location = request.POST.get('location', '').strip()
+        complaint_number = request.POST.get('complaint_number', '').strip()
         reward = request.POST.get('reward', 0)
 
         if not title or not location:
             messages.error(request, 'Title and location are required.')
+            return redirect('case_list')
+
+        if not complaint_number:
+            messages.error(request, 'Police complaint registered number is required. Cases cannot be uploaded without it.')
             return redirect('case_list')
 
         try:
@@ -343,6 +348,7 @@ def case_create(request):
             case_type=case_type if case_type in ['LOST', 'FOUND'] else 'LOST',
             category=category if category in ['ITEM', 'PET', 'PERSON'] else 'PET',
             location=location,
+            complaint_number=complaint_number,
             reward=reward,
         )
 
@@ -380,6 +386,9 @@ def case_edit(request, pk):
         location = request.POST.get('location', '').strip()
         if location:
             case.location = location
+        complaint_number = request.POST.get('complaint_number', '').strip()
+        if complaint_number:
+            case.complaint_number = complaint_number
         category = request.POST.get('category', '').strip().upper()
         if category in ['ITEM', 'PET', 'PERSON']:
             case.category = category
