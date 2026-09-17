@@ -290,16 +290,25 @@ def case_create(request):
 
 @login_required
 def case_edit(request, pk):
+    # Only the user who posted the case can edit it
     case = get_object_or_404(Case, pk=pk, owner=request.user)
 
     if request.method == 'POST':
-        case.title = request.POST.get('title', case.title).strip()
-        case.description = request.POST.get('description', case.description).strip()
-        case.location = request.POST.get('location', case.location).strip()
-        case.category = request.POST.get('category', case.category).upper() or case.category
+        title = request.POST.get('title', '').strip()
+        if title:
+            case.title = title
+        description = request.POST.get('description', '').strip()
+        if description:
+            case.description = description
+        location = request.POST.get('location', '').strip()
+        if location:
+            case.location = location
+        category = request.POST.get('category', '').strip().upper()
+        if category in ['ITEM', 'PET', 'PERSON']:
+            case.category = category
         reward = request.POST.get('reward', case.reward)
         try:
-            case.reward = float(reward) if reward else 0
+            case.reward = float(reward) if reward not in (None, '') else 0
         except (ValueError, TypeError):
             pass
 
@@ -311,9 +320,9 @@ def case_edit(request, pk):
             CaseImage.objects.create(case=case, image=image, is_primary=True)
 
         messages.success(request, 'Case updated successfully!')
-        return redirect('case_detail', pk=case.pk)
+        return redirect('user_dashboard')
 
-    return redirect('case_detail', pk=case.pk)
+    return redirect('user_dashboard')
 
 
 @login_required
@@ -962,6 +971,24 @@ def admin_manage_blog(request):
         blog = get_object_or_404(Blog, pk=blog_pk)
         blog.delete()
         messages.success(request, 'Blog article deleted.')
+
+    elif action == 'edit':
+        blog_pk = request.POST.get('blog_id')
+        blog = get_object_or_404(Blog, pk=blog_pk)
+        title = request.POST.get('title', '').strip()
+        content = request.POST.get('content', '').strip()
+        image = request.FILES.get('image')
+        if not title or not content:
+            messages.error(request, 'Blog title and content are required.')
+            return redirect('admin_dashboard')
+        blog.title = title
+        blog.content = content
+        if image:
+            if blog.image:
+                blog.image.delete(save=False)
+            blog.image = image
+        blog.save()
+        messages.success(request, 'Blog article updated!')
 
     return redirect('admin_dashboard')
 

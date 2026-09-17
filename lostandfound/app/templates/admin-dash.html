@@ -856,12 +856,15 @@
                             <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.25rem;">Published {{ blog.created_at|date:"M d, Y" }}</p>
                             <p style="font-size: 0.75rem; margin-top: 0.5rem;">{{ blog.content|truncatewords:25 }}</p>
                         </div>
-                        <form action="{% url 'admin_manage_blog' %}" method="POST" onsubmit="return confirm('Delete this blog article permanently?');" style="margin-top: 1rem;">
-                            {% csrf_token %}
-                            <input type="hidden" name="action" value="delete">
-                            <input type="hidden" name="blog_id" value="{{ blog.pk }}">
-                            <button type="submit" class="neu-button-danger">Delete Article</button>
-                        </form>
+                        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                            <button onclick="openEditBlogModal({{ blog.pk }}, '{{ blog.title|escapejs }}', '{{ blog.content|escapejs }}')" class="neu-button" style="flex: 1;"><i class="fas fa-pen"></i> Edit</button>
+                            <form action="{% url 'admin_manage_blog' %}" method="POST" onsubmit="return confirm('Delete this blog article permanently?');" style="flex: 1;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="blog_id" value="{{ blog.pk }}">
+                                <button type="submit" class="neu-button-danger" style="width: 100%;">Delete</button>
+                            </form>
+                        </div>
                     </div>
                     {% empty %}
                     <div class="card-box" style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--stone-muted);">
@@ -943,6 +946,32 @@
                 <button type="submit" class="neu-button-dark" style="padding: 0.75rem;">PUBLISH ARTICLE NOW</button>
             </form>
         </div>
+        <!-- EDIT BLOG MODAL -->
+        <div id="modal-edit-blog" class="neu-card modal-body lg hidden">
+            <button onclick="closeModals()" class="close-btn"><i class="fas fa-circle-xmark"></i></button>
+            <div style="margin-bottom: 1rem;">
+                <span class="badge-tag bg-amber"><i class="fas fa-pen"></i> EDIT ARTICLE</span>
+                <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700; margin-top: 0.35rem;">Edit Blog Article</h3>
+            </div>
+            <form id="edit-blog-form" action="{% url 'admin_manage_blog' %}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('Save changes to this blog article?');" style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.75rem;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="edit">
+                <input type="hidden" name="blog_id" id="edit-blog-id">
+                <div>
+                    <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Article Title</label>
+                    <input type="text" name="title" id="edit-blog-title" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Replace Featured Image (optional)</label>
+                    <input type="file" name="image" accept="image/*" class="neu-input" style="width: 100%; padding: 0.5rem 0.75rem;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Article Body / Content</label>
+                    <textarea rows="5" name="content" id="edit-blog-content" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;"></textarea>
+                </div>
+                <button type="submit" class="neu-button-dark" style="padding: 0.75rem;">SAVE CHANGES</button>
+            </form>
+        </div>
     </div>
 
     <script>
@@ -966,6 +995,13 @@
             document.querySelectorAll('.modal-body').forEach(b => b.classList.add('hidden'));
         }
         if (modalOverlay) modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModals(); });
+
+        function openEditBlogModal(pk, title, content) {
+            document.getElementById('edit-blog-id').value = pk;
+            document.getElementById('edit-blog-title').value = title;
+            document.getElementById('edit-blog-content').value = content;
+            openModal('modal-edit-blog');
+        }
     
         // Auto-dismiss toasts after 4s with fade
         (function(){
