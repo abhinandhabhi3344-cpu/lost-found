@@ -538,10 +538,10 @@
                         <option value="{{ case.pk }}">{{ case.title }} ({{ case.case_number }}) — {{ case.location }}</option>
                         {% endfor %}
                     </select>
-                    <p style="font-size:0.65rem; color:var(--stone-muted); margin-top:0.25rem;">Only cases without an assigned detective are shown. Assigned cases are hidden to prevent duplicate assignments.</p>
+                    <p style="font-size:0.65rem; color:var(--stone-muted); margin-top:0.25rem;">Only OPEN / INVESTIGATING cases without an assigned detective are shown. Closed / resolved cases cannot request a detective.</p>
                     {% else %}
                     <div style="padding:0.75rem; background:#fef3c7; border:1px solid #f59e0b; border-radius:6px; color:#92400e; font-size:0.7rem; font-weight:600;">
-                        All your cases already have a detective assigned or you have no LOST reports. No new detective request can be made.
+                        No eligible cases for a detective request. Cases must be LOST, OPEN/INVESTIGATING, and without an assigned detective or pending request.
                     </div>
                     <select name="case_id" class="hidden" disabled><option>No available cases</option></select>
                     {% endif %}

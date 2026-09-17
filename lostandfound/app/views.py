@@ -380,8 +380,10 @@ def user_dashboard(request):
     all_assigned_case_ids = assigned_case_ids.union(assigned_via_field)
     pending_request_case_ids = set(DetectiveRequest.objects.filter(requested_by=user, status='PENDING').values_list('case_id', flat=True))
 
-    # Cases eligible for new detective request (not yet assigned)
-    unassigned_cases = my_cases.filter(case_type='LOST').exclude(id__in=all_assigned_case_ids)
+    # Cases eligible for new detective request (not yet assigned, and still open/investigating)
+    unassigned_cases = my_cases.filter(
+        case_type='LOST', status__in=['OPEN', 'INVESTIGATING']
+    ).exclude(id__in=all_assigned_case_ids).exclude(id__in=pending_request_case_ids)
 
     context = {
         'lost_cases': lost_cases,
@@ -619,6 +621,11 @@ def detective_request_create(request):
 
     case = get_object_or_404(Case, pk=case_pk, owner=request.user)
 
+    # Block requests for closed/resolved cases — no investigation needed
+    if case.status in ['CLOSED', 'FOUND']:
+        messages.error(request, 'Cannot request a detective for a closed or resolved case.')
+        return redirect('user_dashboard')
+
     # Prevent multiple detectives per case: if already assigned, block request
     if CaseAssignment.objects.filter(case=case).exists() or case.assigned_detective is not None:
         messages.error(request, 'A detective is already assigned to this case. Cannot request another.')
@@ -751,6 +758,11 @@ def admin_assign_detective(request):
 
     case = get_object_or_404(Case, pk=case_pk)
     detective_profile = get_object_or_404(Profile, pk=detective_pk, is_detective=True, detective_status='APPROVED')
+
+    # Block assignment to closed/resolved cases
+    if case.status in ['CLOSED', 'FOUND']:
+        messages.error(request, f'Case {case.case_number} is closed/resolved. Cannot assign a detective.')
+        return redirect('admin_dashboard')
 
     # Prevent multiple detectives for a single case
     if CaseAssignment.objects.filter(case=case).exists() or case.assigned_detective is not None:
