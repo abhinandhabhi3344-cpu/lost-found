@@ -551,6 +551,9 @@
                 <a class="dash-tab-btn" href="#panel-users">
                     <i class="fas fa-user"></i> User Management
                 </a>
+                <a class="dash-tab-btn" href="#panel-user-verification">
+                    <i class="fas fa-id-card"></i> User Verification ({{ pending_user_count }})
+                </a>
                 <a class="dash-tab-btn" href="#panel-vetting">
                     <i class="fas fa-id-badge"></i> Detective Vetting ({{ pending_detectives }})
                 </a>
@@ -559,6 +562,9 @@
                 </a>
                 <a class="dash-tab-btn" href="#panel-assignment">
                     <i class="fas fa-compass"></i> Detective Requests &amp; Approvals ({{ detective_requests|length }})
+                </a>
+                <a class="dash-tab-btn" href="#panel-solve">
+                    <i class="fas fa-circle-check"></i> Solve Verifications ({{ pending_solve_requests|length }})
                 </a>
                 <a class="dash-tab-btn" href="#panel-blog">
                     <i class="fas fa-newspaper"></i> Blog Management
@@ -634,6 +640,7 @@
                                 <th>Username</th>
                                 <th>Email</th>
                                 <th>Role</th>
+                                <th>ID / Verify</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -645,6 +652,16 @@
                                 <td>{{ u.user.username }}</td>
                                 <td>{{ u.user.email }}</td>
                                 <td>{% if u.is_detective %}Detective{% else %}Citizen{% endif %}</td>
+                                <td>
+                                    {% if u.is_detective %}
+                                    <span style="font-size:0.6rem; color:var(--stone-muted);">N/A (detective)</span>
+                                    {% else %}
+                                        {% if u.verification_status == 'PENDING' %}<span class="badge-tag bg-amber">Pending</span>
+                                        {% elif u.verification_status == 'APPROVED' %}<span class="badge-tag bg-emerald">Verified</span>
+                                        {% else %}<span class="badge-tag bg-red">Rejected</span>{% endif %}
+                                        {% if u.id_proof %} <a href="{{ u.id_proof.url }}" target="_blank" style="font-size:0.6rem; font-weight:700; text-decoration:underline;">ID ↗</a>{% endif %}
+                                    {% endif %}
+                                </td>
                                 <td>
                                     {% if u.is_banned %}
                                     <span class="badge-tag bg-red">Banned</span>
@@ -664,10 +681,59 @@
                                 </td>
                             </tr>
                             {% empty %}
-                            <tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--stone-muted);">No user accounts found.</td></tr>
+                            <tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--stone-muted);">No user accounts found.</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- USER ID VERIFICATION (citizens) -->
+            <div id="panel-user-verification" class="dash-panel">
+                <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;" class="border-b-line pb-3">PENDING USER ID VERIFICATIONS ({{ pending_user_verifications|length }})</h2>
+                <div class="grid-2">
+                    {% for u in pending_user_verifications %}
+                    <div class="card-box" style="border-left:3px solid var(--amber-accent);">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;" class="border-b-line pb-2">
+                                <div>
+                                    <h3 class="font-display" style="font-size: 1rem; font-weight: 700;">{{ u.full_name }}</h3>
+                                    <p style="font-size: 0.65rem; color: var(--stone-muted); font-family: monospace;">@{{ u.user.username }} • {{ u.user.email }} • {{ u.phone|default:"no phone" }}</p>
+                                </div>
+                                <span class="badge-tag bg-amber"><i class="fas fa-clock"></i> PENDING</span>
+                            </div>
+                            <p style="font-size:0.7rem; color:var(--stone-muted); margin-top:0.5rem;">City: {{ u.city|default:"—" }} | Address: {{ u.address|default:"—" }}</p>
+                            {% if u.id_proof %}
+                            <div style="margin-top:0.6rem;">
+                                <span style="font-size:0.65rem; font-weight:700; text-transform:uppercase;">ID Proof</span><br>
+                                <a href="{{ u.id_proof.url }}" target="_blank" style="font-size:0.7rem; font-weight:700; color:var(--emerald-accent); text-decoration:underline;">View ID Proof ↗</a>
+                                {% if u.id_proof.url|lower|slice:"-4:" == ".pdf" %}
+                                <p style="font-size:0.65rem; color:var(--stone-muted);">(PDF document)</p>
+                                {% else %}
+                                <div style="margin-top:0.4rem; max-width:16rem; border-radius:6px; overflow:hidden; border:1px solid var(--stone-border);"><img src="{{ u.id_proof.url }}" alt="ID proof" style="width:100%; display:block;"></div>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <p style="font-size:0.7rem; color:var(--red-accent); margin-top:0.5rem;">No ID proof uploaded.</p>
+                            {% endif %}
+                        </div>
+                        <form action="{% url 'admin_verify_user' pk=u.pk %}" method="POST" onsubmit="return confirm('Approve this user?');" style="margin-top:0.75rem;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="approve">
+                            <button type="submit" class="neu-button-emerald" style="width:100%;"><i class="fas fa-circle-check"></i> Approve User</button>
+                        </form>
+                        <form action="{% url 'admin_verify_user' pk=u.pk %}" method="POST" onsubmit="return confirm('Reject this user? They will see your reason.');" style="margin-top:0.5rem; display:flex; flex-direction:column; gap:0.4rem; padding-top:0.6rem; border-top:1px solid var(--stone-border);">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="reject">
+                            <textarea name="reason" rows="2" required placeholder="Reason for rejection (shown to user)..." class="neu-input" style="width:100%; padding:0.5rem;"></textarea>
+                            <button type="submit" class="neu-button-danger" style="width:100%;">Reject User</button>
+                        </form>
+                    </div>
+                    {% empty %}
+                    <div class="card-box" style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--stone-muted);">
+                        No pending user verifications.
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
 
@@ -724,6 +790,7 @@
                                 <th>Subject</th>
                                 <th>Type</th>
                                 <th>Location</th>
+                                <th>Complaint No.</th>
                                 <th>Reward</th>
                                 <th>Status</th>
                                 <th>Actions</th>
@@ -736,6 +803,7 @@
                                 <td><strong>{{ c.title }}</strong></td>
                                 <td><span class="badge-tag {% if c.case_type == 'LOST' %}bg-red{% else %}bg-emerald{% endif %}">{{ c.get_case_type_display }}</span></td>
                                 <td>{{ c.location }}</td>
+                                <td>{% if c.case_type == 'LOST' %}<code style="font-size:0.65rem;">{{ c.complaint_number|default:"—" }}</code>{% else %}<span style="font-size:0.65rem; color:var(--stone-muted);">—</span>{% endif %}</td>
                                 <td>₹{{ c.reward|floatformat:0 }}</td>
                                 <td>
                                     {% if c.status == 'CLOSED' or c.status == 'FOUND' %}
@@ -765,7 +833,7 @@
                                 </td>
                             </tr>
                             {% empty %}
-                            <tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--stone-muted);">No cases in database.</td></tr>
+                            <tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--stone-muted);">No cases in database.</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -778,17 +846,27 @@
 
                 <div class="grid-2">
                     {% for req in detective_requests %}
-                    <div class="card-box">
+                    <div class="card-box" style="border-left:3px solid var(--amber-accent);">
                         <div>
                             <h3 class="font-display" style="font-size: 1rem; font-weight: 700;">{{ req.case.title }} ({{ req.case.case_number }})</h3>
                             <p style="font-size: 0.75rem; color: var(--stone-muted);">Requested by {{ req.requested_by.profile.full_name|default:req.requested_by.username }}</p>
+                            {% if req.requested_detective %}
+                            <p style="font-size: 0.8rem; margin-top: 0.4rem; font-weight: 700; color: var(--emerald-accent);"><i class="fas fa-id-badge"></i> User-selected: {{ req.requested_detective.profile.full_name|default:req.requested_detective.username }}</p>
+                            {% else %}
+                            <p style="font-size: 0.75rem; margin-top: 0.4rem; color: var(--red-accent);">No specific detective selected (legacy request).</p>
+                            {% endif %}
                             {% if req.message %}<p style="font-size: 0.75rem; margin-top: 0.5rem;">"{{ req.message }}"</p>{% endif %}
                         </div>
 
-                        <form action="{% url 'admin_assign_detective' %}" method="POST" onsubmit="return confirm('Assign selected detective to this case?');" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                        <form action="{% url 'admin_assign_detective' %}" method="POST" onsubmit="return confirm('Approve and assign {{ req.requested_detective.profile.full_name|default:"selected detective"|escapejs }} to this case?');" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
                             {% csrf_token %}
                             <input type="hidden" name="case_id" value="{{ req.case.pk }}">
                             <input type="hidden" name="request_id" value="{{ req.pk }}">
+                            {% if req.requested_detective %}
+                            <input type="hidden" name="detective_id" value="{{ req.requested_detective.profile.pk }}">
+                            <p style="font-size:0.7rem; color:var(--stone-muted);">Approving assigns <strong>{{ req.requested_detective.profile.full_name }}</strong> (user-selected). To override, use manual assign below.</p>
+                            <button type="submit" class="neu-button-emerald"><i class="fas fa-check"></i> Approve &amp; Assign {{ req.requested_detective.profile.full_name|truncatewords:2 }}</button>
+                            {% else %}
                             <select name="detective_id" class="neu-input" style="width: 100%; padding: 0.5rem;" required>
                                 <option value="">Select Approved Detective to Assign...</option>
                                 {% for det in approved_detectives %}
@@ -796,11 +874,70 @@
                                 {% endfor %}
                             </select>
                             <button type="submit" class="neu-button-emerald">Assign Detective</button>
+                            {% endif %}
+                        </form>
+                        {% if req.requested_detective %}
+                        <details style="margin-top:0.5rem;">
+                            <summary style="font-size:0.65rem; font-weight:700; color:var(--stone-muted); cursor:pointer; text-transform:uppercase;">Override with different detective</summary>
+                            <form action="{% url 'admin_assign_detective' %}" method="POST" onsubmit="return confirm('Assign different detective (override user choice)?');" style="margin-top:0.5rem; display:flex; flex-direction:column; gap:0.5rem;">
+                                {% csrf_token %}
+                                <input type="hidden" name="case_id" value="{{ req.case.pk }}">
+                                <input type="hidden" name="request_id" value="{{ req.pk }}">
+                                <select name="detective_id" class="neu-input" style="width: 100%; padding: 0.5rem;" required>
+                                    <option value="">Select Approved Detective...</option>
+                                    {% for det in approved_detectives %}
+                                    <option value="{{ det.pk }}">{{ det.full_name }} ({{ det.city|default:det.address|default:"—" }})</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="neu-button" style="font-size:0.65rem;">Assign Different Detective</button>
+                            </form>
+                        </details>
+                        {% endif %}
+                        <form action="{% url 'admin_reject_detective_request' %}" method="POST" onsubmit="return confirm('Reject this detective request? User will see your reason.');" style="margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; padding-top:0.75rem; border-top:1px solid var(--stone-border);">
+                            {% csrf_token %}
+                            <input type="hidden" name="request_id" value="{{ req.pk }}">
+                            <label style="font-size:0.65rem; font-weight:700; color:var(--red-accent); text-transform:uppercase;">Reject with reason</label>
+                            <textarea name="admin_reason" rows="2" required placeholder="e.g. Detective unavailable, case out of scope..." class="neu-input" style="width:100%; padding:0.5rem;"></textarea>
+                            <button type="submit" class="neu-button-danger"><i class="fas fa-xmark"></i> Reject Request</button>
                         </form>
                     </div>
                     {% empty %}
                     <div class="card-box" style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--stone-muted);">
                         No pending detective dispatch requests.
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- SOLVE VERIFICATION REQUESTS -->
+            <div id="panel-solve" class="dash-panel">
+                <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;" class="border-b-line pb-3">SOLVE VERIFICATION REQUESTS ({{ pending_solve_requests|length }})</h2>
+                <div class="grid-2">
+                    {% for sreq in pending_solve_requests %}
+                    <div class="card-box" style="border-left:3px solid var(--amber-accent);">
+                        <div>
+                            <h3 class="font-display" style="font-size: 1rem; font-weight: 700;">{{ sreq.case.title }} ({{ sreq.case.case_number }})</h3>
+                            <p style="font-size: 0.75rem; color: var(--stone-muted);">Owner: {{ sreq.requested_by.profile.full_name|default:sreq.requested_by.username }} • Was: {{ sreq.previous_status }} • Now: {{ sreq.case.status }}</p>
+                            {% if sreq.message %}<p style="font-size:0.75rem; margin-top:0.5rem;">"{{ sreq.message }}"</p>{% endif %}
+                            <p style="font-size:0.7rem; color:var(--stone-muted); margin-top:0.4rem;">Requested {{ sreq.created_at|timesince }} ago. Approving CLOSES the case; rejecting keeps it {{ sreq.case.get_status_display }} (open).</p>
+                        </div>
+                        <form action="{% url 'admin_review_solve_request' %}" method="POST" onsubmit="return confirm('Approve and CLOSE this case as solved?');" style="margin-top:0.75rem;">
+                            {% csrf_token %}
+                            <input type="hidden" name="request_id" value="{{ sreq.pk }}">
+                            <input type="hidden" name="action" value="approve">
+                            <button type="submit" class="neu-button-emerald" style="width:100%;"><i class="fas fa-check"></i> Approve &amp; Close Case</button>
+                        </form>
+                        <form action="{% url 'admin_review_solve_request' %}" method="POST" onsubmit="return confirm('Reject solve request? Case stays open and owner sees your reason.');" style="margin-top:0.5rem; display:flex; flex-direction:column; gap:0.4rem; padding-top:0.6rem; border-top:1px solid var(--stone-border);">
+                            {% csrf_token %}
+                            <input type="hidden" name="request_id" value="{{ sreq.pk }}">
+                            <input type="hidden" name="action" value="reject">
+                            <textarea name="admin_reason" rows="2" required placeholder="Reason for rejection (shown to owner)..." class="neu-input" style="width:100%; padding:0.5rem;"></textarea>
+                            <button type="submit" class="neu-button-danger" style="width:100%;">Reject — Keep Open</button>
+                        </form>
+                    </div>
+                    {% empty %}
+                    <div class="card-box" style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--stone-muted);">
+                        No pending solve verification requests.
                     </div>
                     {% endfor %}
                 </div>
@@ -821,12 +958,15 @@
                             <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.25rem;">Published {{ blog.created_at|date:"M d, Y" }}</p>
                             <p style="font-size: 0.75rem; margin-top: 0.5rem;">{{ blog.content|truncatewords:25 }}</p>
                         </div>
-                        <form action="{% url 'admin_manage_blog' %}" method="POST" onsubmit="return confirm('Delete this blog article permanently?');" style="margin-top: 1rem;">
-                            {% csrf_token %}
-                            <input type="hidden" name="action" value="delete">
-                            <input type="hidden" name="blog_id" value="{{ blog.pk }}">
-                            <button type="submit" class="neu-button-danger">Delete Article</button>
-                        </form>
+                        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                            <button onclick="openEditBlogModal({{ blog.pk }}, '{{ blog.title|escapejs }}', '{{ blog.content|escapejs }}')" class="neu-button" style="flex: 1;"><i class="fas fa-pen"></i> Edit</button>
+                            <form action="{% url 'admin_manage_blog' %}" method="POST" onsubmit="return confirm('Delete this blog article permanently?');" style="flex: 1;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="blog_id" value="{{ blog.pk }}">
+                                <button type="submit" class="neu-button-danger" style="width: 100%;">Delete</button>
+                            </form>
+                        </div>
                     </div>
                     {% empty %}
                     <div class="card-box" style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--stone-muted);">
@@ -908,6 +1048,32 @@
                 <button type="submit" class="neu-button-dark" style="padding: 0.75rem;">PUBLISH ARTICLE NOW</button>
             </form>
         </div>
+        <!-- EDIT BLOG MODAL -->
+        <div id="modal-edit-blog" class="neu-card modal-body lg hidden">
+            <button onclick="closeModals()" class="close-btn"><i class="fas fa-circle-xmark"></i></button>
+            <div style="margin-bottom: 1rem;">
+                <span class="badge-tag bg-amber"><i class="fas fa-pen"></i> EDIT ARTICLE</span>
+                <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700; margin-top: 0.35rem;">Edit Blog Article</h3>
+            </div>
+            <form id="edit-blog-form" action="{% url 'admin_manage_blog' %}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('Save changes to this blog article?');" style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.75rem;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="edit">
+                <input type="hidden" name="blog_id" id="edit-blog-id">
+                <div>
+                    <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Article Title</label>
+                    <input type="text" name="title" id="edit-blog-title" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Replace Featured Image (optional)</label>
+                    <input type="file" name="image" accept="image/*" class="neu-input" style="width: 100%; padding: 0.5rem 0.75rem;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Article Body / Content</label>
+                    <textarea rows="5" name="content" id="edit-blog-content" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;"></textarea>
+                </div>
+                <button type="submit" class="neu-button-dark" style="padding: 0.75rem;">SAVE CHANGES</button>
+            </form>
+        </div>
     </div>
 
     <script>
@@ -931,6 +1097,13 @@
             document.querySelectorAll('.modal-body').forEach(b => b.classList.add('hidden'));
         }
         if (modalOverlay) modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModals(); });
+
+        function openEditBlogModal(pk, title, content) {
+            document.getElementById('edit-blog-id').value = pk;
+            document.getElementById('edit-blog-title').value = title;
+            document.getElementById('edit-blog-content').value = content;
+            openModal('modal-edit-blog');
+        }
     
         // Auto-dismiss toasts after 4s with fade
         (function(){

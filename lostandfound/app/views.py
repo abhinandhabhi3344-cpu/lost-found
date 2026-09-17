@@ -8,13 +8,62 @@ from django.db.models import Q, Count
 from django.core.paginator import Paginator
 from django.utils import timezone
 from django.views.decorators.http import require_POST
+from functools import wraps
 
 from .models import (
-    Profile, Case, CaseImage, SightingReport, DetectiveRequest,
+    Profile, Case, CaseImage, SightingReport, DetectiveRequest, CaseSolveRequest,
     CaseAssignment, InvestigationUpdate, DetectiveAchievement,
     Notification, Blog, Feedback,
     CASE_TYPE, CATEGORY, CASE_STATUS
 )
+
+
+# ============================================================
+# CITIZEN ID-VERIFICATION HELPERS
+# ============================================================
+
+def is_verified_for_site(user):
+    """Staff + detectives bypass citizen ID check. Citizens need APPROVED."""
+    if not user or not user.is_authenticated:
+        return False
+    if user.is_staff or user.is_superuser:
+        return True
+    try:
+        profile = user.profile
+    except Profile.DoesNotExist:
+        return False
+    if getattr(profile, 'is_banned', False):
+        return False
+    if getattr(profile, 'is_detective', False):
+        return True
+    return getattr(profile, 'verification_status', 'PENDING') == 'APPROVED'
+
+
+def verified_citizen_required(view_func):
+    """Block PENDING/REJECTED citizens from authenticated features."""
+    @wraps(view_func)
+    def _wrapped(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.error(request, 'Please log in to continue.')
+            return redirect('home')
+        if request.user.is_staff or request.user.is_superuser:
+            return view_func(request, *args, **kwargs)
+        try:
+            profile = request.user.profile
+        except Profile.DoesNotExist:
+            messages.error(request, 'Profile missing. Please contact admin.')
+            return redirect('home')
+        if getattr(profile, 'is_detective', False):
+            return view_func(request, *args, **kwargs)
+        status = getattr(profile, 'verification_status', 'PENDING')
+        if status == 'APPROVED':
+            return view_func(request, *args, **kwargs)
+        if status == 'REJECTED':
+            messages.error(request, 'You are not a verified user by admin. Your account was rejected.')
+        else:
+            messages.error(request, 'You are not a verified user by admin. Your account is pending verification.')
+        return redirect('home')
+    return _wrapped
 
 
 # ============================================================
@@ -40,6 +89,12 @@ def signup_view(request):
 
         if User.objects.filter(email=email).exists():
             messages.error(request, 'Email already registered.')
+            return redirect('home')
+
+        # Citizens MUST upload ID proof. Detectives are exempt.
+        id_proof_file = request.FILES.get('id_proof')
+        if role != 'detective' and not id_proof_file:
+            messages.error(request, 'ID proof is required for citizen registration.')
             return redirect('home')
 
         name_parts = full_name.split(' ', 1)
@@ -73,14 +128,23 @@ def signup_view(request):
             profile.address = operating_region
             if operating_region:
                 profile.city = operating_region
+            # Detectives skip citizen ID verification
+            profile.verification_status = 'APPROVED'
+            profile.verification_reason = ''
+        else:
+            profile.is_detective = False
+            profile.id_proof = id_proof_file
+            profile.verification_status = 'PENDING'
+            profile.verification_reason = ''
 
         profile.save()
         login(request, user)
-        messages.success(request, 'Account created successfully! Welcome to Lost & Found.')
 
         if role == 'detective':
+            messages.success(request, 'Detective application submitted! Awaiting vetting.')
             return redirect('detective_dashboard')
-        return redirect('user_dashboard')
+        messages.warning(request, 'Account created! Please wait for admin verification of your ID proof.')
+        return redirect('home')
 
     return redirect('home')
 
@@ -96,13 +160,24 @@ def login_view(request):
                 messages.error(request, 'Your account has been suspended.')
                 return redirect('home')
             login(request, user)
-            messages.success(request, f'Welcome back, {user.first_name or user.username}!')
 
             if user.is_superuser or user.is_staff:
+                messages.success(request, f'Welcome back, {user.first_name or user.username}!')
                 return redirect('admin_dashboard')
-            if hasattr(user, 'profile') and user.profile.is_detective:
+            profile = getattr(user, 'profile', None)
+            if profile and profile.is_detective:
+                messages.success(request, f'Welcome back, {user.first_name or user.username}!')
                 return redirect('detective_dashboard')
-            return redirect('user_dashboard')
+            # Citizen ID-verification gate on login (still log them in so nav/modal can render)
+            status = getattr(profile, 'verification_status', 'PENDING') if profile else 'PENDING'
+            if status == 'APPROVED':
+                messages.success(request, f'Welcome back, {user.first_name or user.username}!')
+                return redirect('user_dashboard')
+            if status == 'REJECTED':
+                messages.error(request, 'Your account was rejected by admin. See reason.')
+                return redirect('home')
+            messages.warning(request, 'Your account is pending verification by admin.')
+            return redirect('home')
         else:
             messages.error(request, 'Invalid username or password.')
     return redirect('home')
@@ -242,6 +317,7 @@ def case_detail(request, pk):
 
 
 @login_required
+@verified_citizen_required
 def case_create(request):
     if request.method == 'POST':
         title = request.POST.get('title', '').strip()
@@ -249,11 +325,23 @@ def case_create(request):
         case_type = request.POST.get('case_type', 'LOST').upper()
         category = request.POST.get('category', 'PET').upper()
         location = request.POST.get('location', '').strip()
+        complaint_number = request.POST.get('complaint_number', '').strip()
         reward = request.POST.get('reward', 0)
 
         if not title or not location:
             messages.error(request, 'Title and location are required.')
             return redirect('case_list')
+
+        if case_type not in ['LOST', 'FOUND']:
+            case_type = 'LOST'
+
+        # Complaint number is required for LOST only (police FIR no. is unique).
+        # FOUND items have no complaint number.
+        if case_type == 'LOST' and not complaint_number:
+            messages.error(request, 'Police complaint registered number is required for lost cases.')
+            return redirect('case_list')
+        if case_type == 'FOUND':
+            complaint_number = ""
 
         try:
             reward = float(reward) if reward else 0
@@ -267,6 +355,7 @@ def case_create(request):
             case_type=case_type if case_type in ['LOST', 'FOUND'] else 'LOST',
             category=category if category in ['ITEM', 'PET', 'PERSON'] else 'PET',
             location=location,
+            complaint_number=complaint_number,
             reward=reward,
         )
 
@@ -289,17 +378,34 @@ def case_create(request):
 
 
 @login_required
+@verified_citizen_required
 def case_edit(request, pk):
+    # Only the user who posted the case can edit it
     case = get_object_or_404(Case, pk=pk, owner=request.user)
 
     if request.method == 'POST':
-        case.title = request.POST.get('title', case.title).strip()
-        case.description = request.POST.get('description', case.description).strip()
-        case.location = request.POST.get('location', case.location).strip()
-        case.category = request.POST.get('category', case.category).upper() or case.category
+        title = request.POST.get('title', '').strip()
+        if title:
+            case.title = title
+        description = request.POST.get('description', '').strip()
+        if description:
+            case.description = description
+        location = request.POST.get('location', '').strip()
+        if location:
+            case.location = location
+        # Complaint number applies to LOST only; FOUND never stores one.
+        if case.case_type == 'LOST':
+            complaint_number = request.POST.get('complaint_number', '').strip()
+            if complaint_number:
+                case.complaint_number = complaint_number
+        else:
+            case.complaint_number = ""
+        category = request.POST.get('category', '').strip().upper()
+        if category in ['ITEM', 'PET', 'PERSON']:
+            case.category = category
         reward = request.POST.get('reward', case.reward)
         try:
-            case.reward = float(reward) if reward else 0
+            case.reward = float(reward) if reward not in (None, '') else 0
         except (ValueError, TypeError):
             pass
 
@@ -311,12 +417,13 @@ def case_edit(request, pk):
             CaseImage.objects.create(case=case, image=image, is_primary=True)
 
         messages.success(request, 'Case updated successfully!')
-        return redirect('case_detail', pk=case.pk)
+        return redirect('user_dashboard')
 
-    return redirect('case_detail', pk=case.pk)
+    return redirect('user_dashboard')
 
 
 @login_required
+@verified_citizen_required
 @require_POST
 def case_delete(request, pk):
     case = get_object_or_404(Case, pk=pk)
@@ -332,12 +439,18 @@ def case_delete(request, pk):
 
 
 @login_required
+@verified_citizen_required
 @require_POST
 def case_mark_resolved(request, pk):
     case = get_object_or_404(Case, pk=pk)
-    if case.owner == request.user or request.user.is_staff:
+    # Staff can close directly (they ARE the verifier)
+    if request.user.is_staff:
+        if case.owner != request.user and not request.user.is_staff:
+            messages.error(request, 'Permission denied.')
+            return redirect('case_detail', pk=pk)
         case.status = 'CLOSED'
         case.save()
+        CaseSolveRequest.objects.filter(case=case, status='PENDING').update(status='APPROVED', reviewed_at=timezone.now())
         Notification.objects.create(
             user=case.owner,
             case=case,
@@ -345,8 +458,36 @@ def case_mark_resolved(request, pk):
             message=f'Your case "{case.title}" has been marked as solved and closed.'
         )
         messages.success(request, 'Case marked as solved!')
-    else:
+        return redirect('case_detail', pk=pk)
+    # Owner flow: send to admin for verification, do NOT close yet
+    if case.owner != request.user:
         messages.error(request, 'Permission denied.')
+        return redirect('case_detail', pk=pk)
+    if case.status in ['CLOSED']:
+        messages.warning(request, 'Case is already closed.')
+        return redirect('case_detail', pk=pk)
+    if CaseSolveRequest.objects.filter(case=case, status='PENDING').exists():
+        messages.warning(request, 'A solve verification request is already pending with admin.')
+        return redirect('case_detail', pk=pk)
+    message_text = request.POST.get('message', '').strip()
+    CaseSolveRequest.objects.create(
+        case=case,
+        requested_by=request.user,
+        previous_status=case.status,
+        message=message_text,
+    )
+    for admin_user in User.objects.filter(is_staff=True):
+        Notification.objects.create(
+            user=admin_user,
+            case=case,
+            title='Solve Verification Request',
+            message=f'User {request.user.profile.full_name} requested to mark case {case.case_number} as solved. Please verify.'
+        )
+    messages.success(request, 'Solve request sent to admin for verification. Case stays open until approved.')
+    # stay on dashboard when coming from dashboard, else detail
+    referer = request.META.get('HTTP_REFERER', '')
+    if 'dashboard' in referer:
+        return redirect('user_dashboard')
     return redirect('case_detail', pk=pk)
 
 
@@ -355,6 +496,7 @@ def case_mark_resolved(request, pk):
 # ============================================================
 
 @login_required
+@verified_citizen_required
 def user_dashboard(request):
     user = request.user
     my_cases = Case.objects.filter(owner=user).prefetch_related('images').order_by('-created_at')
@@ -366,7 +508,7 @@ def user_dashboard(request):
 
     detective_requests = DetectiveRequest.objects.filter(
         requested_by=user
-    ).select_related('case').order_by('-created_at')
+    ).select_related('case', 'requested_detective', 'requested_detective__profile').order_by('-created_at')
 
     assignments = CaseAssignment.objects.filter(
         case__owner=user
@@ -375,13 +517,19 @@ def user_dashboard(request):
     notifications = Notification.objects.filter(user=user).order_by('-created_at')[:10]
 
     # IDs of cases that already have a detective assigned (prevent multiple detectives per case)
-    assigned_case_ids = set(CaseAssignment.objects.filter(case__owner=user).values_list('case_id', flat=True))
+    # REJECTED assignments don't block — case becomes requestable again
+    assigned_case_ids = set(CaseAssignment.objects.filter(case__owner=user).exclude(status='REJECTED').values_list('case_id', flat=True))
     assigned_via_field = set(Case.objects.filter(owner=user, assigned_detective__isnull=False).values_list('id', flat=True))
     all_assigned_case_ids = assigned_case_ids.union(assigned_via_field)
     pending_request_case_ids = set(DetectiveRequest.objects.filter(requested_by=user, status='PENDING').values_list('case_id', flat=True))
 
-    # Cases eligible for new detective request (not yet assigned)
-    unassigned_cases = my_cases.filter(case_type='LOST').exclude(id__in=all_assigned_case_ids)
+    # Cases eligible for new detective request (not yet assigned, and still open/investigating)
+    unassigned_cases = my_cases.filter(
+        case_type='LOST', status__in=['OPEN', 'INVESTIGATING']
+    ).exclude(id__in=all_assigned_case_ids).exclude(id__in=pending_request_case_ids)
+
+    solve_requests = CaseSolveRequest.objects.filter(requested_by=user).select_related('case').order_by('-created_at')
+    pending_solve_case_ids = set(solve_requests.filter(status='PENDING').values_list('case_id', flat=True))
 
     context = {
         'lost_cases': lost_cases,
@@ -397,11 +545,15 @@ def user_dashboard(request):
         'assigned_case_ids': all_assigned_case_ids,
         'pending_request_case_ids': pending_request_case_ids,
         'unassigned_cases': unassigned_cases,
+        'available_detectives': Profile.objects.filter(is_detective=True, detective_status='APPROVED').select_related('user').order_by('full_name'),
+        'solve_requests': solve_requests,
+        'pending_solve_case_ids': pending_solve_case_ids,
     }
     return render(request, 'user-dash.html', context)
 
 
 @login_required
+@verified_citizen_required
 def profile_update(request):
     if request.method == 'POST':
         user = request.user
@@ -450,6 +602,7 @@ def profile_update(request):
 
 
 @login_required
+@verified_citizen_required
 def avatar_upload(request):
     if request.method == 'POST' and request.FILES.get('avatar'):
         profile = request.user.profile
@@ -511,6 +664,7 @@ def detective_profile(request, pk):
 
 
 @login_required
+@verified_citizen_required
 def detective_dashboard(request):
     user = request.user
     if not hasattr(user, 'profile') or not user.profile.is_detective:
@@ -523,6 +677,7 @@ def detective_dashboard(request):
 
     active_assignments = assignments.filter(status__in=['PENDING', 'ACCEPTED'])
     completed_assignments = assignments.filter(status='COMPLETED')
+    rejected_assignments = assignments.filter(status='REJECTED')
 
     achievements = DetectiveAchievement.objects.filter(detective=user).order_by('-created_at')
     notifications = Notification.objects.filter(user=user).order_by('-created_at')[:10]
@@ -534,17 +689,20 @@ def detective_dashboard(request):
         'assignments': assignments,
         'active_assignments': active_assignments,
         'completed_assignments': completed_assignments,
+        'rejected_assignments': rejected_assignments,
         'achievements': achievements,
         'notifications': notifications,
         'active_count': active_assignments.count(),
         'completed_count': completed_assignments.count(),
-        'total_count': assignments.count(),
+        'rejected_count': rejected_assignments.count(),
+        'total_count': assignments.exclude(status='REJECTED').count(),
         'all_updates': all_updates,
     }
     return render(request, 'dictative-dash.html', context)
 
 
 @login_required
+@verified_citizen_required
 @require_POST
 def detective_add_update(request, assignment_pk):
     assignment = get_object_or_404(CaseAssignment, pk=assignment_pk, detective=request.user)
@@ -589,9 +747,13 @@ def detective_add_update(request, assignment_pk):
 
 
 @login_required
+@verified_citizen_required
 @require_POST
 def detective_accept_case(request, assignment_pk):
     assignment = get_object_or_404(CaseAssignment, pk=assignment_pk, detective=request.user)
+    if assignment.status not in ['PENDING']:
+        messages.error(request, 'This assignment can no longer be accepted.')
+        return redirect('detective_dashboard')
     assignment.status = 'ACCEPTED'
     assignment.save()
     assignment.case.status = 'INVESTIGATING'
@@ -607,20 +769,67 @@ def detective_accept_case(request, assignment_pk):
     return redirect('detective_dashboard')
 
 
+@login_required
+@verified_citizen_required
+@require_POST
+def detective_reject_case(request, assignment_pk):
+    assignment = get_object_or_404(CaseAssignment, pk=assignment_pk, detective=request.user)
+    if assignment.status in ['COMPLETED', 'REJECTED']:
+        messages.error(request, 'This assignment can no longer be rejected.')
+        return redirect('detective_dashboard')
+
+    reason = request.POST.get('reject_reason', '').strip()
+    if not reason:
+        messages.error(request, 'Please provide a reason for rejecting this case.')
+        return redirect('detective_dashboard')
+
+    assignment.status = 'REJECTED'
+    assignment.reject_reason = reason
+    assignment.rejected_at = timezone.now()
+    assignment.save()
+
+    # Free the case so the owner can request another detective
+    case = assignment.case
+    case.assigned_detective = None
+    # Revert INVESTIGATING back to OPEN if no other active assignment exists
+    has_other_active = CaseAssignment.objects.filter(case=case).exclude(pk=assignment.pk).exclude(status='REJECTED').exists()
+    if not has_other_active and case.status == 'INVESTIGATING':
+        case.status = 'OPEN'
+    case.save()
+
+    detective_name = request.user.profile.full_name if hasattr(request.user, 'profile') else request.user.username
+    Notification.objects.create(
+        user=case.owner,
+        case=case,
+        title='Detective Declined Case',
+        message=f'Detective {detective_name} declined your case "{case.title}" ({case.case_number}). Reason: {reason}'
+    )
+    messages.success(request, 'Case rejected. The case owner has been notified with your reason.')
+    return redirect('detective_dashboard')
+
+
 # ============================================================
 # DETECTIVE REQUEST (USER REQUESTS DETECTIVE FOR CASE)
 # ============================================================
 
 @login_required
+@verified_citizen_required
 @require_POST
 def detective_request_create(request):
     case_pk = request.POST.get('case_id')
+    detective_pk = request.POST.get('detective_id')
     message_text = request.POST.get('message', '').strip()
 
     case = get_object_or_404(Case, pk=case_pk, owner=request.user)
 
+    # Block requests for closed/resolved cases — no investigation needed
+    if case.status in ['CLOSED', 'FOUND']:
+        messages.error(request, 'Cannot request a detective for a closed or resolved case.')
+        return redirect('user_dashboard')
+
     # Prevent multiple detectives per case: if already assigned, block request
-    if CaseAssignment.objects.filter(case=case).exists() or case.assigned_detective is not None:
+    # REJECTED assignments don't count — owner may re-request
+    if CaseAssignment.objects.filter(case=case).exclude(status='REJECTED').exists() or case.assigned_detective is not None:
         messages.error(request, 'A detective is already assigned to this case. Cannot request another.')
         return redirect('user_dashboard')
 
@@ -628,9 +837,20 @@ def detective_request_create(request):
         messages.warning(request, 'A detective request is already pending for this case.')
         return redirect('user_dashboard')
 
+    # User must select a detective — validate approved detective user id
+    if not detective_pk:
+        messages.error(request, 'Please select a detective for your case.')
+        return redirect('user_dashboard')
+    try:
+        selected_detective_user = User.objects.get(pk=detective_pk, profile__is_detective=True, profile__detective_status='APPROVED')
+    except User.DoesNotExist:
+        messages.error(request, 'Selected detective is invalid or not approved.')
+        return redirect('user_dashboard')
+
     DetectiveRequest.objects.create(
         case=case,
         requested_by=request.user,
+        requested_detective=selected_detective_user,
         message=message_text,
     )
 
@@ -640,10 +860,10 @@ def detective_request_create(request):
             user=admin_user,
             case=case,
             title='New Detective Request',
-            message=f'User {request.user.profile.full_name} requested a detective for case {case.case_number}.'
+            message=f'User {request.user.profile.full_name} requested detective {selected_detective_user.profile.full_name} for case {case.case_number}.'
         )
 
-    messages.success(request, 'Detective dispatch request submitted!')
+    messages.success(request, f'Request for detective {selected_detective_user.profile.full_name} submitted! Awaiting admin approval.')
     return redirect('user_dashboard')
 
 
@@ -665,6 +885,10 @@ def admin_dashboard(request):
     active_cases = Case.objects.filter(status__in=['OPEN', 'INVESTIGATING']).count()
     total_blogs = Blog.objects.count()
     pending_detectives = Profile.objects.filter(is_detective=True, detective_status='PENDING').count()
+    pending_user_verifications = Profile.objects.filter(
+        is_detective=False, verification_status='PENDING', user__is_staff=False
+    ).select_related('user').order_by('-created_at')
+    pending_user_count = pending_user_verifications.count()
 
     users = Profile.objects.select_related('user').filter(user__is_staff=False).order_by('-created_at')
     pending_detective_apps = Profile.objects.filter(
@@ -675,7 +899,11 @@ def admin_dashboard(request):
 
     detective_requests = DetectiveRequest.objects.filter(
         status='PENDING'
-    ).select_related('case', 'requested_by', 'requested_by__profile')
+    ).select_related('case', 'requested_by', 'requested_by__profile', 'requested_detective', 'requested_detective__profile')
+
+    pending_solve_requests = CaseSolveRequest.objects.filter(
+        status='PENDING'
+    ).select_related('case', 'requested_by', 'requested_by__profile').order_by('-created_at')
 
     approved_detectives = Profile.objects.filter(
         is_detective=True, detective_status='APPROVED'
@@ -694,10 +922,13 @@ def admin_dashboard(request):
         'active_cases': active_cases,
         'total_blogs': total_blogs,
         'pending_detectives': pending_detectives,
+        'pending_user_verifications': pending_user_verifications,
+        'pending_user_count': pending_user_count,
         'users': users,
         'pending_detective_apps': pending_detective_apps,
         'cases': cases,
         'detective_requests': detective_requests,
+        'pending_solve_requests': pending_solve_requests,
         'approved_detectives': approved_detectives,
         'blogs': blogs,
         'feedbacks': feedbacks,
@@ -740,6 +971,77 @@ def admin_approve_detective(request, pk):
 
 @login_required
 @require_POST
+def admin_verify_user(request, pk):
+    """Admin approves or rejects a citizen after checking ID proof + details."""
+    if not request.user.is_staff:
+        messages.error(request, 'Access denied.')
+        return redirect('home')
+
+    profile = get_object_or_404(Profile, pk=pk, is_detective=False)
+    action = request.POST.get('action', 'approve')
+
+    if action == 'approve':
+        profile.verification_status = 'APPROVED'
+        profile.verification_reason = ''
+        profile.verified_at = timezone.now()
+        profile.save()
+        Notification.objects.create(
+            user=profile.user,
+            title='Account Verified',
+            message='Your account has been verified by admin! You can now use all platform features.'
+        )
+        messages.success(request, f'User {profile.full_name} verified.')
+    elif action == 'reject':
+        reason = request.POST.get('reason', '').strip()
+        if not reason:
+            messages.error(request, 'Please provide a reason for rejecting this user.')
+            return redirect('admin_dashboard')
+        profile.verification_status = 'REJECTED'
+        profile.verification_reason = reason
+        profile.verified_at = timezone.now()
+        profile.save()
+        Notification.objects.create(
+            user=profile.user,
+            case=None,
+            title='Account Rejected by Admin',
+            message=f'Your account verification was rejected by admin. Reason: {reason}'
+        )
+        messages.success(request, f'User {profile.full_name} rejected.')
+    return redirect('admin_dashboard')
+
+
+@login_required
+@require_POST
+def delete_own_account(request):
+    """Rejected (or any non-staff) user deletes their own account + cleanup."""
+    user = request.user
+    if user.is_staff or user.is_superuser:
+        messages.error(request, 'Admin accounts cannot be deleted this way.')
+        return redirect('home')
+    username = user.username
+    try:
+        profile = user.profile
+        # Cleanup uploaded files
+        try:
+            if profile.avatar:
+                profile.avatar.delete(save=False)
+        except Exception:
+            pass
+        try:
+            if profile.id_proof:
+                profile.id_proof.delete(save=False)
+        except Exception:
+            pass
+    except Profile.DoesNotExist:
+        pass
+    logout(request)
+    User.objects.filter(pk=user.pk).delete()
+    messages.success(request, f'Account {username} has been deleted.')
+    return redirect('home')
+
+
+@login_required
+@require_POST
 def admin_assign_detective(request):
     if not request.user.is_staff:
         messages.error(request, 'Access denied.')
@@ -750,10 +1052,35 @@ def admin_assign_detective(request):
     request_pk = request.POST.get('request_id')
 
     case = get_object_or_404(Case, pk=case_pk)
-    detective_profile = get_object_or_404(Profile, pk=detective_pk, is_detective=True, detective_status='APPROVED')
 
-    # Prevent multiple detectives for a single case
-    if CaseAssignment.objects.filter(case=case).exists() or case.assigned_detective is not None:
+    # Resolve detective: prefer user-selected detective from the request on approval
+    detective_request = None
+    if request_pk:
+        detective_request = DetectiveRequest.objects.select_related('requested_detective').filter(pk=request_pk).first()
+        if detective_request and detective_request.status != 'PENDING':
+            messages.error(request, 'This detective request has already been reviewed.')
+            return redirect('admin_dashboard')
+        # If admin did not pick a different detective, use the user-selected one
+        if not detective_pk and detective_request and detective_request.requested_detective_id:
+            detective_user = detective_request.requested_detective
+            detective_profile = detective_user.profile
+            if not (detective_profile.is_detective and detective_profile.detective_status == 'APPROVED'):
+                messages.error(request, 'User-selected detective is no longer approved.')
+                return redirect('admin_dashboard')
+        else:
+            detective_profile = get_object_or_404(Profile, pk=detective_pk, is_detective=True, detective_status='APPROVED')
+            detective_user = detective_profile.user
+    else:
+        detective_profile = get_object_or_404(Profile, pk=detective_pk, is_detective=True, detective_status='APPROVED')
+        detective_user = detective_profile.user
+
+    # Block assignment to closed/resolved cases
+    if case.status in ['CLOSED', 'FOUND']:
+        messages.error(request, f'Case {case.case_number} is closed/resolved. Cannot assign a detective.')
+        return redirect('admin_dashboard')
+
+    # Prevent multiple detectives for a single case (REJECTED doesn't block re-assign)
+    if CaseAssignment.objects.filter(case=case).exclude(status='REJECTED').exists() or case.assigned_detective is not None:
         messages.error(request, f'Case {case.case_number} already has a detective assigned. Multiple detectives per case is not allowed.')
         return redirect('admin_dashboard')
 
@@ -770,12 +1097,14 @@ def admin_assign_detective(request):
     case.save()
 
     # Update detective request if provided
-    if request_pk:
-        DetectiveRequest.objects.filter(pk=request_pk).update(status='APPROVED')
+    if request_pk and detective_request:
+        detective_request.status = 'APPROVED'
+        detective_request.reviewed_at = timezone.now()
+        detective_request.save()
 
     # Notify detective
     Notification.objects.create(
-        user=detective_profile.user,
+        user=detective_user,
         case=case,
         title='New Case Assignment',
         message=f'You have been assigned to case {case.case_number}: {case.title}'
@@ -790,6 +1119,35 @@ def admin_assign_detective(request):
     )
 
     messages.success(request, f'Detective {detective_profile.full_name} assigned to case {case.case_number}.')
+    return redirect('admin_dashboard')
+
+
+@login_required
+@require_POST
+def admin_reject_detective_request(request):
+    if not request.user.is_staff:
+        messages.error(request, 'Access denied.')
+        return redirect('home')
+
+    request_pk = request.POST.get('request_id')
+    reason = request.POST.get('admin_reason', '').strip()
+    if not reason:
+        messages.error(request, 'Please provide a reason for rejecting this request.')
+        return redirect('admin_dashboard')
+
+    det_request = get_object_or_404(DetectiveRequest, pk=request_pk, status='PENDING')
+    det_request.status = 'DECLINED'
+    det_request.admin_reason = reason
+    det_request.reviewed_at = timezone.now()
+    det_request.save()
+
+    Notification.objects.create(
+        user=det_request.requested_by,
+        case=det_request.case,
+        title='Detective Request Rejected by Admin',
+        message=f'Admin rejected your request for detective {det_request.requested_detective.profile.full_name if det_request.requested_detective and hasattr(det_request.requested_detective, "profile") else "selected detective"} on case "{det_request.case.title}" ({det_request.case.case_number}). Reason: {reason}'
+    )
+    messages.success(request, 'Detective request rejected. The user has been notified with your reason.')
     return redirect('admin_dashboard')
 
 
@@ -840,6 +1198,24 @@ def admin_manage_blog(request):
         blog = get_object_or_404(Blog, pk=blog_pk)
         blog.delete()
         messages.success(request, 'Blog article deleted.')
+
+    elif action == 'edit':
+        blog_pk = request.POST.get('blog_id')
+        blog = get_object_or_404(Blog, pk=blog_pk)
+        title = request.POST.get('title', '').strip()
+        content = request.POST.get('content', '').strip()
+        image = request.FILES.get('image')
+        if not title or not content:
+            messages.error(request, 'Blog title and content are required.')
+            return redirect('admin_dashboard')
+        blog.title = title
+        blog.content = content
+        if image:
+            if blog.image:
+                blog.image.delete(save=False)
+            blog.image = image
+        blog.save()
+        messages.success(request, 'Blog article updated!')
 
     return redirect('admin_dashboard')
 
@@ -893,7 +1269,60 @@ def admin_mark_case_solved(request, pk):
     case = get_object_or_404(Case, pk=pk)
     case.status = 'CLOSED'
     case.save()
+    CaseSolveRequest.objects.filter(case=case, status='PENDING').update(status='APPROVED', reviewed_at=timezone.now())
+    Notification.objects.create(
+        user=case.owner,
+        case=case,
+        title='Case Solved',
+        message=f'Admin verified and closed your case "{case.title}" ({case.case_number}) as solved.'
+    )
     messages.success(request, f'Case {case.case_number} marked as solved.')
+    return redirect('admin_dashboard')
+
+
+@login_required
+@require_POST
+def admin_review_solve_request(request):
+    if not request.user.is_staff:
+        messages.error(request, 'Access denied.')
+        return redirect('home')
+    request_pk = request.POST.get('request_id')
+    action = request.POST.get('action', 'approve')
+    solve_req = get_object_or_404(CaseSolveRequest, pk=request_pk, status='PENDING')
+    case = solve_req.case
+    if action == 'approve':
+        solve_req.status = 'APPROVED'
+        solve_req.reviewed_at = timezone.now()
+        solve_req.save()
+        case.status = 'CLOSED'
+        case.save()
+        Notification.objects.create(
+            user=case.owner,
+            case=case,
+            title='Solve Request Approved',
+            message=f'Admin verified your solve request for "{case.title}" ({case.case_number}). Case is now CLOSED as solved.'
+        )
+        messages.success(request, f'Solve request approved. Case {case.case_number} CLOSED.')
+    else:
+        reason = request.POST.get('admin_reason', '').strip()
+        if not reason:
+            messages.error(request, 'Please provide a reason for rejecting the solve request.')
+            return redirect('admin_dashboard')
+        solve_req.status = 'DECLINED'
+        solve_req.admin_reason = reason
+        solve_req.reviewed_at = timezone.now()
+        solve_req.save()
+        # Restore/keep older open status — case was never closed
+        if case.status == 'CLOSED':
+            case.status = solve_req.previous_status if solve_req.previous_status in ['OPEN', 'INVESTIGATING', 'FOUND'] else 'OPEN'
+            case.save()
+        Notification.objects.create(
+            user=case.owner,
+            case=case,
+            title='Solve Request Rejected by Admin',
+            message=f'Admin rejected your solve request for "{case.title}" ({case.case_number}). Reason: {reason} Case remains {case.get_status_display()} (open).'
+        )
+        messages.success(request, 'Solve request rejected. Owner notified with reason; case stays open.')
     return redirect('admin_dashboard')
 
 
@@ -902,6 +1331,7 @@ def admin_mark_case_solved(request, pk):
 # ============================================================
 
 @login_required
+@verified_citizen_required
 def notifications_list(request):
     notifications = Notification.objects.filter(user=request.user).order_by('-created_at')[:20]
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -917,6 +1347,7 @@ def notifications_list(request):
 
 
 @login_required
+@verified_citizen_required
 @require_POST
 def notification_mark_read(request, pk):
     notification = get_object_or_404(Notification, pk=pk, user=request.user)
@@ -928,6 +1359,7 @@ def notification_mark_read(request, pk):
 
 
 @login_required
+@verified_citizen_required
 @require_POST
 def notifications_mark_all_read(request):
     Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
@@ -942,6 +1374,7 @@ def notifications_mark_all_read(request):
 # ============================================================
 
 @login_required
+@verified_citizen_required
 @require_POST
 def feedback_create(request):
     comment = request.POST.get('comment', '').strip()
@@ -962,6 +1395,7 @@ def feedback_create(request):
 # ============================================================
 
 @login_required
+@verified_citizen_required
 @require_POST
 def sighting_create(request, case_pk):
     case = get_object_or_404(Case, pk=case_pk)

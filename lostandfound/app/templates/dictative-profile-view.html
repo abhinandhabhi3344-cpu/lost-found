@@ -116,6 +116,11 @@
                         {% endif %}
                     </div>
                     <span style="font-size: 0.75rem; font-weight: 700;">{{ user_profile.full_name|default:user.username }}</span>
+                    {% if not user.is_staff and user_profile and not user_profile.is_detective and user_profile.verification_status == 'PENDING' %}
+                    <span style="font-size:0.6rem; font-weight:800; text-transform:uppercase; background:#fef3c7; color:#92400e; border:1px solid #f59e0b; padding:0.2rem 0.5rem; border-radius:9999px;">Verification Pending</span>
+                    {% elif not user.is_staff and user_profile and not user_profile.is_detective and user_profile.verification_status == 'REJECTED' %}
+                    <span style="font-size:0.6rem; font-weight:800; text-transform:uppercase; background:#fee2e2; color:#991b1b; border:1px solid #ef4444; padding:0.2rem 0.5rem; border-radius:9999px;">Verification Rejected</span>
+                    {% endif %}
                 </div>
                 {% if user.is_staff %}
                     <a href="{% url 'admin_dashboard' %}" class="btn-login">Admin</a>
@@ -256,5 +261,19 @@
             }, 4000);
         })();
 </script>
+    {% if user.is_authenticated and not user.is_staff and user_profile and not user_profile.is_detective and user_profile.verification_status == 'REJECTED' %}
+    <div id="verification-rejected-overlay" style="position:fixed; inset:0; z-index:300; background:rgba(0,0,0,0.55); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; padding:1rem;">
+        <div style="background:#F3F0EC; border-radius:12px; max-width:28rem; width:100%; padding:2rem; text-align:center;">
+            <div style="width:3rem; height:3rem; border-radius:50%; background:#fee2e2; color:#dc2626; display:flex; align-items:center; justify-content:center; font-size:1.25rem; margin:0 auto 1rem auto;"><i class="fas fa-xmark"></i></div>
+            <h3 style="font-size:1.25rem; font-weight:800;">Account Rejected by Admin</h3>
+            <p style="font-size:0.8rem; margin-top:0.75rem;">Reason:</p>
+            <p style="font-size:0.8rem; font-weight:700; color:#991b1b; background:#fee2e2; border:1px solid #ef4444; border-radius:8px; padding:0.75rem; margin-top:0.5rem;">"{{ user_profile.verification_reason|default:"No reason provided." }}"</p>
+            <div style="display:flex; gap:0.75rem; margin-top:1.25rem; justify-content:center;">
+                <button onclick="document.getElementById('verification-rejected-overlay').style.display='none'" style="background:#EAE6E1; border-radius:10px; font-weight:700; font-size:0.75rem; padding:0.7rem 1.25rem;">Close</button>
+                <form action="{% url 'delete_own_account' %}" method="POST" onsubmit="return confirm('Permanently delete your account?');" style="display:inline;">{% csrf_token %}<button type="submit" style="background:#dc2626; color:#fff; border-radius:10px; font-weight:700; font-size:0.75rem; padding:0.7rem 1.25rem;">Delete Account</button></form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </body>
 </html>

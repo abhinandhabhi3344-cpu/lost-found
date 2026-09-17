@@ -201,6 +201,7 @@
                                 <th>Subject</th>
                                 <th>Category</th>
                                 <th>Location</th>
+                                <th>Complaint No.</th>
                                 <th>Reward</th>
                                 <th>Status</th>
                                 <th>Actions</th>
@@ -213,6 +214,7 @@
                                 <td><strong>{{ case.title }}</strong>{% if case.pk in assigned_case_ids %}<br><span style="font-size:0.6rem; font-weight:700; color:var(--emerald-accent);"><i class="fas fa-id-badge"></i> Detective Assigned — Request Disabled</span>{% elif case.pk in pending_request_case_ids %}<br><span style="font-size:0.6rem; font-weight:700; color:var(--amber-accent);"><i class="fas fa-clock"></i> Detective Request Pending</span>{% endif %}</td>
                                 <td>{{ case.get_category_display }}</td>
                                 <td>{{ case.location }}</td>
+                                <td><code style="font-size:0.65rem;">{{ case.complaint_number|default:"—" }}</code></td>
                                 <td>₹{{ case.reward|floatformat:0|intcomma }}</td>
                                 <td>
                                     {% if case.pk in assigned_case_ids %}
@@ -227,15 +229,19 @@
                                 </td>
                                 <td style="display: flex; gap: 0.3rem; flex-wrap: wrap;">
                                     <a href="{% url 'case_detail' pk=case.pk %}" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">View</a>
-                                    <button onclick="openEditModal({{ case.pk }}, '{{ case.title|escapejs }}', '{{ case.location|escapejs }}', '{{ case.description|escapejs|truncatewords:30 }}', {{ case.reward }}, '{{ case.get_category_display }}')" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Edit</button>
+                                    <button onclick="openEditModal({{ case.pk }}, '{{ case.title|escapejs }}', '{{ case.location|escapejs }}', '{{ case.description|escapejs }}', '{{ case.reward|floatformat:0 }}', '{{ case.category }}', '{{ case.complaint_number|escapejs }}', '{{ case.case_type }}')" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Edit</button>
                                     <button onclick="openDeleteModal({{ case.pk }}, '{{ case.title|escapejs }}')" class="neu-button-danger" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Delete</button>
                                     {% if case.status == 'OPEN' or case.status == 'INVESTIGATING' %}
-                                    <button onclick="openResolveModal({{ case.pk }}, '{{ case.title|escapejs }}')" class="neu-button-emerald" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Solved</button>
+                                        {% if case.pk in pending_solve_case_ids %}
+                                        <span class="badge-tag bg-amber" style="font-size:0.6rem;"><i class="fas fa-clock"></i> Solve Pending Admin</span>
+                                        {% else %}
+                                        <button onclick="openResolveModal({{ case.pk }}, '{{ case.title|escapejs }}')" class="neu-button-emerald" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Solved</button>
+                                        {% endif %}
                                     {% endif %}
                                 </td>
                             </tr>
                             {% empty %}
-                            <tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--stone-muted);">No lost cases reported yet.</td></tr>
+                            <tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--stone-muted);">No lost cases reported yet.</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -278,7 +284,15 @@
                                 </td>
                                 <td style="display: flex; gap: 0.3rem;">
                                     <a href="{% url 'case_detail' pk=case.pk %}" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">View</a>
+                                    <button onclick="openEditModal({{ case.pk }}, '{{ case.title|escapejs }}', '{{ case.location|escapejs }}', '{{ case.description|escapejs }}', '{{ case.reward|floatformat:0 }}', '{{ case.category }}', '{{ case.complaint_number|escapejs }}', '{{ case.case_type }}')" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Edit</button>
                                     <button onclick="openDeleteModal({{ case.pk }}, '{{ case.title|escapejs }}')" class="neu-button-danger" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Delete</button>
+                                    {% if case.status != 'CLOSED' %}
+                                        {% if case.pk in pending_solve_case_ids %}
+                                        <span class="badge-tag bg-amber" style="font-size:0.6rem;"><i class="fas fa-clock"></i> Solve Pending</span>
+                                        {% else %}
+                                        <button onclick="openResolveModal({{ case.pk }}, '{{ case.title|escapejs }}')" class="neu-button-emerald" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Solved</button>
+                                        {% endif %}
+                                    {% endif %}
                                 </td>
                             </tr>
                             {% empty %}
@@ -298,15 +312,27 @@
                 </div>
 
                 {% for assignment in assignments %}
-                <div class="card-box">
+                <div class="card-box" {% if assignment.status == 'REJECTED' %}style="border:1px solid var(--red-accent);"{% endif %}>
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;" class="border-b-line pb-2">
                         <div>
                             <h3 class="font-display" style="font-size: 1rem; font-weight: 700;">{{ assignment.case.title }}</h3>
                             <p style="font-size: 0.65rem; color: var(--stone-muted); font-family: monospace;">{{ assignment.case.case_number }} • Detective: {{ assignment.detective.profile.full_name|default:assignment.detective.username }}</p>
                         </div>
-                        <span class="badge-tag {% if assignment.status == 'COMPLETED' %}bg-emerald{% elif assignment.status == 'ACCEPTED' %}bg-amber{% else %}bg-red{% endif %}">{{ assignment.get_status_display }}</span>
+                        <span class="badge-tag {% if assignment.status == 'COMPLETED' %}bg-emerald{% elif assignment.status == 'ACCEPTED' %}bg-amber{% elif assignment.status == 'REJECTED' %}bg-red{% else %}bg-red{% endif %}">{{ assignment.get_status_display }}</span>
                     </div>
 
+                    {% if assignment.status == 'REJECTED' %}
+                    <div style="margin-top:0.75rem; padding:0.75rem; background:#fee2e2; border:1px solid var(--red-accent); border-radius:6px;">
+                        <span style="font-size:0.65rem; font-weight:700; color:var(--red-accent); text-transform:uppercase;"><i class="fas fa-xmark"></i> Detective declined this case</span>
+                        <p style="font-size:0.75rem; color:#7f1d1d; margin-top:0.35rem;"><strong>Reason:</strong> "{{ assignment.reject_reason|default:"No reason provided." }}"</p>
+                        {% if assignment.rejected_at %}
+                        <span style="font-size:0.65rem; color:var(--stone-muted);">{{ assignment.rejected_at|date:"M d, Y h:i A" }}</span>
+                        {% endif %}
+                        <p style="font-size:0.7rem; color:#7f1d1d; margin-top:0.4rem;">You can request another detective for this case from "Request Detective" if the case is still OPEN.</p>
+                    </div>
+                    {% endif %}
+
+                    {% if assignment.status != 'REJECTED' %}
                     {% for update in assignment.updates.all %}
                     <div class="activity-item">
                         <span style="font-size: 0.65rem; font-weight: 700; color: var(--emerald-accent);">INVESTIGATION UPDATE</span>
@@ -320,6 +346,7 @@
                     {% empty %}
                     <p style="font-size: 0.75rem; color: var(--stone-muted); padding: 1rem 0;">No investigation updates yet.</p>
                     {% endfor %}
+                    {% endif %}
                 </div>
                 {% empty %}
                 <div class="card-box">
@@ -328,16 +355,54 @@
                 {% endfor %}
 
                 {% if detective_requests %}
-                <h3 class="font-display" style="font-size: 1rem; font-weight: 700; margin-top: 2rem; margin-bottom: 1rem;">PENDING DETECTIVE REQUESTS</h3>
+                <h3 class="font-display" style="font-size: 1rem; font-weight: 700; margin-top: 2rem; margin-bottom: 1rem;">DETECTIVE REQUESTS</h3>
                 {% for req in detective_requests %}
-                <div class="card-box">
+                <div class="card-box" {% if req.status == 'DECLINED' %}style="border:1px solid var(--red-accent);"{% endif %}>
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <h4 class="font-display" style="font-size: 0.9rem; font-weight: 700;">{{ req.case.title }}</h4>
                             <p style="font-size: 0.65rem; color: var(--stone-muted);">{{ req.case.case_number }} • Requested {{ req.created_at|timesince }} ago</p>
+                            {% if req.requested_detective %}
+                            <p style="font-size: 0.7rem; margin-top: 0.25rem;"><i class="fas fa-id-badge"></i> Requested: <strong>{{ req.requested_detective.profile.full_name|default:req.requested_detective.username }}</strong></p>
+                            {% endif %}
                         </div>
                         <span class="badge-tag {% if req.status == 'PENDING' %}bg-amber{% elif req.status == 'APPROVED' %}bg-emerald{% else %}bg-red{% endif %}">{{ req.get_status_display }}</span>
                     </div>
+                    {% if req.status == 'DECLINED' %}
+                    <div style="margin-top:0.75rem; padding:0.75rem; background:#fee2e2; border:1px solid var(--red-accent); border-radius:6px;">
+                        <span style="font-size:0.65rem; font-weight:700; color:var(--red-accent); text-transform:uppercase;"><i class="fas fa-xmark"></i> Admin rejected your request</span>
+                        <p style="font-size:0.75rem; color:#7f1d1d; margin-top:0.35rem;"><strong>Reason:</strong> "{{ req.admin_reason|default:"No reason provided." }}"</p>
+                        {% if req.reviewed_at %}
+                        <span style="font-size:0.65rem; color:var(--stone-muted);">{{ req.reviewed_at|date:"M d, Y h:i A" }}</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                {% endif %}
+
+                {% if solve_requests %}
+                <h3 class="font-display" style="font-size: 1rem; font-weight: 700; margin-top: 2rem; margin-bottom: 1rem;">SOLVE VERIFICATION REQUESTS</h3>
+                {% for sreq in solve_requests %}
+                <div class="card-box" {% if sreq.status == 'DECLINED' %}style="border:1px solid var(--red-accent);"{% endif %}>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h4 class="font-display" style="font-size: 0.9rem; font-weight: 700;">{{ sreq.case.title }}</h4>
+                            <p style="font-size: 0.65rem; color: var(--stone-muted);">{{ sreq.case.case_number }} • Requested {{ sreq.created_at|timesince }} ago • Case still {{ sreq.case.get_status_display }}</p>
+                        </div>
+                        <span class="badge-tag {% if sreq.status == 'PENDING' %}bg-amber{% elif sreq.status == 'APPROVED' %}bg-emerald{% else %}bg-red{% endif %}">{{ sreq.get_status_display }}</span>
+                    </div>
+                    {% if sreq.status == 'DECLINED' %}
+                    <div style="margin-top:0.75rem; padding:0.75rem; background:#fee2e2; border:1px solid var(--red-accent); border-radius:6px;">
+                        <span style="font-size:0.65rem; font-weight:700; color:var(--red-accent); text-transform:uppercase;"><i class="fas fa-xmark"></i> Admin rejected — case still open</span>
+                        <p style="font-size:0.75rem; color:#7f1d1d; margin-top:0.35rem;"><strong>Reason:</strong> "{{ sreq.admin_reason|default:"No reason provided." }}"</p>
+                        {% if sreq.reviewed_at %}
+                        <span style="font-size:0.65rem; color:var(--stone-muted);">{{ sreq.reviewed_at|date:"M d, Y h:i A" }}</span>
+                        {% endif %}
+                    </div>
+                    {% elif sreq.status == 'PENDING' %}
+                    <p style="font-size:0.7rem; color:var(--stone-muted); margin-top:0.5rem;">Awaiting admin verification. Case stays open until approved.</p>
+                    {% endif %}
                 </div>
                 {% endfor %}
                 {% endif %}
@@ -476,6 +541,18 @@
                     <input type="text" name="location" id="edit-location" required class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;">
                 </div>
                 <div>
+                    <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Category</label>
+                    <select name="category" id="edit-category" class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;">
+                        <option value="PET">Pet</option>
+                        <option value="PERSON">Person</option>
+                        <option value="ITEM">Item</option>
+                    </select>
+                </div>
+                <div id="edit-complaint-wrap">
+                    <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Police Complaint Registered Number <span style="color:var(--red-accent);">*</span></label>
+                    <input type="text" name="complaint_number" id="edit-complaint" required class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;" placeholder="e.g. FIR No. 123/2026">
+                </div>
+                <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Description</label>
                     <textarea rows="3" name="description" id="edit-description" class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;"></textarea>
                 </div>
@@ -510,15 +587,18 @@
             <div style="width: 3rem; height: 3rem; border-radius: 50%; background: #d1fae5; color: var(--emerald-accent); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; margin: 0 auto 1rem auto;">
                 <i class="fas fa-circle-check"></i>
             </div>
-            <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700;">Mark Case as Solved?</h3>
+            <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700;">Request Case Solved?</h3>
             <p id="resolve-case-title" style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.35rem;"></p>
-            <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem; justify-content: center;">
-                <button onclick="closeModals()" class="neu-button">Cancel</button>
-                <form id="resolve-case-form" method="POST" style="display: inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="neu-button-dark">Confirm Reunited</button>
-                </form>
-            </div>
+            <p style="font-size:0.7rem; color:var(--stone-muted); margin-top:0.4rem;">Admin must verify before the case is closed. Case stays open until approved.</p>
+            <form id="resolve-case-form" method="POST" style="margin-top: 1rem; text-align:left;">
+                {% csrf_token %}
+                <label style="display:block; font-size:0.65rem; font-weight:600; color:var(--stone-muted); text-transform:uppercase; margin-bottom:0.25rem;">Note to admin (optional)</label>
+                <textarea name="message" rows="2" placeholder="e.g. Item recovered, proof attached..." class="neu-input" style="width:100%; padding:0.6rem 0.75rem;"></textarea>
+                <div style="display: flex; gap: 0.75rem; margin-top: 1rem; justify-content: center;">
+                    <button type="button" onclick="closeModals()" class="neu-button">Cancel</button>
+                    <button type="submit" class="neu-button-dark">Send for Admin Verification</button>
+                </div>
+            </form>
         </div>
 
         <!-- REQUEST DETECTIVE MODAL -->
@@ -538,15 +618,31 @@
                         <option value="{{ case.pk }}">{{ case.title }} ({{ case.case_number }}) — {{ case.location }}</option>
                         {% endfor %}
                     </select>
-                    <p style="font-size:0.65rem; color:var(--stone-muted); margin-top:0.25rem;">Only cases without an assigned detective are shown. Assigned cases are hidden to prevent duplicate assignments.</p>
+                    <p style="font-size:0.65rem; color:var(--stone-muted); margin-top:0.25rem;">Only OPEN / INVESTIGATING cases without an assigned detective are shown. Closed / resolved cases cannot request a detective.</p>
                     {% else %}
                     <div style="padding:0.75rem; background:#fef3c7; border:1px solid #f59e0b; border-radius:6px; color:#92400e; font-size:0.7rem; font-weight:600;">
-                        All your cases already have a detective assigned or you have no LOST reports. No new detective request can be made.
+                        No eligible cases for a detective request. Cases must be LOST, OPEN/INVESTIGATING, and without an assigned detective or pending request.
                     </div>
                     <select name="case_id" class="hidden" disabled><option>No available cases</option></select>
                     {% endif %}
                     {% if lost_cases|length != unassigned_cases|length %}
                     <p style="font-size:0.65rem; color:var(--emerald-accent); font-weight:600; margin-top:0.35rem;"><i class="fas fa-circle-check"></i> {{ assigned_case_ids|length }} case(s) already have a detective and are shown as assigned in the table below (non-selectable).</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Select Detective (required)</label>
+                    {% if available_detectives %}
+                    <select name="detective_id" class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;" required>
+                        <option value="">Choose your detective...</option>
+                        {% for det in available_detectives %}
+                        <option value="{{ det.user.pk }}">{{ det.full_name }} — {{ det.specialization|default:"General" }} ({{ det.experience_years }} yrs, {{ det.city|default:det.address|default:"—" }})</option>
+                        {% endfor %}
+                    </select>
+                    <p style="font-size:0.65rem; color:var(--stone-muted); margin-top:0.25rem;">Admin will approve and assign your chosen detective. If rejected, the reason will appear below.</p>
+                    {% else %}
+                    <div style="padding:0.75rem; background:#fee2e2; border:1px solid var(--red-accent); border-radius:6px; color:#7f1d1d; font-size:0.7rem; font-weight:600;">
+                        No approved detectives available right now. Please try later.
+                    </div>
                     {% endif %}
                 </div>
                 <div>
@@ -592,6 +688,10 @@
                         <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Reward (₹) <span style="text-transform:none; font-weight:400;">(Optional)</span></label>
                         <input type="number" name="reward" placeholder="e.g. 1500" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                     </div>
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Police Complaint Registered Number <span style="color:var(--red-accent);">*</span></label>
+                    <input type="text" name="complaint_number" placeholder="e.g. FIR No. 123/2026, Police Station" required class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Upload Photo</label>
@@ -664,12 +764,31 @@
         if (modalOverlay) modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModals(); });
         window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModals(); });
 
-        function openEditModal(pk, title, location, description, reward, category) {
+        function openEditModal(pk, title, location, description, reward, category, complaint, caseType) {
             document.getElementById('edit-case-form').action = '/case/' + pk + '/edit/';
             document.getElementById('edit-title').value = title;
             document.getElementById('edit-location').value = location;
             document.getElementById('edit-description').value = description;
             document.getElementById('edit-reward').value = reward;
+            if (document.getElementById('edit-complaint')) document.getElementById('edit-complaint').value = complaint || '';
+            var wrap = document.getElementById('edit-complaint-wrap');
+            var compInput = document.getElementById('edit-complaint');
+            if (wrap && compInput) {
+                if ((caseType || 'LOST').toUpperCase() === 'FOUND') {
+                    wrap.style.display = 'none';
+                    compInput.removeAttribute('required');
+                } else {
+                    wrap.style.display = 'block';
+                    compInput.setAttribute('required', 'required');
+                }
+            }
+            var catSelect = document.getElementById('edit-category');
+            if (catSelect && category) {
+                var upper = category.toUpperCase();
+                for (var i = 0; i < catSelect.options.length; i++) {
+                    if (catSelect.options[i].value === upper) { catSelect.selectedIndex = i; break; }
+                }
+            }
             openModal('modal-edit-case');
         }
 
@@ -681,7 +800,7 @@
 
         function openResolveModal(pk, title) {
             document.getElementById('resolve-case-form').action = '/case/' + pk + '/resolve/';
-            document.getElementById('resolve-case-title').textContent = 'Mark "' + title + '" as solved and reunited?';
+            document.getElementById('resolve-case-title').textContent = 'Request admin to verify "' + title + '" as solved? Case stays open until approved.';
             openModal('modal-mark-resolved');
         }
 
