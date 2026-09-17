@@ -47,7 +47,7 @@ class Case(models.Model):
     category=models.CharField(max_length=10,choices=CATEGORY)
     status=models.CharField(max_length=20,choices=CASE_STATUS,default="OPEN")
     location=models.CharField(max_length=255)
-    complaint_number=models.CharField(max_length=100,default="",help_text="Police station complaint registered number")
+    complaint_number=models.CharField(max_length=100,default="",blank=True,help_text="Police station complaint registered number (LOST cases only)")
     reward=models.DecimalField(max_digits=10,decimal_places=2,default=0)
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)

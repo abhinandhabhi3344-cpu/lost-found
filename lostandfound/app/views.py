@@ -332,9 +332,16 @@ def case_create(request):
             messages.error(request, 'Title and location are required.')
             return redirect('case_list')
 
-        if not complaint_number:
-            messages.error(request, 'Police complaint registered number is required. Cases cannot be uploaded without it.')
+        if case_type not in ['LOST', 'FOUND']:
+            case_type = 'LOST'
+
+        # Complaint number is required for LOST only (police FIR no. is unique).
+        # FOUND items have no complaint number.
+        if case_type == 'LOST' and not complaint_number:
+            messages.error(request, 'Police complaint registered number is required for lost cases.')
             return redirect('case_list')
+        if case_type == 'FOUND':
+            complaint_number = ""
 
         try:
             reward = float(reward) if reward else 0
@@ -386,9 +393,13 @@ def case_edit(request, pk):
         location = request.POST.get('location', '').strip()
         if location:
             case.location = location
-        complaint_number = request.POST.get('complaint_number', '').strip()
-        if complaint_number:
-            case.complaint_number = complaint_number
+        # Complaint number applies to LOST only; FOUND never stores one.
+        if case.case_type == 'LOST':
+            complaint_number = request.POST.get('complaint_number', '').strip()
+            if complaint_number:
+                case.complaint_number = complaint_number
+        else:
+            case.complaint_number = ""
         category = request.POST.get('category', '').strip().upper()
         if category in ['ITEM', 'PET', 'PERSON']:
             case.category = category

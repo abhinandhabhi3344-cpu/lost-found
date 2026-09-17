@@ -800,7 +800,7 @@
                                 <td><strong>{{ c.title }}</strong></td>
                                 <td><span class="badge-tag {% if c.case_type == 'LOST' %}bg-red{% else %}bg-emerald{% endif %}">{{ c.get_case_type_display }}</span></td>
                                 <td>{{ c.location }}</td>
-                                <td><code style="font-size:0.65rem;">{{ c.complaint_number|default:"—" }}</code></td>
+                                <td>{% if c.case_type == 'LOST' %}<code style="font-size:0.65rem;">{{ c.complaint_number|default:"—" }}</code>{% else %}<span style="font-size:0.65rem; color:var(--stone-muted);">—</span>{% endif %}</td>
                                 <td>₹{{ c.reward|floatformat:0 }}</td>
                                 <td>
                                     {% if c.status == 'CLOSED' or c.status == 'FOUND' %}

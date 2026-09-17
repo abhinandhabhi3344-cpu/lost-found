@@ -305,10 +305,12 @@
                                     <td style="padding: 0.5rem 0; color: var(--stone-muted); font-weight: 600;">Case Number</td>
                                     <td style="padding: 0.5rem 0; font-weight: 700; text-align: right; font-family: monospace;">{{ case.case_number }}</td>
                                 </tr>
+                                {% if case.case_type == 'LOST' %}
                                 <tr style="border-bottom: 1px solid var(--stone-border);">
                                     <td style="padding: 0.5rem 0; color: var(--stone-muted); font-weight: 600;">Police Complaint No.</td>
                                     <td style="padding: 0.5rem 0; font-weight: 700; text-align: right; font-family: monospace;">{{ case.complaint_number|default:"—" }}</td>
                                 </tr>
+                                {% endif %}
                                 <tr style="border-bottom: 1px solid var(--stone-border);">
                                     <td style="padding: 0.5rem 0; color: var(--stone-muted); font-weight: 600;">Type</td>
                                     <td style="padding: 0.5rem 0; font-weight: 700; text-align: right;">{{ case.get_case_type_display }}</td>
