@@ -10,7 +10,7 @@ CATEGORY=[('ITEM','Item'),('PET','Pet'),('PERSON','Person')]
 CASE_STATUS=[('OPEN','Open'),('INVESTIGATING','Investigating'),('FOUND','Found'),('CLOSED','Closed')]
 DETECTIVE_STATUS=[('PENDING','Pending'),('APPROVED','Approved'),('REJECTED','Rejected')]
 REQUEST_STATUS=[('PENDING','Pending'),('APPROVED','Approved'),('DECLINED','Declined')]
-ASSIGNMENT_STATUS=[('PENDING','Pending'),('ACCEPTED','Accepted'),('COMPLETED','Completed')]
+ASSIGNMENT_STATUS=[('PENDING','Pending'),('ACCEPTED','Accepted'),('COMPLETED','Completed'),('REJECTED','Rejected')]
 
 def case_no():
     return f"LF-{timezone.now().year}-{uuid.uuid4().hex[:6].upper()}"
@@ -76,6 +76,8 @@ class CaseAssignment(models.Model):
     assigned_by=models.ForeignKey(User,on_delete=models.CASCADE,related_name="assigned")
     status=models.CharField(max_length=20,choices=ASSIGNMENT_STATUS,default="PENDING")
     assigned_at=models.DateTimeField(auto_now_add=True)
+    reject_reason=models.TextField(blank=True,default="")
+    rejected_at=models.DateTimeField(blank=True,null=True)
 
 class InvestigationUpdate(models.Model):
     assignment = models.ForeignKey(

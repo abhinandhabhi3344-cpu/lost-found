@@ -375,7 +375,8 @@ def user_dashboard(request):
     notifications = Notification.objects.filter(user=user).order_by('-created_at')[:10]
 
     # IDs of cases that already have a detective assigned (prevent multiple detectives per case)
-    assigned_case_ids = set(CaseAssignment.objects.filter(case__owner=user).values_list('case_id', flat=True))
+    # REJECTED assignments don't block — case becomes requestable again
+    assigned_case_ids = set(CaseAssignment.objects.filter(case__owner=user).exclude(status='REJECTED').values_list('case_id', flat=True))
     assigned_via_field = set(Case.objects.filter(owner=user, assigned_detective__isnull=False).values_list('id', flat=True))
     all_assigned_case_ids = assigned_case_ids.union(assigned_via_field)
     pending_request_case_ids = set(DetectiveRequest.objects.filter(requested_by=user, status='PENDING').values_list('case_id', flat=True))
@@ -525,6 +526,7 @@ def detective_dashboard(request):
 
     active_assignments = assignments.filter(status__in=['PENDING', 'ACCEPTED'])
     completed_assignments = assignments.filter(status='COMPLETED')
+    rejected_assignments = assignments.filter(status='REJECTED')
 
     achievements = DetectiveAchievement.objects.filter(detective=user).order_by('-created_at')
     notifications = Notification.objects.filter(user=user).order_by('-created_at')[:10]
@@ -536,11 +538,13 @@ def detective_dashboard(request):
         'assignments': assignments,
         'active_assignments': active_assignments,
         'completed_assignments': completed_assignments,
+        'rejected_assignments': rejected_assignments,
         'achievements': achievements,
         'notifications': notifications,
         'active_count': active_assignments.count(),
         'completed_count': completed_assignments.count(),
-        'total_count': assignments.count(),
+        'rejected_count': rejected_assignments.count(),
+        'total_count': assignments.exclude(status='REJECTED').count(),
         'all_updates': all_updates,
     }
     return render(request, 'dictative-dash.html', context)
@@ -594,6 +598,9 @@ def detective_add_update(request, assignment_pk):
 @require_POST
 def detective_accept_case(request, assignment_pk):
     assignment = get_object_or_404(CaseAssignment, pk=assignment_pk, detective=request.user)
+    if assignment.status not in ['PENDING']:
+        messages.error(request, 'This assignment can no longer be accepted.')
+        return redirect('detective_dashboard')
     assignment.status = 'ACCEPTED'
     assignment.save()
     assignment.case.status = 'INVESTIGATING'
@@ -606,6 +613,44 @@ def detective_accept_case(request, assignment_pk):
         message=f'Detective {request.user.profile.full_name} accepted your case assignment.'
     )
     messages.success(request, 'Case accepted!')
+    return redirect('detective_dashboard')
+
+
+@login_required
+@require_POST
+def detective_reject_case(request, assignment_pk):
+    assignment = get_object_or_404(CaseAssignment, pk=assignment_pk, detective=request.user)
+    if assignment.status in ['COMPLETED', 'REJECTED']:
+        messages.error(request, 'This assignment can no longer be rejected.')
+        return redirect('detective_dashboard')
+
+    reason = request.POST.get('reject_reason', '').strip()
+    if not reason:
+        messages.error(request, 'Please provide a reason for rejecting this case.')
+        return redirect('detective_dashboard')
+
+    assignment.status = 'REJECTED'
+    assignment.reject_reason = reason
+    assignment.rejected_at = timezone.now()
+    assignment.save()
+
+    # Free the case so the owner can request another detective
+    case = assignment.case
+    case.assigned_detective = None
+    # Revert INVESTIGATING back to OPEN if no other active assignment exists
+    has_other_active = CaseAssignment.objects.filter(case=case).exclude(pk=assignment.pk).exclude(status='REJECTED').exists()
+    if not has_other_active and case.status == 'INVESTIGATING':
+        case.status = 'OPEN'
+    case.save()
+
+    detective_name = request.user.profile.full_name if hasattr(request.user, 'profile') else request.user.username
+    Notification.objects.create(
+        user=case.owner,
+        case=case,
+        title='Detective Declined Case',
+        message=f'Detective {detective_name} declined your case "{case.title}" ({case.case_number}). Reason: {reason}'
+    )
+    messages.success(request, 'Case rejected. The case owner has been notified with your reason.')
     return redirect('detective_dashboard')
 
 
@@ -627,7 +672,8 @@ def detective_request_create(request):
         return redirect('user_dashboard')
 
     # Prevent multiple detectives per case: if already assigned, block request
-    if CaseAssignment.objects.filter(case=case).exists() or case.assigned_detective is not None:
+    # REJECTED assignments don't count — owner may re-request
+    if CaseAssignment.objects.filter(case=case).exclude(status='REJECTED').exists() or case.assigned_detective is not None:
         messages.error(request, 'A detective is already assigned to this case. Cannot request another.')
         return redirect('user_dashboard')
 
@@ -764,8 +810,8 @@ def admin_assign_detective(request):
         messages.error(request, f'Case {case.case_number} is closed/resolved. Cannot assign a detective.')
         return redirect('admin_dashboard')
 
-    # Prevent multiple detectives for a single case
-    if CaseAssignment.objects.filter(case=case).exists() or case.assigned_detective is not None:
+    # Prevent multiple detectives for a single case (REJECTED doesn't block re-assign)
+    if CaseAssignment.objects.filter(case=case).exclude(status='REJECTED').exists() or case.assigned_detective is not None:
         messages.error(request, f'Case {case.case_number} already has a detective assigned. Multiple detectives per case is not allowed.')
         return redirect('admin_dashboard')
 

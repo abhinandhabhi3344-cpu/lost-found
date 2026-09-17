@@ -298,15 +298,27 @@
                 </div>
 
                 {% for assignment in assignments %}
-                <div class="card-box">
+                <div class="card-box" {% if assignment.status == 'REJECTED' %}style="border:1px solid var(--red-accent);"{% endif %}>
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;" class="border-b-line pb-2">
                         <div>
                             <h3 class="font-display" style="font-size: 1rem; font-weight: 700;">{{ assignment.case.title }}</h3>
                             <p style="font-size: 0.65rem; color: var(--stone-muted); font-family: monospace;">{{ assignment.case.case_number }} • Detective: {{ assignment.detective.profile.full_name|default:assignment.detective.username }}</p>
                         </div>
-                        <span class="badge-tag {% if assignment.status == 'COMPLETED' %}bg-emerald{% elif assignment.status == 'ACCEPTED' %}bg-amber{% else %}bg-red{% endif %}">{{ assignment.get_status_display }}</span>
+                        <span class="badge-tag {% if assignment.status == 'COMPLETED' %}bg-emerald{% elif assignment.status == 'ACCEPTED' %}bg-amber{% elif assignment.status == 'REJECTED' %}bg-red{% else %}bg-red{% endif %}">{{ assignment.get_status_display }}</span>
                     </div>
 
+                    {% if assignment.status == 'REJECTED' %}
+                    <div style="margin-top:0.75rem; padding:0.75rem; background:#fee2e2; border:1px solid var(--red-accent); border-radius:6px;">
+                        <span style="font-size:0.65rem; font-weight:700; color:var(--red-accent); text-transform:uppercase;"><i class="fas fa-xmark"></i> Detective declined this case</span>
+                        <p style="font-size:0.75rem; color:#7f1d1d; margin-top:0.35rem;"><strong>Reason:</strong> "{{ assignment.reject_reason|default:"No reason provided." }}"</p>
+                        {% if assignment.rejected_at %}
+                        <span style="font-size:0.65rem; color:var(--stone-muted);">{{ assignment.rejected_at|date:"M d, Y h:i A" }}</span>
+                        {% endif %}
+                        <p style="font-size:0.7rem; color:#7f1d1d; margin-top:0.4rem;">You can request another detective for this case from "Request Detective" if the case is still OPEN.</p>
+                    </div>
+                    {% endif %}
+
+                    {% if assignment.status != 'REJECTED' %}
                     {% for update in assignment.updates.all %}
                     <div class="activity-item">
                         <span style="font-size: 0.65rem; font-weight: 700; color: var(--emerald-accent);">INVESTIGATION UPDATE</span>
@@ -320,6 +332,7 @@
                     {% empty %}
                     <p style="font-size: 0.75rem; color: var(--stone-muted); padding: 1rem 0;">No investigation updates yet.</p>
                     {% endfor %}
+                    {% endif %}
                 </div>
                 {% empty %}
                 <div class="card-box">

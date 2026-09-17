@@ -43,6 +43,7 @@
         .neu-button { background: var(--stone-bg); box-shadow: 4px 4px 10px #c7c4bf, -4px -4px 10px #ffffff; border-radius: 8px; font-weight: 700; text-transform: uppercase; font-size: 0.7rem; padding: 0.65rem 1rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; color: var(--stone-dark); }
         .neu-button-dark { background: var(--stone-dark); color: #ffffff; box-shadow: 4px 4px 10px #c7c4bf, -4px -4px 10px #ffffff; border-radius: 8px; font-weight: 700; text-transform: uppercase; font-size: 0.7rem; padding: 0.65rem 1rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; }
         .neu-button-emerald { background: var(--emerald-accent); color: #ffffff; border-radius: 8px; font-weight: 700; text-transform: uppercase; font-size: 0.7rem; padding: 0.65rem 1rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; box-shadow: 3px 3px 8px #c7c4bf; }
+        .neu-button-danger { background: var(--red-accent); color: #ffffff; border-radius: 8px; font-weight: 700; text-transform: uppercase; font-size: 0.7rem; padding: 0.65rem 1rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; box-shadow: 3px 3px 8px #c7c4bf; }
 
         .metrics-grid { display: grid; grid-template-columns: repeat(1, 1fr); gap: 1.25rem; margin-top: 2rem; }
         @media (min-width: 640px) { .metrics-grid { grid-template-columns: repeat(2, 1fr); } }
@@ -235,13 +236,17 @@
                             {% if assignment.status == 'PENDING' %}
                             <form action="{% url 'detective_accept_case' assignment_pk=assignment.pk %}" method="POST">
                                 {% csrf_token %}
-                                <button type="submit" class="neu-button-emerald" style="width: 100%;">Accept Assignment</button>
+                                <button type="submit" class="neu-button-emerald" style="width: 100%;"><i class="fas fa-check"></i> Accept Assignment</button>
                             </form>
+                            <button onclick="openRejectModal({{ assignment.pk }}, '{{ assignment.case.title|escapejs }}')" class="neu-button-danger" style="width: 100%;"><i class="fas fa-xmark"></i> Reject with Reason</button>
                             {% else %}
                             <div style="display: flex; gap: 0.4rem;">
                                 <a href="{% url 'case_detail' pk=assignment.case.pk %}" class="neu-button" style="padding: 0.4rem 0.6rem; font-size: 0.6rem; flex: 1;">View Details</a>
                                 <button onclick="openAddUpdateModal({{ assignment.pk }}, '{{ assignment.case.title|escapejs }}')" class="neu-button-dark" style="padding: 0.4rem 0.6rem; font-size: 0.6rem; flex: 1;">+ Post Update</button>
                             </div>
+                            {% if assignment.status == 'ACCEPTED' %}
+                            <button onclick="openRejectModal({{ assignment.pk }}, '{{ assignment.case.title|escapejs }}')" style="font-size:0.6rem; color:var(--red-accent); font-weight:700; text-transform:uppercase; margin-top:0.2rem;">Reject assignment with reason</button>
+                            {% endif %}
                             {% endif %}
                         </div>
                     </div>
@@ -425,6 +430,23 @@
                 <button type="submit" class="neu-button-dark" style="padding: 0.75rem;">POST UPDATE NOW</button>
             </form>
         </div>
+        <!-- REJECT ASSIGNMENT MODAL -->
+        <div id="modal-reject-case" class="neu-card modal-body hidden" style="text-align: left;">
+            <button onclick="closeModals()" class="close-btn"><i class="fas fa-circle-xmark"></i></button>
+            <div style="margin-bottom: 1rem;">
+                <span class="badge-tag bg-red"><i class="fas fa-xmark"></i> REJECT ASSIGNMENT</span>
+                <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700; margin-top: 0.35rem;" id="reject-case-title">Reject Case</h3>
+                <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.25rem;">The case owner will see your reason on their dashboard and can request another detective.</p>
+            </div>
+            <form id="reject-case-form" method="POST" onsubmit="return confirm('Reject this assignment? The owner will be notified with your reason.');" style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.75rem;">
+                {% csrf_token %}
+                <div>
+                    <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Reason for Rejection (required)</label>
+                    <textarea rows="4" name="reject_reason" placeholder="e.g. Out of operating region, conflict of interest, workload..." required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;"></textarea>
+                </div>
+                <button type="submit" class="neu-button-danger" style="padding: 0.75rem;">CONFIRM REJECT</button>
+            </form>
+        </div>
     </div>
 
     <script>
@@ -445,6 +467,12 @@
             document.getElementById('add-update-form').action = '/detective/update/' + assignmentPk + '/';
             document.getElementById('update-case-title').textContent = 'Post Update for: ' + caseTitle;
             openModal('modal-add-update');
+        }
+
+        function openRejectModal(assignmentPk, caseTitle) {
+            document.getElementById('reject-case-form').action = '/detective/reject/' + assignmentPk + '/';
+            document.getElementById('reject-case-title').textContent = 'Reject: ' + caseTitle;
+            openModal('modal-reject-case');
         }
     
         // Auto-dismiss toasts after 4s with fade

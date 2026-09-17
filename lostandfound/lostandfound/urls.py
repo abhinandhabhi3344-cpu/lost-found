@@ -37,6 +37,7 @@ urlpatterns = [
     path('detective/dashboard/', views.detective_dashboard, name='detective_dashboard'),
     path('detective/update/<int:assignment_pk>/', views.detective_add_update, name='detective_add_update'),
     path('detective/accept/<int:assignment_pk>/', views.detective_accept_case, name='detective_accept_case'),
+    path('detective/reject/<int:assignment_pk>/', views.detective_reject_case, name='detective_reject_case'),
     path('detective/request/', views.detective_request_create, name='detective_request_create'),
 
     # Admin Dashboard
