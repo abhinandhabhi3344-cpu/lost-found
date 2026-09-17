@@ -549,8 +549,8 @@
                 aiBanner.classList.add('active');
 
                 if (!data.results || data.results.length === 0) {
-                    // ZERO matches above 95% threshold (e.g. nature picture / unrelated object uploaded)
-                    aiStatusMsg.innerHTML = `<i class="fas fa-circle-xmark" style="font-size: 1rem; color: var(--red-accent);"></i> <strong>NO SIMILARITY MATCHES FOUND:</strong> Uploaded photo does not match any active cases in database (0 Cases &ge; 95% Similarity Threshold).`;
+                    // ZERO matches above the similarity threshold — unrelated photo
+                    aiStatusMsg.innerHTML = `<i class="fas fa-circle-xmark" style="font-size: 1rem; color: var(--red-accent);"></i> <strong>NO SIMILARITY MATCHES FOUND:</strong> Uploaded photo does not match any active cases in database (0 Cases &ge; 60% Similarity Threshold).`;
 
                     cards.forEach(card => {
                         card.style.display = 'none';
@@ -562,16 +562,16 @@
                     emptyNotice.style.cssText = 'grid-column: 1 / -1; text-align: center; padding: 3rem;';
                     emptyNotice.innerHTML = `
                         <div style="font-size: 2.25rem; color: var(--amber-accent); margin-bottom: 0.5rem;"><i class="fas fa-image"></i></div>
-                        <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700;">No Visual Similarity Matches Found (95% - 100% Threshold)</h3>
+                        <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700;">No Visual Similarity Matches Found (60% Threshold)</h3>
                         <p style="font-size: 0.8rem; color: var(--stone-muted); margin-top: 0.5rem; max-width: 32rem; margin-left: auto; margin-right: auto; line-height: 1.5;">
-                            The uploaded image (nature, background, or unrelated object) does not match any active missing person, pet, or found report with 95% - 100% similarity.
+                            The uploaded image does not match any active missing person, pet, or found report with 60%+ similarity. Try a clearer photo of the subject.
                         </p>
                     `;
                     container.appendChild(emptyNotice);
                     return;
                 }
 
-                // HIGH MATCHES (95% - 100%) FOUND
+                // MATCHES FOUND (ranked by similarity; 80%+ = high match)
                 const resultMap = {};
                 let topScore = 0;
                 data.results.forEach(r => {
