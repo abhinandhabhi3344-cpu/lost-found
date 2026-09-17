@@ -80,6 +80,16 @@ class DetectiveRequest(models.Model):
     reviewed_at=models.DateTimeField(blank=True,null=True)
     created_at=models.DateTimeField(auto_now_add=True)
 
+class CaseSolveRequest(models.Model):
+    case=models.ForeignKey(Case,on_delete=models.CASCADE,related_name="solve_requests")
+    requested_by=models.ForeignKey(User,on_delete=models.CASCADE)
+    previous_status=models.CharField(max_length=20,default="OPEN")
+    message=models.TextField(blank=True,default="")
+    status=models.CharField(max_length=20,choices=REQUEST_STATUS,default="PENDING")
+    admin_reason=models.TextField(blank=True,default="")
+    reviewed_at=models.DateTimeField(blank=True,null=True)
+    created_at=models.DateTimeField(auto_now_add=True)
+
 class CaseAssignment(models.Model):
     case=models.ForeignKey(Case,on_delete=models.CASCADE)
     detective=models.ForeignKey(User,on_delete=models.CASCADE,related_name="assignments")

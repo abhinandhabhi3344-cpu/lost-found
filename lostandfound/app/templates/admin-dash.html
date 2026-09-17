@@ -563,6 +563,9 @@
                 <a class="dash-tab-btn" href="#panel-assignment">
                     <i class="fas fa-compass"></i> Detective Requests &amp; Approvals ({{ detective_requests|length }})
                 </a>
+                <a class="dash-tab-btn" href="#panel-solve">
+                    <i class="fas fa-circle-check"></i> Solve Verifications ({{ pending_solve_requests|length }})
+                </a>
                 <a class="dash-tab-btn" href="#panel-blog">
                     <i class="fas fa-newspaper"></i> Blog Management
                 </a>
@@ -901,6 +904,40 @@
                     {% empty %}
                     <div class="card-box" style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--stone-muted);">
                         No pending detective dispatch requests.
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- SOLVE VERIFICATION REQUESTS -->
+            <div id="panel-solve" class="dash-panel">
+                <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;" class="border-b-line pb-3">SOLVE VERIFICATION REQUESTS ({{ pending_solve_requests|length }})</h2>
+                <div class="grid-2">
+                    {% for sreq in pending_solve_requests %}
+                    <div class="card-box" style="border-left:3px solid var(--amber-accent);">
+                        <div>
+                            <h3 class="font-display" style="font-size: 1rem; font-weight: 700;">{{ sreq.case.title }} ({{ sreq.case.case_number }})</h3>
+                            <p style="font-size: 0.75rem; color: var(--stone-muted);">Owner: {{ sreq.requested_by.profile.full_name|default:sreq.requested_by.username }} • Was: {{ sreq.previous_status }} • Now: {{ sreq.case.status }}</p>
+                            {% if sreq.message %}<p style="font-size:0.75rem; margin-top:0.5rem;">"{{ sreq.message }}"</p>{% endif %}
+                            <p style="font-size:0.7rem; color:var(--stone-muted); margin-top:0.4rem;">Requested {{ sreq.created_at|timesince }} ago. Approving CLOSES the case; rejecting keeps it {{ sreq.case.get_status_display }} (open).</p>
+                        </div>
+                        <form action="{% url 'admin_review_solve_request' %}" method="POST" onsubmit="return confirm('Approve and CLOSE this case as solved?');" style="margin-top:0.75rem;">
+                            {% csrf_token %}
+                            <input type="hidden" name="request_id" value="{{ sreq.pk }}">
+                            <input type="hidden" name="action" value="approve">
+                            <button type="submit" class="neu-button-emerald" style="width:100%;"><i class="fas fa-check"></i> Approve &amp; Close Case</button>
+                        </form>
+                        <form action="{% url 'admin_review_solve_request' %}" method="POST" onsubmit="return confirm('Reject solve request? Case stays open and owner sees your reason.');" style="margin-top:0.5rem; display:flex; flex-direction:column; gap:0.4rem; padding-top:0.6rem; border-top:1px solid var(--stone-border);">
+                            {% csrf_token %}
+                            <input type="hidden" name="request_id" value="{{ sreq.pk }}">
+                            <input type="hidden" name="action" value="reject">
+                            <textarea name="admin_reason" rows="2" required placeholder="Reason for rejection (shown to owner)..." class="neu-input" style="width:100%; padding:0.5rem;"></textarea>
+                            <button type="submit" class="neu-button-danger" style="width:100%;">Reject — Keep Open</button>
+                        </form>
+                    </div>
+                    {% empty %}
+                    <div class="card-box" style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--stone-muted);">
+                        No pending solve verification requests.
                     </div>
                     {% endfor %}
                 </div>

@@ -11,7 +11,7 @@ from django.views.decorators.http import require_POST
 from functools import wraps
 
 from .models import (
-    Profile, Case, CaseImage, SightingReport, DetectiveRequest,
+    Profile, Case, CaseImage, SightingReport, DetectiveRequest, CaseSolveRequest,
     CaseAssignment, InvestigationUpdate, DetectiveAchievement,
     Notification, Blog, Feedback,
     CASE_TYPE, CATEGORY, CASE_STATUS
@@ -443,9 +443,14 @@ def case_delete(request, pk):
 @require_POST
 def case_mark_resolved(request, pk):
     case = get_object_or_404(Case, pk=pk)
-    if case.owner == request.user or request.user.is_staff:
+    # Staff can close directly (they ARE the verifier)
+    if request.user.is_staff:
+        if case.owner != request.user and not request.user.is_staff:
+            messages.error(request, 'Permission denied.')
+            return redirect('case_detail', pk=pk)
         case.status = 'CLOSED'
         case.save()
+        CaseSolveRequest.objects.filter(case=case, status='PENDING').update(status='APPROVED', reviewed_at=timezone.now())
         Notification.objects.create(
             user=case.owner,
             case=case,
@@ -453,8 +458,36 @@ def case_mark_resolved(request, pk):
             message=f'Your case "{case.title}" has been marked as solved and closed.'
         )
         messages.success(request, 'Case marked as solved!')
-    else:
+        return redirect('case_detail', pk=pk)
+    # Owner flow: send to admin for verification, do NOT close yet
+    if case.owner != request.user:
         messages.error(request, 'Permission denied.')
+        return redirect('case_detail', pk=pk)
+    if case.status in ['CLOSED']:
+        messages.warning(request, 'Case is already closed.')
+        return redirect('case_detail', pk=pk)
+    if CaseSolveRequest.objects.filter(case=case, status='PENDING').exists():
+        messages.warning(request, 'A solve verification request is already pending with admin.')
+        return redirect('case_detail', pk=pk)
+    message_text = request.POST.get('message', '').strip()
+    CaseSolveRequest.objects.create(
+        case=case,
+        requested_by=request.user,
+        previous_status=case.status,
+        message=message_text,
+    )
+    for admin_user in User.objects.filter(is_staff=True):
+        Notification.objects.create(
+            user=admin_user,
+            case=case,
+            title='Solve Verification Request',
+            message=f'User {request.user.profile.full_name} requested to mark case {case.case_number} as solved. Please verify.'
+        )
+    messages.success(request, 'Solve request sent to admin for verification. Case stays open until approved.')
+    # stay on dashboard when coming from dashboard, else detail
+    referer = request.META.get('HTTP_REFERER', '')
+    if 'dashboard' in referer:
+        return redirect('user_dashboard')
     return redirect('case_detail', pk=pk)
 
 
@@ -495,6 +528,9 @@ def user_dashboard(request):
         case_type='LOST', status__in=['OPEN', 'INVESTIGATING']
     ).exclude(id__in=all_assigned_case_ids).exclude(id__in=pending_request_case_ids)
 
+    solve_requests = CaseSolveRequest.objects.filter(requested_by=user).select_related('case').order_by('-created_at')
+    pending_solve_case_ids = set(solve_requests.filter(status='PENDING').values_list('case_id', flat=True))
+
     context = {
         'lost_cases': lost_cases,
         'found_cases': found_cases,
@@ -510,6 +546,8 @@ def user_dashboard(request):
         'pending_request_case_ids': pending_request_case_ids,
         'unassigned_cases': unassigned_cases,
         'available_detectives': Profile.objects.filter(is_detective=True, detective_status='APPROVED').select_related('user').order_by('full_name'),
+        'solve_requests': solve_requests,
+        'pending_solve_case_ids': pending_solve_case_ids,
     }
     return render(request, 'user-dash.html', context)
 
@@ -863,6 +901,10 @@ def admin_dashboard(request):
         status='PENDING'
     ).select_related('case', 'requested_by', 'requested_by__profile', 'requested_detective', 'requested_detective__profile')
 
+    pending_solve_requests = CaseSolveRequest.objects.filter(
+        status='PENDING'
+    ).select_related('case', 'requested_by', 'requested_by__profile').order_by('-created_at')
+
     approved_detectives = Profile.objects.filter(
         is_detective=True, detective_status='APPROVED'
     ).select_related('user')
@@ -886,6 +928,7 @@ def admin_dashboard(request):
         'pending_detective_apps': pending_detective_apps,
         'cases': cases,
         'detective_requests': detective_requests,
+        'pending_solve_requests': pending_solve_requests,
         'approved_detectives': approved_detectives,
         'blogs': blogs,
         'feedbacks': feedbacks,
@@ -1226,7 +1269,60 @@ def admin_mark_case_solved(request, pk):
     case = get_object_or_404(Case, pk=pk)
     case.status = 'CLOSED'
     case.save()
+    CaseSolveRequest.objects.filter(case=case, status='PENDING').update(status='APPROVED', reviewed_at=timezone.now())
+    Notification.objects.create(
+        user=case.owner,
+        case=case,
+        title='Case Solved',
+        message=f'Admin verified and closed your case "{case.title}" ({case.case_number}) as solved.'
+    )
     messages.success(request, f'Case {case.case_number} marked as solved.')
+    return redirect('admin_dashboard')
+
+
+@login_required
+@require_POST
+def admin_review_solve_request(request):
+    if not request.user.is_staff:
+        messages.error(request, 'Access denied.')
+        return redirect('home')
+    request_pk = request.POST.get('request_id')
+    action = request.POST.get('action', 'approve')
+    solve_req = get_object_or_404(CaseSolveRequest, pk=request_pk, status='PENDING')
+    case = solve_req.case
+    if action == 'approve':
+        solve_req.status = 'APPROVED'
+        solve_req.reviewed_at = timezone.now()
+        solve_req.save()
+        case.status = 'CLOSED'
+        case.save()
+        Notification.objects.create(
+            user=case.owner,
+            case=case,
+            title='Solve Request Approved',
+            message=f'Admin verified your solve request for "{case.title}" ({case.case_number}). Case is now CLOSED as solved.'
+        )
+        messages.success(request, f'Solve request approved. Case {case.case_number} CLOSED.')
+    else:
+        reason = request.POST.get('admin_reason', '').strip()
+        if not reason:
+            messages.error(request, 'Please provide a reason for rejecting the solve request.')
+            return redirect('admin_dashboard')
+        solve_req.status = 'DECLINED'
+        solve_req.admin_reason = reason
+        solve_req.reviewed_at = timezone.now()
+        solve_req.save()
+        # Restore/keep older open status — case was never closed
+        if case.status == 'CLOSED':
+            case.status = solve_req.previous_status if solve_req.previous_status in ['OPEN', 'INVESTIGATING', 'FOUND'] else 'OPEN'
+            case.save()
+        Notification.objects.create(
+            user=case.owner,
+            case=case,
+            title='Solve Request Rejected by Admin',
+            message=f'Admin rejected your solve request for "{case.title}" ({case.case_number}). Reason: {reason} Case remains {case.get_status_display()} (open).'
+        )
+        messages.success(request, 'Solve request rejected. Owner notified with reason; case stays open.')
     return redirect('admin_dashboard')
 
 

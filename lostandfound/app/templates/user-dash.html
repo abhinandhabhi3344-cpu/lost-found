@@ -232,7 +232,11 @@
                                     <button onclick="openEditModal({{ case.pk }}, '{{ case.title|escapejs }}', '{{ case.location|escapejs }}', '{{ case.description|escapejs }}', '{{ case.reward|floatformat:0 }}', '{{ case.category }}', '{{ case.complaint_number|escapejs }}', '{{ case.case_type }}')" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Edit</button>
                                     <button onclick="openDeleteModal({{ case.pk }}, '{{ case.title|escapejs }}')" class="neu-button-danger" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Delete</button>
                                     {% if case.status == 'OPEN' or case.status == 'INVESTIGATING' %}
-                                    <button onclick="openResolveModal({{ case.pk }}, '{{ case.title|escapejs }}')" class="neu-button-emerald" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Solved</button>
+                                        {% if case.pk in pending_solve_case_ids %}
+                                        <span class="badge-tag bg-amber" style="font-size:0.6rem;"><i class="fas fa-clock"></i> Solve Pending Admin</span>
+                                        {% else %}
+                                        <button onclick="openResolveModal({{ case.pk }}, '{{ case.title|escapejs }}')" class="neu-button-emerald" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Solved</button>
+                                        {% endif %}
                                     {% endif %}
                                 </td>
                             </tr>
@@ -282,6 +286,13 @@
                                     <a href="{% url 'case_detail' pk=case.pk %}" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">View</a>
                                     <button onclick="openEditModal({{ case.pk }}, '{{ case.title|escapejs }}', '{{ case.location|escapejs }}', '{{ case.description|escapejs }}', '{{ case.reward|floatformat:0 }}', '{{ case.category }}', '{{ case.complaint_number|escapejs }}', '{{ case.case_type }}')" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Edit</button>
                                     <button onclick="openDeleteModal({{ case.pk }}, '{{ case.title|escapejs }}')" class="neu-button-danger" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Delete</button>
+                                    {% if case.status != 'CLOSED' %}
+                                        {% if case.pk in pending_solve_case_ids %}
+                                        <span class="badge-tag bg-amber" style="font-size:0.6rem;"><i class="fas fa-clock"></i> Solve Pending</span>
+                                        {% else %}
+                                        <button onclick="openResolveModal({{ case.pk }}, '{{ case.title|escapejs }}')" class="neu-button-emerald" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Solved</button>
+                                        {% endif %}
+                                    {% endif %}
                                 </td>
                             </tr>
                             {% empty %}
@@ -365,6 +376,32 @@
                         <span style="font-size:0.65rem; color:var(--stone-muted);">{{ req.reviewed_at|date:"M d, Y h:i A" }}</span>
                         {% endif %}
                     </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                {% endif %}
+
+                {% if solve_requests %}
+                <h3 class="font-display" style="font-size: 1rem; font-weight: 700; margin-top: 2rem; margin-bottom: 1rem;">SOLVE VERIFICATION REQUESTS</h3>
+                {% for sreq in solve_requests %}
+                <div class="card-box" {% if sreq.status == 'DECLINED' %}style="border:1px solid var(--red-accent);"{% endif %}>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h4 class="font-display" style="font-size: 0.9rem; font-weight: 700;">{{ sreq.case.title }}</h4>
+                            <p style="font-size: 0.65rem; color: var(--stone-muted);">{{ sreq.case.case_number }} • Requested {{ sreq.created_at|timesince }} ago • Case still {{ sreq.case.get_status_display }}</p>
+                        </div>
+                        <span class="badge-tag {% if sreq.status == 'PENDING' %}bg-amber{% elif sreq.status == 'APPROVED' %}bg-emerald{% else %}bg-red{% endif %}">{{ sreq.get_status_display }}</span>
+                    </div>
+                    {% if sreq.status == 'DECLINED' %}
+                    <div style="margin-top:0.75rem; padding:0.75rem; background:#fee2e2; border:1px solid var(--red-accent); border-radius:6px;">
+                        <span style="font-size:0.65rem; font-weight:700; color:var(--red-accent); text-transform:uppercase;"><i class="fas fa-xmark"></i> Admin rejected — case still open</span>
+                        <p style="font-size:0.75rem; color:#7f1d1d; margin-top:0.35rem;"><strong>Reason:</strong> "{{ sreq.admin_reason|default:"No reason provided." }}"</p>
+                        {% if sreq.reviewed_at %}
+                        <span style="font-size:0.65rem; color:var(--stone-muted);">{{ sreq.reviewed_at|date:"M d, Y h:i A" }}</span>
+                        {% endif %}
+                    </div>
+                    {% elif sreq.status == 'PENDING' %}
+                    <p style="font-size:0.7rem; color:var(--stone-muted); margin-top:0.5rem;">Awaiting admin verification. Case stays open until approved.</p>
                     {% endif %}
                 </div>
                 {% endfor %}
@@ -550,15 +587,18 @@
             <div style="width: 3rem; height: 3rem; border-radius: 50%; background: #d1fae5; color: var(--emerald-accent); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; margin: 0 auto 1rem auto;">
                 <i class="fas fa-circle-check"></i>
             </div>
-            <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700;">Mark Case as Solved?</h3>
+            <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700;">Request Case Solved?</h3>
             <p id="resolve-case-title" style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.35rem;"></p>
-            <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem; justify-content: center;">
-                <button onclick="closeModals()" class="neu-button">Cancel</button>
-                <form id="resolve-case-form" method="POST" style="display: inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="neu-button-dark">Confirm Reunited</button>
-                </form>
-            </div>
+            <p style="font-size:0.7rem; color:var(--stone-muted); margin-top:0.4rem;">Admin must verify before the case is closed. Case stays open until approved.</p>
+            <form id="resolve-case-form" method="POST" style="margin-top: 1rem; text-align:left;">
+                {% csrf_token %}
+                <label style="display:block; font-size:0.65rem; font-weight:600; color:var(--stone-muted); text-transform:uppercase; margin-bottom:0.25rem;">Note to admin (optional)</label>
+                <textarea name="message" rows="2" placeholder="e.g. Item recovered, proof attached..." class="neu-input" style="width:100%; padding:0.6rem 0.75rem;"></textarea>
+                <div style="display: flex; gap: 0.75rem; margin-top: 1rem; justify-content: center;">
+                    <button type="button" onclick="closeModals()" class="neu-button">Cancel</button>
+                    <button type="submit" class="neu-button-dark">Send for Admin Verification</button>
+                </div>
+            </form>
         </div>
 
         <!-- REQUEST DETECTIVE MODAL -->
@@ -760,7 +800,7 @@
 
         function openResolveModal(pk, title) {
             document.getElementById('resolve-case-form').action = '/case/' + pk + '/resolve/';
-            document.getElementById('resolve-case-title').textContent = 'Mark "' + title + '" as solved and reunited?';
+            document.getElementById('resolve-case-title').textContent = 'Request admin to verify "' + title + '" as solved? Case stays open until approved.';
             openModal('modal-mark-resolved');
         }
 
