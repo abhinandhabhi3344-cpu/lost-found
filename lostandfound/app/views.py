@@ -366,7 +366,7 @@ def user_dashboard(request):
 
     detective_requests = DetectiveRequest.objects.filter(
         requested_by=user
-    ).select_related('case').order_by('-created_at')
+    ).select_related('case', 'requested_detective', 'requested_detective__profile').order_by('-created_at')
 
     assignments = CaseAssignment.objects.filter(
         case__owner=user
@@ -400,6 +400,7 @@ def user_dashboard(request):
         'assigned_case_ids': all_assigned_case_ids,
         'pending_request_case_ids': pending_request_case_ids,
         'unassigned_cases': unassigned_cases,
+        'available_detectives': Profile.objects.filter(is_detective=True, detective_status='APPROVED').select_related('user').order_by('full_name'),
     }
     return render(request, 'user-dash.html', context)
 
@@ -662,6 +663,7 @@ def detective_reject_case(request, assignment_pk):
 @require_POST
 def detective_request_create(request):
     case_pk = request.POST.get('case_id')
+    detective_pk = request.POST.get('detective_id')
     message_text = request.POST.get('message', '').strip()
 
     case = get_object_or_404(Case, pk=case_pk, owner=request.user)
@@ -681,9 +683,20 @@ def detective_request_create(request):
         messages.warning(request, 'A detective request is already pending for this case.')
         return redirect('user_dashboard')
 
+    # User must select a detective — validate approved detective user id
+    if not detective_pk:
+        messages.error(request, 'Please select a detective for your case.')
+        return redirect('user_dashboard')
+    try:
+        selected_detective_user = User.objects.get(pk=detective_pk, profile__is_detective=True, profile__detective_status='APPROVED')
+    except User.DoesNotExist:
+        messages.error(request, 'Selected detective is invalid or not approved.')
+        return redirect('user_dashboard')
+
     DetectiveRequest.objects.create(
         case=case,
         requested_by=request.user,
+        requested_detective=selected_detective_user,
         message=message_text,
     )
 
@@ -693,10 +706,10 @@ def detective_request_create(request):
             user=admin_user,
             case=case,
             title='New Detective Request',
-            message=f'User {request.user.profile.full_name} requested a detective for case {case.case_number}.'
+            message=f'User {request.user.profile.full_name} requested detective {selected_detective_user.profile.full_name} for case {case.case_number}.'
         )
 
-    messages.success(request, 'Detective dispatch request submitted!')
+    messages.success(request, f'Request for detective {selected_detective_user.profile.full_name} submitted! Awaiting admin approval.')
     return redirect('user_dashboard')
 
 
@@ -728,7 +741,7 @@ def admin_dashboard(request):
 
     detective_requests = DetectiveRequest.objects.filter(
         status='PENDING'
-    ).select_related('case', 'requested_by', 'requested_by__profile')
+    ).select_related('case', 'requested_by', 'requested_by__profile', 'requested_detective', 'requested_detective__profile')
 
     approved_detectives = Profile.objects.filter(
         is_detective=True, detective_status='APPROVED'
@@ -803,7 +816,27 @@ def admin_assign_detective(request):
     request_pk = request.POST.get('request_id')
 
     case = get_object_or_404(Case, pk=case_pk)
-    detective_profile = get_object_or_404(Profile, pk=detective_pk, is_detective=True, detective_status='APPROVED')
+
+    # Resolve detective: prefer user-selected detective from the request on approval
+    detective_request = None
+    if request_pk:
+        detective_request = DetectiveRequest.objects.select_related('requested_detective').filter(pk=request_pk).first()
+        if detective_request and detective_request.status != 'PENDING':
+            messages.error(request, 'This detective request has already been reviewed.')
+            return redirect('admin_dashboard')
+        # If admin did not pick a different detective, use the user-selected one
+        if not detective_pk and detective_request and detective_request.requested_detective_id:
+            detective_user = detective_request.requested_detective
+            detective_profile = detective_user.profile
+            if not (detective_profile.is_detective and detective_profile.detective_status == 'APPROVED'):
+                messages.error(request, 'User-selected detective is no longer approved.')
+                return redirect('admin_dashboard')
+        else:
+            detective_profile = get_object_or_404(Profile, pk=detective_pk, is_detective=True, detective_status='APPROVED')
+            detective_user = detective_profile.user
+    else:
+        detective_profile = get_object_or_404(Profile, pk=detective_pk, is_detective=True, detective_status='APPROVED')
+        detective_user = detective_profile.user
 
     # Block assignment to closed/resolved cases
     if case.status in ['CLOSED', 'FOUND']:
@@ -828,12 +861,14 @@ def admin_assign_detective(request):
     case.save()
 
     # Update detective request if provided
-    if request_pk:
-        DetectiveRequest.objects.filter(pk=request_pk).update(status='APPROVED')
+    if request_pk and detective_request:
+        detective_request.status = 'APPROVED'
+        detective_request.reviewed_at = timezone.now()
+        detective_request.save()
 
     # Notify detective
     Notification.objects.create(
-        user=detective_profile.user,
+        user=detective_user,
         case=case,
         title='New Case Assignment',
         message=f'You have been assigned to case {case.case_number}: {case.title}'
@@ -848,6 +883,35 @@ def admin_assign_detective(request):
     )
 
     messages.success(request, f'Detective {detective_profile.full_name} assigned to case {case.case_number}.')
+    return redirect('admin_dashboard')
+
+
+@login_required
+@require_POST
+def admin_reject_detective_request(request):
+    if not request.user.is_staff:
+        messages.error(request, 'Access denied.')
+        return redirect('home')
+
+    request_pk = request.POST.get('request_id')
+    reason = request.POST.get('admin_reason', '').strip()
+    if not reason:
+        messages.error(request, 'Please provide a reason for rejecting this request.')
+        return redirect('admin_dashboard')
+
+    det_request = get_object_or_404(DetectiveRequest, pk=request_pk, status='PENDING')
+    det_request.status = 'DECLINED'
+    det_request.admin_reason = reason
+    det_request.reviewed_at = timezone.now()
+    det_request.save()
+
+    Notification.objects.create(
+        user=det_request.requested_by,
+        case=det_request.case,
+        title='Detective Request Rejected by Admin',
+        message=f'Admin rejected your request for detective {det_request.requested_detective.profile.full_name if det_request.requested_detective and hasattr(det_request.requested_detective, "profile") else "selected detective"} on case "{det_request.case.title}" ({det_request.case.case_number}). Reason: {reason}'
+    )
+    messages.success(request, 'Detective request rejected. The user has been notified with your reason.')
     return redirect('admin_dashboard')
 
 

@@ -44,6 +44,7 @@ urlpatterns = [
     path('admin-panel/', views.admin_dashboard, name='admin_dashboard'),
     path('admin-panel/approve-detective/<int:pk>/', views.admin_approve_detective, name='admin_approve_detective'),
     path('admin-panel/assign-detective/', views.admin_assign_detective, name='admin_assign_detective'),
+    path('admin-panel/reject-detective-request/', views.admin_reject_detective_request, name='admin_reject_detective_request'),
     path('admin-panel/toggle-ban/<int:pk>/', views.admin_toggle_ban, name='admin_toggle_ban'),
     path('admin-panel/blog/', views.admin_manage_blog, name='admin_manage_blog'),
     path('admin-panel/feedback/<int:pk>/', views.admin_manage_feedback, name='admin_manage_feedback'),

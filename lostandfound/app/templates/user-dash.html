@@ -341,16 +341,28 @@
                 {% endfor %}
 
                 {% if detective_requests %}
-                <h3 class="font-display" style="font-size: 1rem; font-weight: 700; margin-top: 2rem; margin-bottom: 1rem;">PENDING DETECTIVE REQUESTS</h3>
+                <h3 class="font-display" style="font-size: 1rem; font-weight: 700; margin-top: 2rem; margin-bottom: 1rem;">DETECTIVE REQUESTS</h3>
                 {% for req in detective_requests %}
-                <div class="card-box">
+                <div class="card-box" {% if req.status == 'DECLINED' %}style="border:1px solid var(--red-accent);"{% endif %}>
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <h4 class="font-display" style="font-size: 0.9rem; font-weight: 700;">{{ req.case.title }}</h4>
                             <p style="font-size: 0.65rem; color: var(--stone-muted);">{{ req.case.case_number }} • Requested {{ req.created_at|timesince }} ago</p>
+                            {% if req.requested_detective %}
+                            <p style="font-size: 0.7rem; margin-top: 0.25rem;"><i class="fas fa-id-badge"></i> Requested: <strong>{{ req.requested_detective.profile.full_name|default:req.requested_detective.username }}</strong></p>
+                            {% endif %}
                         </div>
                         <span class="badge-tag {% if req.status == 'PENDING' %}bg-amber{% elif req.status == 'APPROVED' %}bg-emerald{% else %}bg-red{% endif %}">{{ req.get_status_display }}</span>
                     </div>
+                    {% if req.status == 'DECLINED' %}
+                    <div style="margin-top:0.75rem; padding:0.75rem; background:#fee2e2; border:1px solid var(--red-accent); border-radius:6px;">
+                        <span style="font-size:0.65rem; font-weight:700; color:var(--red-accent); text-transform:uppercase;"><i class="fas fa-xmark"></i> Admin rejected your request</span>
+                        <p style="font-size:0.75rem; color:#7f1d1d; margin-top:0.35rem;"><strong>Reason:</strong> "{{ req.admin_reason|default:"No reason provided." }}"</p>
+                        {% if req.reviewed_at %}
+                        <span style="font-size:0.65rem; color:var(--stone-muted);">{{ req.reviewed_at|date:"M d, Y h:i A" }}</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
                 </div>
                 {% endfor %}
                 {% endif %}
@@ -560,6 +572,22 @@
                     {% endif %}
                     {% if lost_cases|length != unassigned_cases|length %}
                     <p style="font-size:0.65rem; color:var(--emerald-accent); font-weight:600; margin-top:0.35rem;"><i class="fas fa-circle-check"></i> {{ assigned_case_ids|length }} case(s) already have a detective and are shown as assigned in the table below (non-selectable).</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Select Detective (required)</label>
+                    {% if available_detectives %}
+                    <select name="detective_id" class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;" required>
+                        <option value="">Choose your detective...</option>
+                        {% for det in available_detectives %}
+                        <option value="{{ det.user.pk }}">{{ det.full_name }} — {{ det.specialization|default:"General" }} ({{ det.experience_years }} yrs, {{ det.city|default:det.address|default:"—" }})</option>
+                        {% endfor %}
+                    </select>
+                    <p style="font-size:0.65rem; color:var(--stone-muted); margin-top:0.25rem;">Admin will approve and assign your chosen detective. If rejected, the reason will appear below.</p>
+                    {% else %}
+                    <div style="padding:0.75rem; background:#fee2e2; border:1px solid var(--red-accent); border-radius:6px; color:#7f1d1d; font-size:0.7rem; font-weight:600;">
+                        No approved detectives available right now. Please try later.
+                    </div>
                     {% endif %}
                 </div>
                 <div>

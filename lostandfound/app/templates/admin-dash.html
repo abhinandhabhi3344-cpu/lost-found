@@ -778,17 +778,27 @@
 
                 <div class="grid-2">
                     {% for req in detective_requests %}
-                    <div class="card-box">
+                    <div class="card-box" style="border-left:3px solid var(--amber-accent);">
                         <div>
                             <h3 class="font-display" style="font-size: 1rem; font-weight: 700;">{{ req.case.title }} ({{ req.case.case_number }})</h3>
                             <p style="font-size: 0.75rem; color: var(--stone-muted);">Requested by {{ req.requested_by.profile.full_name|default:req.requested_by.username }}</p>
+                            {% if req.requested_detective %}
+                            <p style="font-size: 0.8rem; margin-top: 0.4rem; font-weight: 700; color: var(--emerald-accent);"><i class="fas fa-id-badge"></i> User-selected: {{ req.requested_detective.profile.full_name|default:req.requested_detective.username }}</p>
+                            {% else %}
+                            <p style="font-size: 0.75rem; margin-top: 0.4rem; color: var(--red-accent);">No specific detective selected (legacy request).</p>
+                            {% endif %}
                             {% if req.message %}<p style="font-size: 0.75rem; margin-top: 0.5rem;">"{{ req.message }}"</p>{% endif %}
                         </div>
 
-                        <form action="{% url 'admin_assign_detective' %}" method="POST" onsubmit="return confirm('Assign selected detective to this case?');" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                        <form action="{% url 'admin_assign_detective' %}" method="POST" onsubmit="return confirm('Approve and assign {{ req.requested_detective.profile.full_name|default:"selected detective"|escapejs }} to this case?');" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
                             {% csrf_token %}
                             <input type="hidden" name="case_id" value="{{ req.case.pk }}">
                             <input type="hidden" name="request_id" value="{{ req.pk }}">
+                            {% if req.requested_detective %}
+                            <input type="hidden" name="detective_id" value="{{ req.requested_detective.profile.pk }}">
+                            <p style="font-size:0.7rem; color:var(--stone-muted);">Approving assigns <strong>{{ req.requested_detective.profile.full_name }}</strong> (user-selected). To override, use manual assign below.</p>
+                            <button type="submit" class="neu-button-emerald"><i class="fas fa-check"></i> Approve &amp; Assign {{ req.requested_detective.profile.full_name|truncatewords:2 }}</button>
+                            {% else %}
                             <select name="detective_id" class="neu-input" style="width: 100%; padding: 0.5rem;" required>
                                 <option value="">Select Approved Detective to Assign...</option>
                                 {% for det in approved_detectives %}
@@ -796,6 +806,31 @@
                                 {% endfor %}
                             </select>
                             <button type="submit" class="neu-button-emerald">Assign Detective</button>
+                            {% endif %}
+                        </form>
+                        {% if req.requested_detective %}
+                        <details style="margin-top:0.5rem;">
+                            <summary style="font-size:0.65rem; font-weight:700; color:var(--stone-muted); cursor:pointer; text-transform:uppercase;">Override with different detective</summary>
+                            <form action="{% url 'admin_assign_detective' %}" method="POST" onsubmit="return confirm('Assign different detective (override user choice)?');" style="margin-top:0.5rem; display:flex; flex-direction:column; gap:0.5rem;">
+                                {% csrf_token %}
+                                <input type="hidden" name="case_id" value="{{ req.case.pk }}">
+                                <input type="hidden" name="request_id" value="{{ req.pk }}">
+                                <select name="detective_id" class="neu-input" style="width: 100%; padding: 0.5rem;" required>
+                                    <option value="">Select Approved Detective...</option>
+                                    {% for det in approved_detectives %}
+                                    <option value="{{ det.pk }}">{{ det.full_name }} ({{ det.city|default:det.address|default:"—" }})</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="neu-button" style="font-size:0.65rem;">Assign Different Detective</button>
+                            </form>
+                        </details>
+                        {% endif %}
+                        <form action="{% url 'admin_reject_detective_request' %}" method="POST" onsubmit="return confirm('Reject this detective request? User will see your reason.');" style="margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; padding-top:0.75rem; border-top:1px solid var(--stone-border);">
+                            {% csrf_token %}
+                            <input type="hidden" name="request_id" value="{{ req.pk }}">
+                            <label style="font-size:0.65rem; font-weight:700; color:var(--red-accent); text-transform:uppercase;">Reject with reason</label>
+                            <textarea name="admin_reason" rows="2" required placeholder="e.g. Detective unavailable, case out of scope..." class="neu-input" style="width:100%; padding:0.5rem;"></textarea>
+                            <button type="submit" class="neu-button-danger"><i class="fas fa-xmark"></i> Reject Request</button>
                         </form>
                     </div>
                     {% empty %}
