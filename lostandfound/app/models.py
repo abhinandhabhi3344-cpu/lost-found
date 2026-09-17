@@ -9,6 +9,7 @@ CASE_TYPE=[('LOST','Lost'),('FOUND','Found')]
 CATEGORY=[('ITEM','Item'),('PET','Pet'),('PERSON','Person')]
 CASE_STATUS=[('OPEN','Open'),('INVESTIGATING','Investigating'),('FOUND','Found'),('CLOSED','Closed')]
 DETECTIVE_STATUS=[('PENDING','Pending'),('APPROVED','Approved'),('REJECTED','Rejected')]
+USER_VERIFICATION=[('PENDING','Pending'),('APPROVED','Approved'),('REJECTED','Rejected')]
 REQUEST_STATUS=[('PENDING','Pending'),('APPROVED','Approved'),('DECLINED','Declined')]
 ASSIGNMENT_STATUS=[('PENDING','Pending'),('ACCEPTED','Accepted'),('COMPLETED','Completed'),('REJECTED','Rejected')]
 
@@ -28,6 +29,11 @@ class Profile(models.Model):
     license_number=models.CharField(max_length=100,blank=True)
     specialization=models.CharField(max_length=200,blank=True)
     experience_years=models.PositiveIntegerField(default=0)
+    # Citizen ID verification (required for citizens, not for detectives)
+    id_proof=models.FileField(upload_to="id_proofs/",blank=True,null=True)
+    verification_status=models.CharField(max_length=20,choices=USER_VERIFICATION,default="PENDING")
+    verification_reason=models.TextField(blank=True,default="")
+    verified_at=models.DateTimeField(blank=True,null=True)
     created_at=models.DateTimeField(auto_now_add=True)
     def __str__(self): return self.full_name
 

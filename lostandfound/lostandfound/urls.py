@@ -15,6 +15,7 @@ urlpatterns = [
     path('signup/', views.signup_view, name='signup'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
+    path('account/delete/', views.delete_own_account, name='delete_own_account'),
     path('api/check-availability/', views.check_availability, name='check_availability'),
 
     # Cases
@@ -43,6 +44,7 @@ urlpatterns = [
     # Admin Dashboard
     path('admin-panel/', views.admin_dashboard, name='admin_dashboard'),
     path('admin-panel/approve-detective/<int:pk>/', views.admin_approve_detective, name='admin_approve_detective'),
+    path('admin-panel/verify-user/<int:pk>/', views.admin_verify_user, name='admin_verify_user'),
     path('admin-panel/assign-detective/', views.admin_assign_detective, name='admin_assign_detective'),
     path('admin-panel/reject-detective-request/', views.admin_reject_detective_request, name='admin_reject_detective_request'),
     path('admin-panel/toggle-ban/<int:pk>/', views.admin_toggle_ban, name='admin_toggle_ban'),

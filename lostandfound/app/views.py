@@ -8,6 +8,7 @@ from django.db.models import Q, Count
 from django.core.paginator import Paginator
 from django.utils import timezone
 from django.views.decorators.http import require_POST
+from functools import wraps
 
 from .models import (
     Profile, Case, CaseImage, SightingReport, DetectiveRequest,
@@ -15,6 +16,54 @@ from .models import (
     Notification, Blog, Feedback,
     CASE_TYPE, CATEGORY, CASE_STATUS
 )
+
+
+# ============================================================
+# CITIZEN ID-VERIFICATION HELPERS
+# ============================================================
+
+def is_verified_for_site(user):
+    """Staff + detectives bypass citizen ID check. Citizens need APPROVED."""
+    if not user or not user.is_authenticated:
+        return False
+    if user.is_staff or user.is_superuser:
+        return True
+    try:
+        profile = user.profile
+    except Profile.DoesNotExist:
+        return False
+    if getattr(profile, 'is_banned', False):
+        return False
+    if getattr(profile, 'is_detective', False):
+        return True
+    return getattr(profile, 'verification_status', 'PENDING') == 'APPROVED'
+
+
+def verified_citizen_required(view_func):
+    """Block PENDING/REJECTED citizens from authenticated features."""
+    @wraps(view_func)
+    def _wrapped(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.error(request, 'Please log in to continue.')
+            return redirect('home')
+        if request.user.is_staff or request.user.is_superuser:
+            return view_func(request, *args, **kwargs)
+        try:
+            profile = request.user.profile
+        except Profile.DoesNotExist:
+            messages.error(request, 'Profile missing. Please contact admin.')
+            return redirect('home')
+        if getattr(profile, 'is_detective', False):
+            return view_func(request, *args, **kwargs)
+        status = getattr(profile, 'verification_status', 'PENDING')
+        if status == 'APPROVED':
+            return view_func(request, *args, **kwargs)
+        if status == 'REJECTED':
+            messages.error(request, 'You are not a verified user by admin. Your account was rejected.')
+        else:
+            messages.error(request, 'You are not a verified user by admin. Your account is pending verification.')
+        return redirect('home')
+    return _wrapped
 
 
 # ============================================================
@@ -40,6 +89,12 @@ def signup_view(request):
 
         if User.objects.filter(email=email).exists():
             messages.error(request, 'Email already registered.')
+            return redirect('home')
+
+        # Citizens MUST upload ID proof. Detectives are exempt.
+        id_proof_file = request.FILES.get('id_proof')
+        if role != 'detective' and not id_proof_file:
+            messages.error(request, 'ID proof is required for citizen registration.')
             return redirect('home')
 
         name_parts = full_name.split(' ', 1)
@@ -73,14 +128,23 @@ def signup_view(request):
             profile.address = operating_region
             if operating_region:
                 profile.city = operating_region
+            # Detectives skip citizen ID verification
+            profile.verification_status = 'APPROVED'
+            profile.verification_reason = ''
+        else:
+            profile.is_detective = False
+            profile.id_proof = id_proof_file
+            profile.verification_status = 'PENDING'
+            profile.verification_reason = ''
 
         profile.save()
         login(request, user)
-        messages.success(request, 'Account created successfully! Welcome to Lost & Found.')
 
         if role == 'detective':
+            messages.success(request, 'Detective application submitted! Awaiting vetting.')
             return redirect('detective_dashboard')
-        return redirect('user_dashboard')
+        messages.warning(request, 'Account created! Please wait for admin verification of your ID proof.')
+        return redirect('home')
 
     return redirect('home')
 
@@ -96,13 +160,24 @@ def login_view(request):
                 messages.error(request, 'Your account has been suspended.')
                 return redirect('home')
             login(request, user)
-            messages.success(request, f'Welcome back, {user.first_name or user.username}!')
 
             if user.is_superuser or user.is_staff:
+                messages.success(request, f'Welcome back, {user.first_name or user.username}!')
                 return redirect('admin_dashboard')
-            if hasattr(user, 'profile') and user.profile.is_detective:
+            profile = getattr(user, 'profile', None)
+            if profile and profile.is_detective:
+                messages.success(request, f'Welcome back, {user.first_name or user.username}!')
                 return redirect('detective_dashboard')
-            return redirect('user_dashboard')
+            # Citizen ID-verification gate on login (still log them in so nav/modal can render)
+            status = getattr(profile, 'verification_status', 'PENDING') if profile else 'PENDING'
+            if status == 'APPROVED':
+                messages.success(request, f'Welcome back, {user.first_name or user.username}!')
+                return redirect('user_dashboard')
+            if status == 'REJECTED':
+                messages.error(request, 'Your account was rejected by admin. See reason.')
+                return redirect('home')
+            messages.warning(request, 'Your account is pending verification by admin.')
+            return redirect('home')
         else:
             messages.error(request, 'Invalid username or password.')
     return redirect('home')
@@ -242,6 +317,7 @@ def case_detail(request, pk):
 
 
 @login_required
+@verified_citizen_required
 def case_create(request):
     if request.method == 'POST':
         title = request.POST.get('title', '').strip()
@@ -289,6 +365,7 @@ def case_create(request):
 
 
 @login_required
+@verified_citizen_required
 def case_edit(request, pk):
     # Only the user who posted the case can edit it
     case = get_object_or_404(Case, pk=pk, owner=request.user)
@@ -326,6 +403,7 @@ def case_edit(request, pk):
 
 
 @login_required
+@verified_citizen_required
 @require_POST
 def case_delete(request, pk):
     case = get_object_or_404(Case, pk=pk)
@@ -341,6 +419,7 @@ def case_delete(request, pk):
 
 
 @login_required
+@verified_citizen_required
 @require_POST
 def case_mark_resolved(request, pk):
     case = get_object_or_404(Case, pk=pk)
@@ -364,6 +443,7 @@ def case_mark_resolved(request, pk):
 # ============================================================
 
 @login_required
+@verified_citizen_required
 def user_dashboard(request):
     user = request.user
     my_cases = Case.objects.filter(owner=user).prefetch_related('images').order_by('-created_at')
@@ -415,6 +495,7 @@ def user_dashboard(request):
 
 
 @login_required
+@verified_citizen_required
 def profile_update(request):
     if request.method == 'POST':
         user = request.user
@@ -463,6 +544,7 @@ def profile_update(request):
 
 
 @login_required
+@verified_citizen_required
 def avatar_upload(request):
     if request.method == 'POST' and request.FILES.get('avatar'):
         profile = request.user.profile
@@ -524,6 +606,7 @@ def detective_profile(request, pk):
 
 
 @login_required
+@verified_citizen_required
 def detective_dashboard(request):
     user = request.user
     if not hasattr(user, 'profile') or not user.profile.is_detective:
@@ -561,6 +644,7 @@ def detective_dashboard(request):
 
 
 @login_required
+@verified_citizen_required
 @require_POST
 def detective_add_update(request, assignment_pk):
     assignment = get_object_or_404(CaseAssignment, pk=assignment_pk, detective=request.user)
@@ -605,6 +689,7 @@ def detective_add_update(request, assignment_pk):
 
 
 @login_required
+@verified_citizen_required
 @require_POST
 def detective_accept_case(request, assignment_pk):
     assignment = get_object_or_404(CaseAssignment, pk=assignment_pk, detective=request.user)
@@ -627,6 +712,7 @@ def detective_accept_case(request, assignment_pk):
 
 
 @login_required
+@verified_citizen_required
 @require_POST
 def detective_reject_case(request, assignment_pk):
     assignment = get_object_or_404(CaseAssignment, pk=assignment_pk, detective=request.user)
@@ -669,6 +755,7 @@ def detective_reject_case(request, assignment_pk):
 # ============================================================
 
 @login_required
+@verified_citizen_required
 @require_POST
 def detective_request_create(request):
     case_pk = request.POST.get('case_id')
@@ -740,6 +827,10 @@ def admin_dashboard(request):
     active_cases = Case.objects.filter(status__in=['OPEN', 'INVESTIGATING']).count()
     total_blogs = Blog.objects.count()
     pending_detectives = Profile.objects.filter(is_detective=True, detective_status='PENDING').count()
+    pending_user_verifications = Profile.objects.filter(
+        is_detective=False, verification_status='PENDING', user__is_staff=False
+    ).select_related('user').order_by('-created_at')
+    pending_user_count = pending_user_verifications.count()
 
     users = Profile.objects.select_related('user').filter(user__is_staff=False).order_by('-created_at')
     pending_detective_apps = Profile.objects.filter(
@@ -769,6 +860,8 @@ def admin_dashboard(request):
         'active_cases': active_cases,
         'total_blogs': total_blogs,
         'pending_detectives': pending_detectives,
+        'pending_user_verifications': pending_user_verifications,
+        'pending_user_count': pending_user_count,
         'users': users,
         'pending_detective_apps': pending_detective_apps,
         'cases': cases,
@@ -811,6 +904,77 @@ def admin_approve_detective(request, pk):
         messages.success(request, f'Detective {profile.full_name} rejected.')
 
     return redirect('admin_dashboard')
+
+
+@login_required
+@require_POST
+def admin_verify_user(request, pk):
+    """Admin approves or rejects a citizen after checking ID proof + details."""
+    if not request.user.is_staff:
+        messages.error(request, 'Access denied.')
+        return redirect('home')
+
+    profile = get_object_or_404(Profile, pk=pk, is_detective=False)
+    action = request.POST.get('action', 'approve')
+
+    if action == 'approve':
+        profile.verification_status = 'APPROVED'
+        profile.verification_reason = ''
+        profile.verified_at = timezone.now()
+        profile.save()
+        Notification.objects.create(
+            user=profile.user,
+            title='Account Verified',
+            message='Your account has been verified by admin! You can now use all platform features.'
+        )
+        messages.success(request, f'User {profile.full_name} verified.')
+    elif action == 'reject':
+        reason = request.POST.get('reason', '').strip()
+        if not reason:
+            messages.error(request, 'Please provide a reason for rejecting this user.')
+            return redirect('admin_dashboard')
+        profile.verification_status = 'REJECTED'
+        profile.verification_reason = reason
+        profile.verified_at = timezone.now()
+        profile.save()
+        Notification.objects.create(
+            user=profile.user,
+            case=None,
+            title='Account Rejected by Admin',
+            message=f'Your account verification was rejected by admin. Reason: {reason}'
+        )
+        messages.success(request, f'User {profile.full_name} rejected.')
+    return redirect('admin_dashboard')
+
+
+@login_required
+@require_POST
+def delete_own_account(request):
+    """Rejected (or any non-staff) user deletes their own account + cleanup."""
+    user = request.user
+    if user.is_staff or user.is_superuser:
+        messages.error(request, 'Admin accounts cannot be deleted this way.')
+        return redirect('home')
+    username = user.username
+    try:
+        profile = user.profile
+        # Cleanup uploaded files
+        try:
+            if profile.avatar:
+                profile.avatar.delete(save=False)
+        except Exception:
+            pass
+        try:
+            if profile.id_proof:
+                profile.id_proof.delete(save=False)
+        except Exception:
+            pass
+    except Profile.DoesNotExist:
+        pass
+    logout(request)
+    User.objects.filter(pk=user.pk).delete()
+    messages.success(request, f'Account {username} has been deleted.')
+    return redirect('home')
 
 
 @login_required
@@ -1051,6 +1215,7 @@ def admin_mark_case_solved(request, pk):
 # ============================================================
 
 @login_required
+@verified_citizen_required
 def notifications_list(request):
     notifications = Notification.objects.filter(user=request.user).order_by('-created_at')[:20]
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -1066,6 +1231,7 @@ def notifications_list(request):
 
 
 @login_required
+@verified_citizen_required
 @require_POST
 def notification_mark_read(request, pk):
     notification = get_object_or_404(Notification, pk=pk, user=request.user)
@@ -1077,6 +1243,7 @@ def notification_mark_read(request, pk):
 
 
 @login_required
+@verified_citizen_required
 @require_POST
 def notifications_mark_all_read(request):
     Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
@@ -1091,6 +1258,7 @@ def notifications_mark_all_read(request):
 # ============================================================
 
 @login_required
+@verified_citizen_required
 @require_POST
 def feedback_create(request):
     comment = request.POST.get('comment', '').strip()
@@ -1111,6 +1279,7 @@ def feedback_create(request):
 # ============================================================
 
 @login_required
+@verified_citizen_required
 @require_POST
 def sighting_create(request, case_pk):
     case = get_object_or_404(Case, pk=case_pk)

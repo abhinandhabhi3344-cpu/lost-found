@@ -551,6 +551,9 @@
                 <a class="dash-tab-btn" href="#panel-users">
                     <i class="fas fa-user"></i> User Management
                 </a>
+                <a class="dash-tab-btn" href="#panel-user-verification">
+                    <i class="fas fa-id-card"></i> User Verification ({{ pending_user_count }})
+                </a>
                 <a class="dash-tab-btn" href="#panel-vetting">
                     <i class="fas fa-id-badge"></i> Detective Vetting ({{ pending_detectives }})
                 </a>
@@ -634,6 +637,7 @@
                                 <th>Username</th>
                                 <th>Email</th>
                                 <th>Role</th>
+                                <th>ID / Verify</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -645,6 +649,16 @@
                                 <td>{{ u.user.username }}</td>
                                 <td>{{ u.user.email }}</td>
                                 <td>{% if u.is_detective %}Detective{% else %}Citizen{% endif %}</td>
+                                <td>
+                                    {% if u.is_detective %}
+                                    <span style="font-size:0.6rem; color:var(--stone-muted);">N/A (detective)</span>
+                                    {% else %}
+                                        {% if u.verification_status == 'PENDING' %}<span class="badge-tag bg-amber">Pending</span>
+                                        {% elif u.verification_status == 'APPROVED' %}<span class="badge-tag bg-emerald">Verified</span>
+                                        {% else %}<span class="badge-tag bg-red">Rejected</span>{% endif %}
+                                        {% if u.id_proof %} <a href="{{ u.id_proof.url }}" target="_blank" style="font-size:0.6rem; font-weight:700; text-decoration:underline;">ID ↗</a>{% endif %}
+                                    {% endif %}
+                                </td>
                                 <td>
                                     {% if u.is_banned %}
                                     <span class="badge-tag bg-red">Banned</span>
@@ -664,10 +678,59 @@
                                 </td>
                             </tr>
                             {% empty %}
-                            <tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--stone-muted);">No user accounts found.</td></tr>
+                            <tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--stone-muted);">No user accounts found.</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- USER ID VERIFICATION (citizens) -->
+            <div id="panel-user-verification" class="dash-panel">
+                <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800; margin-bottom: 1.5rem;" class="border-b-line pb-3">PENDING USER ID VERIFICATIONS ({{ pending_user_verifications|length }})</h2>
+                <div class="grid-2">
+                    {% for u in pending_user_verifications %}
+                    <div class="card-box" style="border-left:3px solid var(--amber-accent);">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;" class="border-b-line pb-2">
+                                <div>
+                                    <h3 class="font-display" style="font-size: 1rem; font-weight: 700;">{{ u.full_name }}</h3>
+                                    <p style="font-size: 0.65rem; color: var(--stone-muted); font-family: monospace;">@{{ u.user.username }} • {{ u.user.email }} • {{ u.phone|default:"no phone" }}</p>
+                                </div>
+                                <span class="badge-tag bg-amber"><i class="fas fa-clock"></i> PENDING</span>
+                            </div>
+                            <p style="font-size:0.7rem; color:var(--stone-muted); margin-top:0.5rem;">City: {{ u.city|default:"—" }} | Address: {{ u.address|default:"—" }}</p>
+                            {% if u.id_proof %}
+                            <div style="margin-top:0.6rem;">
+                                <span style="font-size:0.65rem; font-weight:700; text-transform:uppercase;">ID Proof</span><br>
+                                <a href="{{ u.id_proof.url }}" target="_blank" style="font-size:0.7rem; font-weight:700; color:var(--emerald-accent); text-decoration:underline;">View ID Proof ↗</a>
+                                {% if u.id_proof.url|lower|slice:"-4:" == ".pdf" %}
+                                <p style="font-size:0.65rem; color:var(--stone-muted);">(PDF document)</p>
+                                {% else %}
+                                <div style="margin-top:0.4rem; max-width:16rem; border-radius:6px; overflow:hidden; border:1px solid var(--stone-border);"><img src="{{ u.id_proof.url }}" alt="ID proof" style="width:100%; display:block;"></div>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <p style="font-size:0.7rem; color:var(--red-accent); margin-top:0.5rem;">No ID proof uploaded.</p>
+                            {% endif %}
+                        </div>
+                        <form action="{% url 'admin_verify_user' pk=u.pk %}" method="POST" onsubmit="return confirm('Approve this user?');" style="margin-top:0.75rem;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="approve">
+                            <button type="submit" class="neu-button-emerald" style="width:100%;"><i class="fas fa-circle-check"></i> Approve User</button>
+                        </form>
+                        <form action="{% url 'admin_verify_user' pk=u.pk %}" method="POST" onsubmit="return confirm('Reject this user? They will see your reason.');" style="margin-top:0.5rem; display:flex; flex-direction:column; gap:0.4rem; padding-top:0.6rem; border-top:1px solid var(--stone-border);">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="reject">
+                            <textarea name="reason" rows="2" required placeholder="Reason for rejection (shown to user)..." class="neu-input" style="width:100%; padding:0.5rem;"></textarea>
+                            <button type="submit" class="neu-button-danger" style="width:100%;">Reject User</button>
+                        </form>
+                    </div>
+                    {% empty %}
+                    <div class="card-box" style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--stone-muted);">
+                        No pending user verifications.
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
 
