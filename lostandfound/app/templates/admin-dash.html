@@ -722,10 +722,10 @@
                             <input type="hidden" name="action" value="approve">
                             <button type="submit" class="neu-button-emerald" style="width:100%;"><i class="fas fa-circle-check"></i> Approve User</button>
                         </form>
-                        <form action="{% url 'admin_verify_user' pk=u.pk %}" method="POST" onsubmit="return confirm('Reject this user? They will see your reason.');" style="margin-top:0.5rem; display:flex; flex-direction:column; gap:0.4rem; padding-top:0.6rem; border-top:1px solid var(--stone-border);">
+                        <form action="{% url 'admin_verify_user' pk=u.pk %}" method="POST" onsubmit="if(!LFValidateForm(this)) return false; return confirm('Reject this user? They will see your reason.');" style="margin-top:0.5rem; display:flex; flex-direction:column; gap:0.4rem; padding-top:0.6rem; border-top:1px solid var(--stone-border);">
                             {% csrf_token %}
                             <input type="hidden" name="action" value="reject">
-                            <textarea name="reason" rows="2" required placeholder="Reason for rejection (shown to user)..." class="neu-input" style="width:100%; padding:0.5rem;"></textarea>
+                            <textarea name="reason" rows="2" required minlength="10" maxlength="2000" placeholder="Reason for rejection (shown to user)..." class="neu-input" style="width:100%; padding:0.5rem;"></textarea>
                             <button type="submit" class="neu-button-danger" style="width:100%;">Reject User</button>
                         </form>
                     </div>
@@ -893,11 +893,11 @@
                             </form>
                         </details>
                         {% endif %}
-                        <form action="{% url 'admin_reject_detective_request' %}" method="POST" onsubmit="return confirm('Reject this detective request? User will see your reason.');" style="margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; padding-top:0.75rem; border-top:1px solid var(--stone-border);">
+                        <form action="{% url 'admin_reject_detective_request' %}" method="POST" onsubmit="if(!LFValidateForm(this)) return false; return confirm('Reject this detective request? User will see your reason.');" style="margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; padding-top:0.75rem; border-top:1px solid var(--stone-border);">
                             {% csrf_token %}
                             <input type="hidden" name="request_id" value="{{ req.pk }}">
                             <label style="font-size:0.65rem; font-weight:700; color:var(--red-accent); text-transform:uppercase;">Reject with reason</label>
-                            <textarea name="admin_reason" rows="2" required placeholder="e.g. Detective unavailable, case out of scope..." class="neu-input" style="width:100%; padding:0.5rem;"></textarea>
+                            <textarea name="admin_reason" rows="2" required minlength="10" maxlength="2000" placeholder="e.g. Detective unavailable, case out of scope..." class="neu-input" style="width:100%; padding:0.5rem;"></textarea>
                             <button type="submit" class="neu-button-danger"><i class="fas fa-xmark"></i> Reject Request</button>
                         </form>
                     </div>
@@ -927,11 +927,11 @@
                             <input type="hidden" name="action" value="approve">
                             <button type="submit" class="neu-button-emerald" style="width:100%;"><i class="fas fa-check"></i> Approve &amp; Close Case</button>
                         </form>
-                        <form action="{% url 'admin_review_solve_request' %}" method="POST" onsubmit="return confirm('Reject solve request? Case stays open and owner sees your reason.');" style="margin-top:0.5rem; display:flex; flex-direction:column; gap:0.4rem; padding-top:0.6rem; border-top:1px solid var(--stone-border);">
+                        <form action="{% url 'admin_review_solve_request' %}" method="POST" onsubmit="if(!LFValidateForm(this)) return false; return confirm('Reject solve request? Case stays open and owner sees your reason.');" style="margin-top:0.5rem; display:flex; flex-direction:column; gap:0.4rem; padding-top:0.6rem; border-top:1px solid var(--stone-border);">
                             {% csrf_token %}
                             <input type="hidden" name="request_id" value="{{ sreq.pk }}">
                             <input type="hidden" name="action" value="reject">
-                            <textarea name="admin_reason" rows="2" required placeholder="Reason for rejection (shown to owner)..." class="neu-input" style="width:100%; padding:0.5rem;"></textarea>
+                            <textarea name="admin_reason" rows="2" required minlength="10" maxlength="2000" placeholder="Reason for rejection (shown to owner)..." class="neu-input" style="width:100%; padding:0.5rem;"></textarea>
                             <button type="submit" class="neu-button-danger" style="width:100%;">Reject — Keep Open</button>
                         </form>
                     </div>
@@ -1027,12 +1027,12 @@
                 <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700; margin-top: 0.35rem;">Publish Blog / Recovery Guide</h3>
             </div>
 
-            <form action="{% url 'admin_manage_blog' %}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('Publish this blog article?');" style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.75rem;">
+            <form action="{% url 'admin_manage_blog' %}" method="POST" enctype="multipart/form-data" onsubmit="if(!LFValidateForm(this)) return false; return confirm('Publish this blog article?');" style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.75rem;">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="create">
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Article Title</label>
-                    <input type="text" name="title" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                    <input type="text" name="title" required minlength="3" maxlength="200" data-validate="title" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
                 </div>
 
                 <div>
@@ -1042,7 +1042,7 @@
 
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Article Body / Content</label>
-                    <textarea rows="5" name="content" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;"></textarea>
+                    <textarea rows="5" name="content" required minlength="20" maxlength="10000" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;"></textarea>
                 </div>
 
                 <button type="submit" class="neu-button-dark" style="padding: 0.75rem;">PUBLISH ARTICLE NOW</button>
@@ -1055,13 +1055,13 @@
                 <span class="badge-tag bg-amber"><i class="fas fa-pen"></i> EDIT ARTICLE</span>
                 <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700; margin-top: 0.35rem;">Edit Blog Article</h3>
             </div>
-            <form id="edit-blog-form" action="{% url 'admin_manage_blog' %}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('Save changes to this blog article?');" style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.75rem;">
+            <form id="edit-blog-form" action="{% url 'admin_manage_blog' %}" method="POST" enctype="multipart/form-data" onsubmit="if(!LFValidateForm(this)) return false; return confirm('Save changes to this blog article?');" style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.75rem;">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="edit">
                 <input type="hidden" name="blog_id" id="edit-blog-id">
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Article Title</label>
-                    <input type="text" name="title" id="edit-blog-title" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                    <input type="text" name="title" id="edit-blog-title" required minlength="3" maxlength="200" data-validate="title" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Replace Featured Image (optional)</label>
@@ -1069,13 +1069,14 @@
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Article Body / Content</label>
-                    <textarea rows="5" name="content" id="edit-blog-content" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;"></textarea>
+                    <textarea rows="5" name="content" id="edit-blog-content" required minlength="20" maxlength="10000" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;"></textarea>
                 </div>
                 <button type="submit" class="neu-button-dark" style="padding: 0.75rem;">SAVE CHANGES</button>
             </form>
         </div>
     </div>
 
+    <script src="{% static 'js/form-validations.js' %}"></script>
     <script>
         function filterUsers() {
             const query = document.getElementById('user-search').value.toLowerCase();

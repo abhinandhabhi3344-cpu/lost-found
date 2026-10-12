@@ -846,7 +846,7 @@
                 <p style="font-size: 0.75rem; color: var(--stone-muted);">Register as a Citizen or apply as a Licensed Private Investigator.</p>
             </div>
 
-            <form action="{% url 'signup' %}" method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
+            <form action="{% url 'signup' %}" method="POST" enctype="multipart/form-data" onsubmit="return LFValidateForm(this)" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
                 {% csrf_token %}
 
                 <div>
@@ -861,24 +861,24 @@
                 <div class="grid-2">
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Username</label>
-                        <input type="text" name="username" id="signup-username" placeholder="johndoe" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;" onblur="validateField('username', this.value)">
-                        <span id="signup-username-msg" style="font-size:0.65rem; font-weight:600; display:none; margin-top:0.2rem;"></span>
+                        <input type="text" name="username" id="signup-username" placeholder="johndoe" required minlength="3" maxlength="30" pattern="[A-Za-z0-9_.]{3,30}" title="3-30 chars: letters, numbers, _ and . only" data-validate="username" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;" onblur="validateField('username', this.value)">
+                        <span id="signup-username-msg" data-availability-msg style="font-size:0.65rem; font-weight:600; display:none; margin-top:0.2rem;"></span>
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Full Name</label>
-                        <input type="text" name="full_name" placeholder="John Doe" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                        <input type="text" name="full_name" placeholder="John Doe" required minlength="2" maxlength="150" pattern="[A-Za-z][A-Za-z\s.'\-]{1,149}" title="Text only: letters, spaces and . ' -" data-validate="text" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
                     </div>
                 </div>
 
                 <div class="grid-2">
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Phone Number</label>
-                        <input type="tel" name="phone" placeholder="+1 (555) 000-0000" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                        <input type="tel" name="phone" placeholder="10-digit mobile number" required minlength="10" maxlength="10" pattern="[0-9]{10}" title="Enter exactly 10 digits" inputmode="numeric" data-validate="phone" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Email Address</label>
-                        <input type="email" name="email" id="signup-email" placeholder="john@example.com" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;" onblur="validateField('email', this.value)">
-                        <span id="signup-email-msg" style="font-size:0.65rem; font-weight:600; display:none; margin-top:0.2rem;"></span>
+                        <input type="email" name="email" id="signup-email" placeholder="john@example.com" required maxlength="254" data-validate="email" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;" onblur="validateField('email', this.value)">
+                        <span id="signup-email-msg" data-availability-msg style="font-size:0.65rem; font-weight:600; display:none; margin-top:0.2rem;"></span>
                     </div>
                 </div>
 
@@ -892,7 +892,7 @@
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Password</label>
-                        <input type="password" name="password" placeholder="••••••••" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                        <input type="password" name="password" placeholder="••••••••" required minlength="6" maxlength="128" data-validate="password" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
                     </div>
                 </div>
 
@@ -902,22 +902,22 @@
                     <div class="grid-2">
                         <div>
                             <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">License Number</label>
-                            <input type="text" name="license_number" placeholder="e.g. #PD-88219" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
+                            <input type="text" name="license_number" id="signup-license" placeholder="e.g. #PD-88219" minlength="3" maxlength="100" data-validate="title" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                         </div>
                         <div>
                             <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Years Experience</label>
-                            <input type="number" name="experience_years" placeholder="e.g. 10" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
+                            <input type="number" name="experience_years" id="signup-exp" placeholder="e.g. 10" min="0" max="60" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                         </div>
                     </div>
 
                     <div>
                         <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Operating Region / Territory</label>
-                        <input type="text" name="operating_region" placeholder="e.g. Kyoto & Kansai Guild #8" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
+                        <input type="text" name="operating_region" id="signup-region" placeholder="e.g. Kyoto" minlength="2" maxlength="255" data-validate="location" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                     </div>
 
                     <div>
                         <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Specialization Summary</label>
-                        <textarea rows="2" name="specialization" placeholder="e.g. K9 Scent Tracking, Urban missing persons..." class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;"></textarea>
+                        <textarea rows="2" name="specialization" id="signup-spec" placeholder="e.g. K9 Scent Tracking, Urban missing persons..." minlength="3" maxlength="200" data-validate="title" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;"></textarea>
                     </div>
                 </div>
 
@@ -946,18 +946,18 @@
                 <p style="font-size: 0.72rem; color: var(--stone-muted);">Provide complete specs to allow automated CLIP visual vector matching.</p>
             </div>
 
-            <form action="{% url 'case_create' %}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('Submit this missing case report?');" style="display: flex; flex-direction: column; gap: 0.65rem; font-size: 0.75rem;">
+            <form action="{% url 'case_create' %}" method="POST" enctype="multipart/form-data" onsubmit="if(!LFValidateForm(this)) return false; return confirm('Submit this missing case report?');" style="display: flex; flex-direction: column; gap: 0.65rem; font-size: 0.75rem;">
                 {% csrf_token %}
                 <input type="hidden" name="case_type" value="LOST">
                 
                 <div class="grid-2">
                     <div>
                         <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Subject Title / Name</label>
-                        <input type="text" name="title" placeholder="e.g. Golden Retriever 'Leo'" required class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
+                        <input type="text" name="title" placeholder="e.g. Golden Retriever 'Leo'" required minlength="3" maxlength="200" data-validate="title" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Category</label>
-                        <select name="category" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
+                        <select name="category" required class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                             <option value="PET">Pet (Canine, Feline, etc.)</option>
                             <option value="PERSON">Family Member / Person</option>
                             <option value="ITEM">Valuable Belonging</option>
@@ -968,17 +968,17 @@
                 <div class="grid-2">
                     <div>
                         <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Last Seen Location</label>
-                        <input type="text" name="location" placeholder="e.g. Gion District, Kyoto, Japan" required class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
+                        <input type="text" name="location" placeholder="e.g. Gion District, Kyoto, Japan" required minlength="3" maxlength="255" data-validate="location" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Bounty / Reward Offer (₹) <span style="text-transform:none; font-weight:400;">(Optional)</span></label>
-                        <input type="number" name="reward" placeholder="e.g. 1500" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
+                        <input type="number" name="reward" placeholder="e.g. 1500" min="0" max="10000000" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                     </div>
                 </div>
 
                 <div>
                     <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Police Complaint Registered Number <span style="color:var(--red-accent);">*</span></label>
-                    <input type="text" name="complaint_number" placeholder="e.g. FIR No. 123/2026, PS Kyoto" required class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
+                    <input type="text" name="complaint_number" placeholder="e.g. FIR No. 123/2026, PS Kyoto" required minlength="3" maxlength="100" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                 </div>
 
                 <div>
@@ -988,7 +988,7 @@
 
                 <div>
                     <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Detailed Story / Circumstances</label>
-                    <textarea rows="2" name="description" placeholder="Describe how the subject was lost, behavioral traits, direction heading..." class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;"></textarea>
+                    <textarea rows="2" name="description" placeholder="Describe how the subject was lost, behavioral traits, direction heading..." required minlength="10" maxlength="5000" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;"></textarea>
                 </div>
 
                 <button type="submit" class="neu-button-dark" style="padding: 0.75rem; margin-top: 0.25rem;">
@@ -1008,24 +1008,24 @@
                 <p style="font-size: 0.72rem; color: var(--stone-muted);">Upload a photo to notify matching open lost cases instantly.</p>
             </div>
 
-            <form action="{% url 'case_create' %}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('Submit this found report?');" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
+            <form action="{% url 'case_create' %}" method="POST" enctype="multipart/form-data" onsubmit="if(!LFValidateForm(this)) return false; return confirm('Submit this found report?');" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
                 {% csrf_token %}
                 <input type="hidden" name="case_type" value="FOUND">
 
                 <div class="grid-2">
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">What Did You Find?</label>
-                        <input type="text" name="title" placeholder="e.g. Siamese Cat" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                        <input type="text" name="title" placeholder="e.g. Siamese Cat" required minlength="3" maxlength="200" data-validate="title" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Location Found</label>
-                        <input type="text" name="location" placeholder="e.g. Fitzroy Park, Melbourne" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                        <input type="text" name="location" placeholder="e.g. Fitzroy Park, Melbourne" required minlength="3" maxlength="255" data-validate="location" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
                     </div>
                 </div>
 
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Category</label>
-                    <select name="category" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                    <select name="category" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
                         <option value="PET">Pet</option>
                         <option value="PERSON">Person</option>
                         <option value="ITEM">Item</option>
@@ -1039,7 +1039,7 @@
 
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Description</label>
-                    <textarea rows="2" name="description" placeholder="Describe what you found, condition, any identifying features..." class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;"></textarea>
+                    <textarea rows="2" name="description" placeholder="Describe what you found, condition, any identifying features..." required minlength="10" maxlength="5000" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;"></textarea>
                 </div>
 
                 <button type="submit" class="neu-button-dark" style="padding: 0.75rem; margin-top: 0.25rem;">
@@ -1059,11 +1059,11 @@
                 <p style="font-size: 0.72rem; color: var(--stone-muted);">Your feedback helps maintain community trust and detective quality.</p>
             </div>
 
-            <form action="{% url 'feedback_create' %}" method="POST" style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.75rem;">
+            <form action="{% url 'feedback_create' %}" method="POST" onsubmit="return LFValidateForm(this)" style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.75rem;">
                 {% csrf_token %}
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Experience Feedback / Testimonial</label>
-                    <textarea rows="4" name="comment" placeholder="Describe your recovery experience, how the AI vector search helped, or your thoughts on the assigned investigator..." required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;"></textarea>
+                    <textarea rows="4" name="comment" placeholder="Describe your recovery experience, how the AI vector search helped, or your thoughts on the assigned investigator..." required minlength="10" maxlength="2000" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;"></textarea>
                 </div>
 
                 <button type="submit" class="neu-button-dark" style="padding: 0.75rem;">SUBMIT FEEDBACK FOR REVIEW</button>
@@ -1093,6 +1093,8 @@
     {% endif %}
 
 
+    <!-- Shared frontend validations (text-only, email, 10-digit phone, AJAX username check) -->
+    <script src="{% static 'js/form-validations.js' %}"></script>
     <!-- CONTROLLERS SCRIPT -->
     <script>
         // Modal Handler
@@ -1126,19 +1128,31 @@
             if (e.key === 'Escape') closeModals();
         });
 
-        // Dynamic Detective Signup Toggle
+        // Dynamic Detective Signup Toggle (+ toggle required for detective fields)
         function toggleDetectiveFields(role) {
             const extraFields = document.getElementById('detective-extra-fields');
             const idProofWrap = document.getElementById('citizen-id-proof-field');
             const idProofInput = document.getElementById('signup-id-proof');
+            const lic = document.getElementById('signup-license');
+            const exp = document.getElementById('signup-exp');
+            const reg = document.getElementById('signup-region');
+            const spec = document.getElementById('signup-spec');
             if (role === 'detective') {
                 extraFields.classList.remove('hidden');
                 if (idProofWrap) idProofWrap.style.display = 'none';
                 if (idProofInput) { idProofInput.removeAttribute('required'); idProofInput.value = ''; }
+                if (lic) lic.setAttribute('required', 'required');
+                if (exp) exp.setAttribute('required', 'required');
+                if (reg) reg.setAttribute('required', 'required');
+                if (spec) spec.setAttribute('required', 'required');
             } else {
                 extraFields.classList.add('hidden');
                 if (idProofWrap) idProofWrap.style.display = 'flex';
                 if (idProofInput) idProofInput.setAttribute('required', 'required');
+                if (lic) lic.removeAttribute('required');
+                if (exp) exp.removeAttribute('required');
+                if (reg) reg.removeAttribute('required');
+                if (spec) spec.removeAttribute('required');
             }
         }
 
@@ -1181,6 +1195,19 @@
             const inputEl = document.getElementById('signup-' + field);
             const submitBtn = document.getElementById('signup-submit-btn');
             const formMsg = document.getElementById('signup-form-msg');
+            // 1) Frontend format check first — show "Enter a valid email" etc. immediately,
+            // and do NOT call backend AJAX with garbage (fixes "no message on bad email").
+            if (window.LFValidateInput && inputEl && !window.LFValidateInput(inputEl)) {
+                if (msgEl) {
+                    msgEl.textContent = inputEl.validationMessage || 'Invalid value.';
+                    msgEl.style.color = '#dc2626';
+                    msgEl.style.display = 'block';
+                }
+                signupValid[field] = false;
+                if (submitBtn) { submitBtn.disabled = true; submitBtn.style.opacity = '0.6'; submitBtn.style.cursor = 'not-allowed'; }
+                if (formMsg) { formMsg.textContent = 'Please fix the highlighted fields before registering.'; formMsg.style.color = '#dc2626'; formMsg.style.display = 'block'; }
+                return;
+            }
             try {
                 const res = await fetch('/api/check-availability/?' + field + '=' + encodeURIComponent(value.trim()));
                 const data = await res.json();

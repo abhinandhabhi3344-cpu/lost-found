@@ -347,11 +347,11 @@
                     <div class="card-box">
                         <h3 class="font-display border-b-line pb-2" style="font-size: 1rem; font-weight: 700;">PROFESSIONAL CREDENTIALS</h3>
 
-                        <form action="{% url 'profile_update' %}" method="POST" onsubmit="return confirm('Save detective profile changes?');" style="display: flex; flex-direction: column; gap: 0.85rem; margin-top: 1rem;">
+                        <form action="{% url 'profile_update' %}" method="POST" onsubmit="if(!LFValidateForm(this)) return false; return confirm('Save detective profile changes?');" style="display: flex; flex-direction: column; gap: 0.85rem; margin-top: 1rem;">
                             {% csrf_token %}
                             <div>
                                 <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Full Name</label>
-                                <input type="text" name="full_name" value="{{ user_profile.full_name }}" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                                <input type="text" name="full_name" value="{{ user_profile.full_name }}" required minlength="2" maxlength="150" pattern="[A-Za-z][A-Za-z\s.'\-]{1,149}" title="Text only: letters, spaces and . ' -" data-validate="text" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
                             </div>
                             <div class="grid-2">
                                 <div>
@@ -360,12 +360,12 @@
                                 </div>
                                 <div>
                                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Phone</label>
-                                    <input type="tel" name="phone" value="{{ user_profile.phone }}" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                                    <input type="tel" name="phone" value="{{ user_profile.phone }}" required minlength="10" maxlength="10" pattern="[0-9]{10}" title="Enter exactly 10 digits" inputmode="numeric" data-validate="phone" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
                                 </div>
                             </div>
                             <div>
                                 <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">City / Operating Territory</label>
-                                <input type="text" name="city" value="{{ user_profile.city }}" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                                <input type="text" name="city" value="{{ user_profile.city }}" required minlength="2" maxlength="100" pattern="[A-Za-z][A-Za-z\s.'\-]{1,99}" title="Text only: letters, spaces" data-validate="text" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
                             </div>
                             <button type="submit" class="neu-button-dark" style="margin-top: 0.5rem; align-self: flex-start;">SAVE PROFILE</button>
                         </form>
@@ -405,11 +405,11 @@
                 <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700; margin-top: 0.35rem;" id="update-case-title">Post Investigation Update</h3>
             </div>
 
-            <form id="add-update-form" method="POST" enctype="multipart/form-data" onsubmit="return confirm('Post this investigation update? This will notify the case owner.');" style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.75rem;">
+            <form id="add-update-form" method="POST" enctype="multipart/form-data" onsubmit="if(!LFValidateForm(this)) return false; return confirm('Post this investigation update? This will notify the case owner.');" style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.75rem;">
                 {% csrf_token %}
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Update Heading / Title</label>
-                    <input type="text" name="title" placeholder="e.g. CCTV footage confirmed direction" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                    <input type="text" name="title" placeholder="e.g. CCTV footage confirmed direction" required minlength="3" maxlength="200" data-validate="title" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
                 </div>
 
                 <div>
@@ -424,7 +424,7 @@
 
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Detailed Field Notes</label>
-                    <textarea rows="4" name="notes" placeholder="Write full field notes here..." required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;"></textarea>
+                    <textarea rows="4" name="notes" placeholder="Write full field notes here..." required minlength="10" maxlength="5000" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;"></textarea>
                 </div>
 
                 <button type="submit" class="neu-button-dark" style="padding: 0.75rem;">POST UPDATE NOW</button>
@@ -438,17 +438,18 @@
                 <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700; margin-top: 0.35rem;" id="reject-case-title">Reject Case</h3>
                 <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.25rem;">The case owner will see your reason on their dashboard and can request another detective.</p>
             </div>
-            <form id="reject-case-form" method="POST" onsubmit="return confirm('Reject this assignment? The owner will be notified with your reason.');" style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.75rem;">
+            <form id="reject-case-form" method="POST" onsubmit="if(!LFValidateForm(this)) return false; return confirm('Reject this assignment? The owner will be notified with your reason.');" style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.75rem;">
                 {% csrf_token %}
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Reason for Rejection (required)</label>
-                    <textarea rows="4" name="reject_reason" placeholder="e.g. Out of operating region, conflict of interest, workload..." required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;"></textarea>
+                    <textarea rows="4" name="reject_reason" placeholder="e.g. Out of operating region, conflict of interest, workload..." required minlength="10" maxlength="2000" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;"></textarea>
                 </div>
                 <button type="submit" class="neu-button-danger" style="padding: 0.75rem;">CONFIRM REJECT</button>
             </form>
         </div>
     </div>
 
+    <script src="{% static 'js/form-validations.js' %}"></script>
     <script>
         const modalOverlay = document.getElementById('modal-overlay');
         function openModal(id) {

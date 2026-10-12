@@ -418,7 +418,7 @@
                 <h3 class="font-display" style="font-size: 1.5rem; font-weight: 700;">Create Account</h3>
                 <p style="font-size:0.75rem; color:var(--stone-muted);">Register as Citizen or Licensed Detective</p>
             </div>
-            <form action="{% url 'signup' %}" method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
+            <form action="{% url 'signup' %}" method="POST" enctype="multipart/form-data" onsubmit="return LFValidateForm(this)" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
                 {% csrf_token %}
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Profile Picture</label>
@@ -431,23 +431,23 @@
                 <div class="grid-2">
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Username</label>
-                        <input type="text" name="username" id="signup-username-case" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;" onblur="validateFieldCase('username', this.value)">
-                        <span id="signup-username-msg-case" style="font-size:0.65rem; font-weight:600; display:none; margin-top:0.2rem;"></span>
+                        <input type="text" name="username" id="signup-username-case" required minlength="3" maxlength="30" pattern="[A-Za-z0-9_.]{3,30}" title="3-30 chars: letters, numbers, _ and . only" data-validate="username" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;" onblur="validateFieldCase('username', this.value)">
+                        <span id="signup-username-msg-case" data-availability-msg style="font-size:0.65rem; font-weight:600; display:none; margin-top:0.2rem;"></span>
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Full Name</label>
-                        <input type="text" name="full_name" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                        <input type="text" name="full_name" required minlength="2" maxlength="150" pattern="[A-Za-z][A-Za-z\s.'\-]{1,149}" title="Text only: letters, spaces and . ' -" data-validate="text" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
                     </div>
                 </div>
                 <div class="grid-2">
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Phone Number</label>
-                        <input type="tel" name="phone" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                        <input type="tel" name="phone" placeholder="10-digit mobile number" required minlength="10" maxlength="10" pattern="[0-9]{10}" title="Enter exactly 10 digits" inputmode="numeric" data-validate="phone" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Email Address</label>
-                        <input type="email" name="email" id="signup-email-case" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;" onblur="validateFieldCase('email', this.value)">
-                        <span id="signup-email-msg-case" style="font-size:0.65rem; font-weight:600; display:none; margin-top:0.2rem;"></span>
+                        <input type="email" name="email" id="signup-email-case" required maxlength="254" data-validate="email" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;" onblur="validateFieldCase('email', this.value)">
+                        <span id="signup-email-msg-case" data-availability-msg style="font-size:0.65rem; font-weight:600; display:none; margin-top:0.2rem;"></span>
                     </div>
                 </div>
                 <div class="grid-2">
@@ -460,7 +460,7 @@
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Password</label>
-                        <input type="password" name="password" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                        <input type="password" name="password" required minlength="6" maxlength="128" data-validate="password" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
                     </div>
                 </div>
                 <div id="detective-extra-fields-case" class="hidden" style="display: flex; flex-direction: column; gap: 0.75rem; background: var(--stone-light); padding: 0.85rem; border-radius: 8px; border: 1px solid var(--stone-border); margin-top: 0.25rem;">
@@ -468,21 +468,26 @@
                     <div class="grid-2">
                         <div>
                             <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">License Number</label>
-                            <input type="text" name="license_number" placeholder="e.g. #PD-88219" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
+                            <input type="text" name="license_number" placeholder="e.g. #PD-88219" minlength="3" maxlength="100" data-validate="title" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                         </div>
                         <div>
                             <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Years Experience</label>
-                            <input type="number" name="experience_years" placeholder="e.g. 10" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
+                            <input type="number" name="experience_years" placeholder="e.g. 10" min="0" max="60" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                         </div>
                     </div>
                     <div>
-                        <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Operating Region / Territory</label>
-                        <input type="text" name="operating_region" placeholder="e.g. Thrissur, Kerala" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
+                            <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Operating Region / Territory</label>
+                            <input type="text" name="operating_region" placeholder="e.g. Thrissur, Kerala" minlength="2" maxlength="255" data-validate="location" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Specialization Summary</label>
-                        <textarea rows="2" name="specialization" placeholder="e.g. K9 Scent Tracking..." class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;"></textarea>
+                        <textarea rows="2" name="specialization" placeholder="e.g. K9 Scent Tracking..." minlength="3" maxlength="200" data-validate="title" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;"></textarea>
                     </div>
+                </div>
+                <div id="citizen-id-proof-field-case" style="display: flex; flex-direction: column; gap: 0.4rem; background: var(--stone-light); padding: 0.85rem; border-radius: 8px; border: 1px solid var(--stone-border); margin-top: 0.25rem;">
+                    <span style="font-size: 0.65rem; font-weight: 700; color: var(--red-accent); text-transform: uppercase;">ID Proof — Required for Citizens</span>
+                    <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase;">Upload Govt ID (JPG/PNG/PDF)</label>
+                    <input type="file" name="id_proof" id="signup-id-proof-case" accept="image/*,.pdf" required class="neu-input" style="width: 100%; padding: 0.5rem 0.75rem;">
                 </div>
                 <button type="submit" id="signup-submit-btn-case" class="neu-button-dark" style="padding: 0.8rem; font-size: 0.75rem;">REGISTER ACCOUNT</button>
                 <p id="signup-form-msg-case" style="font-size:0.7rem; font-weight:600; text-align:center; display:none;"></p>
@@ -490,6 +495,7 @@
         </div>
     </div>
 
+    <script src="{% static 'js/form-validations.js' %}"></script>
     <!-- AI VECTOR SEARCH CONTROLLER -->
     <script>
         const modalOverlay = document.getElementById('modal-overlay');
@@ -650,11 +656,20 @@
             cards.forEach(card => container.appendChild(card));
             const inp=document.getElementById('ai-file-input'); if(inp) inp.value='';
         }
-        // Toggle detective extra fields on case page
+        // Toggle detective extra fields on case page (+ required only for detective, never citizen)
         function toggleDetectiveFieldsCase(val){
             const el=document.getElementById('detective-extra-fields-case');
             if(!el) return;
-            if(val==='detective') el.classList.remove('hidden'); else el.classList.add('hidden');
+            var isDet = (val==='detective');
+            if(isDet) el.classList.remove('hidden'); else el.classList.add('hidden');
+            el.querySelectorAll('input, textarea').forEach(function(inp){
+                if(isDet && (inp.name==='license_number' || inp.name==='experience_years' || inp.name==='operating_region' || inp.name==='specialization')) inp.setAttribute('required','required');
+                else inp.removeAttribute('required');
+            });
+            var idWrap=document.getElementById('citizen-id-proof-field-case');
+            var idInput=document.getElementById('signup-id-proof-case');
+            if(isDet){ if(idWrap) idWrap.style.display='none'; if(idInput){ idInput.removeAttribute('required'); idInput.value=''; } }
+            else { if(idWrap) idWrap.style.display='flex'; if(idInput) idInput.setAttribute('required','required'); }
         }
         // Live validation for case page signup
         let signupValidCase={ username:true, email:true };
@@ -664,6 +679,13 @@
             const inputEl=document.getElementById('signup-'+field+'-case');
             const submitBtn=document.getElementById('signup-submit-btn-case');
             const formMsg=document.getElementById('signup-form-msg-case');
+            if(window.LFValidateInput && inputEl && !window.LFValidateInput(inputEl)){
+                if(msgEl){ msgEl.textContent=inputEl.validationMessage||'Invalid value.'; msgEl.style.color='#dc2626'; msgEl.style.display='block'; }
+                signupValidCase[field]=false;
+                if(submitBtn){ submitBtn.disabled=true; submitBtn.style.opacity='0.6'; submitBtn.style.cursor='not-allowed'; }
+                if(formMsg){ formMsg.textContent='Please fix highlighted fields.'; formMsg.style.color='#dc2626'; formMsg.style.display='block'; }
+                return;
+            }
             try{
                 const res=await fetch('/api/check-availability/?'+field+'='+encodeURIComponent(value.trim()));
                 const data=await res.json();
