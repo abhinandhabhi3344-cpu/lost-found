@@ -444,23 +444,23 @@
                     <div class="card-box">
                         <h3 class="font-display border-b-line pb-2" style="font-size: 1rem; font-weight: 700;">PERSONAL DETAILS</h3>
                         
-                        <form action="{% url 'profile_update' %}" method="POST" onsubmit="return confirm('Save profile changes?');" style="display: flex; flex-direction: column; gap: 0.85rem; margin-top: 1rem;">
+                        <form action="{% url 'profile_update' %}" method="POST" onsubmit="if(!LFValidateForm(this)) return false; return confirm('Save profile changes?');" style="display: flex; flex-direction: column; gap: 0.85rem; margin-top: 1rem;">
                             {% csrf_token %}
                             <div>
                                 <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Username</label>
-                                <input type="text" name="username" value="{{ user.username }}" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                                <input type="text" name="username" value="{{ user.username }}" required minlength="3" maxlength="30" pattern="[A-Za-z0-9_.]{3,30}" title="3-30 chars: letters, numbers, _ and . only" data-validate="username" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
                             </div>
                             <div>
                                 <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Full Name</label>
-                                <input type="text" name="full_name" value="{{ user_profile.full_name }}" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                                <input type="text" name="full_name" value="{{ user_profile.full_name }}" required minlength="2" maxlength="150" pattern="[A-Za-z][A-Za-z\s.'\-]{1,149}" title="Text only: letters, spaces and . ' -" data-validate="text" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
                             </div>
                             <div>
                                 <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Email Address</label>
-                                <input type="email" name="email" value="{{ user.email }}" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                                <input type="email" name="email" value="{{ user.email }}" required maxlength="254" data-validate="email" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
                             </div>
                             <div>
                                 <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Phone Number</label>
-                                <input type="tel" name="phone" value="{{ user_profile.phone }}" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                                <input type="tel" name="phone" value="{{ user_profile.phone }}" required minlength="10" maxlength="10" pattern="[0-9]{10}" title="Enter exactly 10 digits" inputmode="numeric" data-validate="phone" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
                             </div>
                             <button type="submit" class="neu-button-dark" style="margin-top: 0.5rem; align-self: flex-start;">Save Changes</button>
                         </form>
@@ -524,25 +524,25 @@
                 <h3 class="font-display" style="font-size: 1.35rem; font-weight: 700; margin-top: 0.4rem;">Edit Case Information</h3>
             </div>
 
-            <form id="edit-case-form" method="POST" enctype="multipart/form-data" onsubmit="return confirm('Save changes to this case? This will update the case details.');" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
+            <form id="edit-case-form" method="POST" enctype="multipart/form-data" onsubmit="if(!LFValidateForm(this)) return false; return confirm('Save changes to this case? This will update the case details.');" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
                 {% csrf_token %}
                 <div class="grid-2">
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Title / Subject Name</label>
-                        <input type="text" name="title" id="edit-title" required class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;">
+                        <input type="text" name="title" id="edit-title" required minlength="3" maxlength="200" data-validate="title" class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;">
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Reward Amount (₹) <span style="text-transform:none; font-weight:400; color:var(--stone-muted);">(Optional)</span></label>
-                        <input type="number" name="reward" id="edit-reward" class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;" placeholder="e.g. 1500">
+                        <input type="number" name="reward" id="edit-reward" min="0" max="10000000" class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;" placeholder="e.g. 1500">
                     </div>
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Last Known Location</label>
-                    <input type="text" name="location" id="edit-location" required class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;">
+                    <input type="text" name="location" id="edit-location" required minlength="3" maxlength="255" data-validate="location" class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;">
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Category</label>
-                    <select name="category" id="edit-category" class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;">
+                    <select name="category" id="edit-category" required class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;">
                         <option value="PET">Pet</option>
                         <option value="PERSON">Person</option>
                         <option value="ITEM">Item</option>
@@ -550,11 +550,11 @@
                 </div>
                 <div id="edit-complaint-wrap">
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Police Complaint Registered Number <span style="color:var(--red-accent);">*</span></label>
-                    <input type="text" name="complaint_number" id="edit-complaint" required class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;" placeholder="e.g. FIR No. 123/2026">
+                    <input type="text" name="complaint_number" id="edit-complaint" required minlength="3" maxlength="100" class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;" placeholder="e.g. FIR No. 123/2026">
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Description</label>
-                    <textarea rows="3" name="description" id="edit-description" class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;"></textarea>
+                    <textarea rows="3" name="description" id="edit-description" required minlength="10" maxlength="5000" class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;"></textarea>
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Update Photo (optional)</label>
@@ -608,7 +608,7 @@
                 <span class="badge-tag bg-emerald"><i class="fas fa-id-badge"></i> DISPATCH REQUEST</span>
                 <h3 class="font-display" style="font-size: 1.35rem; font-weight: 700; margin-top: 0.4rem;">Request Private Investigator</h3>
             </div>
-            <form action="{% url 'detective_request_create' %}" method="POST" onsubmit="return confirm('Submit detective dispatch request for this case?');" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
+            <form action="{% url 'detective_request_create' %}" method="POST" onsubmit="if(!LFValidateForm(this)) return false; return confirm('Submit detective dispatch request for this case?');" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
                 {% csrf_token %}
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Target Case</label>
@@ -647,7 +647,7 @@
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Special Investigation Notes</label>
-                    <textarea rows="3" name="message" placeholder="Provide additional private details..." class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;"></textarea>
+                    <textarea rows="3" name="message" placeholder="Provide additional private details..." required minlength="10" maxlength="2000" class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;"></textarea>
                 </div>
                 {% if unassigned_cases %}
                 <button type="submit" class="neu-button-dark" style="padding: 0.75rem; margin-top: 0.25rem;">SUBMIT DISPATCH REQUEST</button>
@@ -664,17 +664,17 @@
                 <span class="badge-tag bg-red" style="position: static;"><i class="fas fa-bell"></i> Emergency Case Report</span>
                 <h3 class="font-display" style="font-size: 1.35rem; font-weight: 700; margin-top: 0.35rem;">Report Missing Subject / Pet</h3>
             </div>
-            <form action="{% url 'case_create' %}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('Submit this missing case report?');" style="display: flex; flex-direction: column; gap: 0.65rem; font-size: 0.75rem;">
+            <form action="{% url 'case_create' %}" method="POST" enctype="multipart/form-data" onsubmit="if(!LFValidateForm(this)) return false; return confirm('Submit this missing case report?');" style="display: flex; flex-direction: column; gap: 0.65rem; font-size: 0.75rem;">
                 {% csrf_token %}
                 <input type="hidden" name="case_type" value="LOST">
                 <div class="grid-2">
                     <div>
                         <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Subject Title / Name</label>
-                        <input type="text" name="title" placeholder="e.g. Golden Retriever 'Leo'" required class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
+                        <input type="text" name="title" placeholder="e.g. Golden Retriever 'Leo'" required minlength="3" maxlength="200" data-validate="title" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Category</label>
-                        <select name="category" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
+                        <select name="category" required class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                             <option value="PET">Pet</option><option value="PERSON">Person</option><option value="ITEM">Item</option>
                         </select>
                     </div>
@@ -682,16 +682,16 @@
                 <div class="grid-2">
                     <div>
                         <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Last Seen Location</label>
-                        <input type="text" name="location" placeholder="e.g. Gion District, Kyoto" required class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
+                        <input type="text" name="location" placeholder="e.g. Gion District, Kyoto" required minlength="3" maxlength="255" data-validate="location" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Reward (₹) <span style="text-transform:none; font-weight:400;">(Optional)</span></label>
-                        <input type="number" name="reward" placeholder="e.g. 1500" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
+                        <input type="number" name="reward" placeholder="e.g. 1500" min="0" max="10000000" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                     </div>
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Police Complaint Registered Number <span style="color:var(--red-accent);">*</span></label>
-                    <input type="text" name="complaint_number" placeholder="e.g. FIR No. 123/2026, Police Station" required class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
+                    <input type="text" name="complaint_number" placeholder="e.g. FIR No. 123/2026, Police Station" required minlength="3" maxlength="100" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;">
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Upload Photo</label>
@@ -699,7 +699,7 @@
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.6rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.2rem;">Description</label>
-                    <textarea rows="2" name="description" placeholder="Describe details..." class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;"></textarea>
+                    <textarea rows="2" name="description" placeholder="Describe details..." required minlength="10" maxlength="5000" class="neu-input" style="width: 100%; padding: 0.55rem 0.75rem;"></textarea>
                 </div>
                 <button type="submit" class="neu-button-dark" style="padding: 0.75rem; margin-top: 0.25rem;">SUBMIT CASE</button>
             </form>
@@ -712,22 +712,22 @@
                 <span class="badge-tag bg-emerald" style="position: static;"><i class="fas fa-heart"></i> Found Alert</span>
                 <h3 class="font-display" style="font-size: 1.35rem; font-weight: 700; margin-top: 0.35rem;">Report Found Subject / Pet</h3>
             </div>
-            <form action="{% url 'case_create' %}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('Submit this found report?');" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
+            <form action="{% url 'case_create' %}" method="POST" enctype="multipart/form-data" onsubmit="if(!LFValidateForm(this)) return false; return confirm('Submit this found report?');" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
                 {% csrf_token %}
                 <input type="hidden" name="case_type" value="FOUND">
                 <div class="grid-2">
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">What Did You Find?</label>
-                        <input type="text" name="title" placeholder="e.g. Siamese Cat" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                        <input type="text" name="title" placeholder="e.g. Siamese Cat" required minlength="3" maxlength="200" data-validate="title" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Location Found</label>
-                        <input type="text" name="location" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                        <input type="text" name="location" required minlength="3" maxlength="255" data-validate="location" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
                     </div>
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Category</label>
-                    <select name="category" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
+                    <select name="category" required class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;">
                         <option value="PET">Pet</option><option value="PERSON">Person</option><option value="ITEM">Item</option>
                     </select>
                 </div>
@@ -737,7 +737,7 @@
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Description</label>
-                    <textarea rows="2" name="description" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;"></textarea>
+                    <textarea rows="2" name="description" required minlength="10" maxlength="5000" class="neu-input" style="width: 100%; padding: 0.6rem 0.85rem;"></textarea>
                 </div>
                 <button type="submit" class="neu-button-dark" style="padding: 0.75rem; margin-top: 0.25rem;">SUBMIT FOUND ALERT</button>
             </form>
@@ -746,6 +746,7 @@
     </div>
 
 
+    <script src="{% static 'js/form-validations.js' %}"></script>
     <script>
         const modalOverlay = document.getElementById('modal-overlay');
 

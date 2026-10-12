@@ -394,11 +394,11 @@
                 <h3 class="font-display" style="font-size: 1.35rem; font-weight: 700; margin-top: 0.4rem;">Report a Sighting for {{ case.title }}</h3>
             </div>
 
-            <form action="{% url 'sighting_create' case_pk=case.pk %}" method="POST" enctype="multipart/form-data" onsubmit="return confirm('Submit this sighting report?');" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
+            <form action="{% url 'sighting_create' case_pk=case.pk %}" method="POST" enctype="multipart/form-data" onsubmit="if(!LFValidateForm(this)) return false; return confirm('Submit this sighting report?');" style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
                 {% csrf_token %}
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Location Spotted</label>
-                    <input type="text" name="location" placeholder="e.g. Maruyama Park near fountain" required class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;">
+                    <input type="text" name="location" placeholder="e.g. Maruyama Park near fountain" required minlength="3" maxlength="255" data-validate="location" class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;">
                 </div>
 
                 <div>
@@ -408,17 +408,17 @@
 
                 <div>
                     <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Sighting Details</label>
-                    <textarea rows="3" name="description" placeholder="Describe physical condition, direction heading..." required class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;"></textarea>
+                    <textarea rows="3" name="description" placeholder="Describe physical condition, direction heading..." required minlength="10" maxlength="2000" class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;"></textarea>
                 </div>
 
                 <div class="grid-2">
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Your Name</label>
-                        <input type="text" name="reporter_name" value="{{ user_profile.full_name|default:user.username }}" class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;">
+                        <input type="text" name="reporter_name" value="{{ user_profile.full_name|default:user.username }}" required minlength="2" maxlength="150" pattern="[A-Za-z][A-Za-z\s.'\-]{1,149}" title="Text only: letters, spaces and . ' -" data-validate="text" class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;">
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Contact Info</label>
-                        <input type="text" name="reporter_contact" value="{{ user_profile.phone }}" placeholder="Phone or email" class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;">
+                        <input type="text" name="reporter_contact" value="{{ user_profile.phone }}" required data-validate="contact" title="Enter 10-digit phone or valid email" placeholder="10-digit phone or email" class="neu-input" style="width: 100%; padding: 0.6rem 0.75rem;">
                     </div>
                 </div>
 
@@ -454,23 +454,46 @@
             <div style="text-align: center; margin-bottom: 1.25rem;">
                 <h3 class="font-display" style="font-size: 1.5rem; font-weight: 700;">Create Account</h3>
             </div>
-            <form action="{% url 'signup' %}" method="POST" style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.75rem;">
+            <form action="{% url 'signup' %}" method="POST" enctype="multipart/form-data" onsubmit="return LFValidateForm(this)" style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.75rem;">
                 {% csrf_token %}
+                <input type="hidden" name="role" value="citizen">
                 <div class="grid-2">
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Username</label>
-                        <input type="text" name="username" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                        <input type="text" name="username" id="signup-username-detail" required minlength="3" maxlength="30" pattern="[A-Za-z0-9_.]{3,30}" title="3-30 chars: letters, numbers, _ and . only" data-validate="username" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;" onblur="LFCheckAvailability('username', this.value, 'signup-username-msg-detail', 'signup-username-detail', 'signup-submit-btn-detail', 'signup-form-msg-detail')">
+                        <span id="signup-username-msg-detail" data-availability-msg style="font-size:0.65rem; font-weight:600; display:none; margin-top:0.2rem;"></span>
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Full Name</label>
-                        <input type="text" name="full_name" required class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                        <input type="text" name="full_name" required minlength="2" maxlength="150" pattern="[A-Za-z][A-Za-z\s.'\-]{1,149}" title="Text only: letters, spaces and . ' -" data-validate="text" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
                     </div>
                 </div>
-                <button type="submit" class="neu-button-dark">REGISTER NOW</button>
+                <div class="grid-2">
+                    <div>
+                        <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Phone Number</label>
+                        <input type="tel" name="phone" placeholder="10-digit mobile number" required minlength="10" maxlength="10" pattern="[0-9]{10}" title="Enter exactly 10 digits" inputmode="numeric" data-validate="phone" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Email Address</label>
+                        <input type="email" name="email" id="signup-email-detail" required maxlength="254" data-validate="email" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;" onblur="LFCheckAvailability('email', this.value, 'signup-email-msg-detail', 'signup-email-detail', 'signup-submit-btn-detail', 'signup-form-msg-detail')">
+                        <span id="signup-email-msg-detail" data-availability-msg style="font-size:0.65rem; font-weight:600; display:none; margin-top:0.2rem;"></span>
+                    </div>
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Password</label>
+                    <input type="password" name="password" required minlength="6" maxlength="128" data-validate="password" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">ID Proof (citizen registration)</label>
+                    <input type="file" name="id_proof" accept="image/*,.pdf" required class="neu-input" style="width: 100%; padding: 0.5rem 0.75rem;">
+                </div>
+                <button type="submit" id="signup-submit-btn-detail" class="neu-button-dark">REGISTER NOW</button>
+                <p id="signup-form-msg-detail" style="font-size:0.7rem; font-weight:600; text-align:center; display:none;"></p>
             </form>
         </div>
     </div>
 
+    <script src="{% static 'js/form-validations.js' %}"></script>
     <script>
         const modalOverlay = document.getElementById('modal-overlay');
         function openModal(id) {
