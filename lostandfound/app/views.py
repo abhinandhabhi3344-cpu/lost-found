@@ -446,22 +446,12 @@ def case_delete(request, pk):
 @require_POST
 def case_mark_resolved(request, pk):
     case = get_object_or_404(Case, pk=pk)
-    # Staff can close directly (they ARE the verifier)
+    # Admins/staff cannot close cases on their own — closure happens ONLY
+    # when the case owner sends a solve request and admin approves it in
+    # Solve Verification Requests (admin_review_solve_request).
     if request.user.is_staff:
-        if case.owner != request.user and not request.user.is_staff:
-            messages.error(request, 'Permission denied.')
-            return redirect('case_detail', pk=pk)
-        case.status = 'CLOSED'
-        case.save()
-        CaseSolveRequest.objects.filter(case=case, status='PENDING').update(status='APPROVED', reviewed_at=timezone.now())
-        Notification.objects.create(
-            user=case.owner,
-            case=case,
-            title='Case Resolved',
-            message=f'Your case "{case.title}" has been marked as solved and closed.'
-        )
-        messages.success(request, 'Case marked as solved!')
-        return redirect('case_detail', pk=pk)
+        messages.error(request, 'Cases can only be closed via the owner solve-request flow. Please review it in Solve Verification Requests.')
+        return redirect('admin_dashboard')
     # Owner flow: send to admin for verification, do NOT close yet
     if case.owner != request.user:
         messages.error(request, 'Permission denied.')
@@ -1263,27 +1253,6 @@ def admin_delete_case(request, pk):
 
 @login_required
 @require_POST
-def admin_mark_case_solved(request, pk):
-    if not request.user.is_staff:
-        messages.error(request, 'Access denied.')
-        return redirect('home')
-
-    case = get_object_or_404(Case, pk=pk)
-    case.status = 'CLOSED'
-    case.save()
-    CaseSolveRequest.objects.filter(case=case, status='PENDING').update(status='APPROVED', reviewed_at=timezone.now())
-    Notification.objects.create(
-        user=case.owner,
-        case=case,
-        title='Case Solved',
-        message=f'Admin verified and closed your case "{case.title}" ({case.case_number}) as solved.'
-    )
-    messages.success(request, f'Case {case.case_number} marked as solved.')
-    return redirect('admin_dashboard')
-
-
-@login_required
-@require_POST
 def admin_review_solve_request(request):
     if not request.user.is_staff:
         messages.error(request, 'Access denied.')
@@ -1457,9 +1426,15 @@ def ai_vector_search_api(request):
     if not files:
         return JsonResponse({'success': False, 'error': 'No query image file uploaded.'}, status=400)
 
+    # Category is REQUIRED — user must tell us what they are searching for
+    # (PET / PERSON / ITEM) so a dog photo never matches a necklace case.
+    category = request.POST.get('category', '').strip().upper()
+    if category not in ['PET', 'PERSON', 'ITEM']:
+        return JsonResponse({'success': False, 'error': 'Please select a category (Pet / Person / Item) for AI search.'}, status=400)
+
     try:
-        cases = Case.objects.select_related('owner').prefetch_related('images').all()
-        results = search_cases_with_ai(files, cases)
+        cases = Case.objects.select_related('owner').prefetch_related('images').filter(category=category)
+        results = search_cases_with_ai(files, cases, category=category)
 
         data = []
         for r in results:
@@ -1467,12 +1442,14 @@ def ai_vector_search_api(request):
                 'case_id': r['case'].pk,
                 'case_number': r['case'].case_number,
                 'title': r['case'].title,
+                'category': r['case'].category,
                 'match_score': r['match_score'],
                 'is_high_match': r['is_high_match'],
             })
 
         return JsonResponse({
             'success': True,
+            'category': category,
             'total_analyzed': len(results),
             'results': data
         })

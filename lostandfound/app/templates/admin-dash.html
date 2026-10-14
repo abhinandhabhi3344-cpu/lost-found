@@ -776,7 +776,7 @@
                 </div>
             </div>
 
-            <!-- 4. CASE DATABASE CONTROL (MARK SOLVED FIXED) -->
+            <!-- 4. CASE DATABASE CONTROL (close only via Solve Verification flow) -->
             <div id="panel-cases" class="dash-panel">
                 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.25rem;" class="border-b-line pb-3">
                     <h2 class="font-display" style="font-size: 1.25rem; font-weight: 800;">CASE DATABASE CONTROL</h2>
@@ -818,10 +818,7 @@
                                     <a href="{% url 'case_detail' pk=c.pk %}" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Inspect</a>
                                     
                                     {% if c.status != 'CLOSED' and c.status != 'FOUND' %}
-                                    <form action="{% url 'admin_mark_case_solved' pk=c.pk %}" method="POST" onsubmit="return confirm('Mark this case as solved/closed?');" style="display: inline;">
-                                        {% csrf_token %}
-                                        <button type="submit" class="neu-button-emerald" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Mark Solved</button>
-                                    </form>
+                                    <span style="font-size: 0.65rem; color: var(--stone-muted); font-weight: 600; padding: 0.2rem 0.4rem;" title="Cases close only via Solve Verification requests sent by the user (see panel below).">Close via Solve Verification ↓</span>
                                     {% else %}
                                     <span style="font-size: 0.65rem; color: var(--emerald-accent); font-weight: 700; padding: 0.2rem 0.4rem;"><i class="fas fa-circle-check"></i> Solved</span>
                                     {% endif %}

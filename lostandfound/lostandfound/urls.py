@@ -51,7 +51,6 @@ urlpatterns = [
     path('admin-panel/blog/', views.admin_manage_blog, name='admin_manage_blog'),
     path('admin-panel/feedback/<int:pk>/', views.admin_manage_feedback, name='admin_manage_feedback'),
     path('admin-panel/case/<int:pk>/delete/', views.admin_delete_case, name='admin_delete_case'),
-    path('admin-panel/case/<int:pk>/solve/', views.admin_mark_case_solved, name='admin_mark_case_solved'),
     path('admin-panel/review-solve-request/', views.admin_review_solve_request, name='admin_review_solve_request'),
 
     # Notifications

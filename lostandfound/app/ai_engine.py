@@ -9,10 +9,14 @@ clip_processor = None
 faiss_module = None
 
 # Similarity contract (percentages shown in the UI):
-#   - min_threshold (default 60.0): minimum score for a case to be returned.
+#   - min_threshold (default 75.0): minimum score for a case to be returned.
 #   - HIGH_MATCH_THRESHOLD (80.0): score at/above which a match is "high".
 # Cosine similarity maps directly to percent (0.78 -> 78.0%).
-DEFAULT_MIN_THRESHOLD = 60.0
+# NOTE: CLIP embeddings live in a narrow cone, so even unrelated photos
+# score ~65-80%. The threshold is kept at 75 so unrelated cross-type pairs
+# (e.g. dog photo vs necklace case) are rejected, and category gating below
+# guarantees a PET query never even compares against ITEM cases.
+DEFAULT_MIN_THRESHOLD = 75.0
 HIGH_MATCH_THRESHOLD = 80.0
 
 # Geometric test-time augmentations used to match the SAME subject
@@ -280,9 +284,14 @@ def _max_cosine(query_mat, db_mat):
     return float(np.max(np.dot(query_mat, db_mat.T)))
 
 
-def search_cases_with_ai(query_image_files, all_cases, min_threshold=DEFAULT_MIN_THRESHOLD):
+def search_cases_with_ai(query_image_files, all_cases, min_threshold=DEFAULT_MIN_THRESHOLD, category=None):
     """
     Queries database cases against uploaded search image(s).
+
+    Category gating: when `category` (PET/PERSON/ITEM) is given, only cases
+    of that same category are compared. A dog photo searched as PET will
+    therefore never match a necklace (ITEM) case, no matter how high the
+    raw visual cosine is.
 
     Angle handling: every image is expanded into geometric variants
     (mirror / rotations / tighter crop) on BOTH the query and database
@@ -294,6 +303,25 @@ def search_cases_with_ai(query_image_files, all_cases, min_threshold=DEFAULT_MIN
     """
     if not query_image_files:
         return []
+
+    # 0. Category gate — never compare across types (PET vs ITEM etc.)
+    if category:
+        cat = str(category).strip().upper()
+        if cat in ('PET', 'PERSON', 'ITEM'):
+            try:
+                if hasattr(all_cases, 'filter'):
+                    all_cases = all_cases.filter(category=cat)
+                else:
+                    all_cases = [c for c in list(all_cases) if str(getattr(c, 'category', '')).upper() == cat]
+            except Exception:
+                pass
+            if all_cases is None:
+                return []
+            try:
+                if len(all_cases) == 0:
+                    return []
+            except Exception:
+                pass
 
     # 1. Variant matrices for the query image(s)
     query_mats = []
