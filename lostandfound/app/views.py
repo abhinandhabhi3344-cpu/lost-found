@@ -76,6 +76,7 @@ def signup_view(request):
         full_name = request.POST.get('full_name', '').strip()
         email = request.POST.get('email', '').strip()
         phone = request.POST.get('phone', '').strip()
+        address = request.POST.get('address', '').strip()
         password = request.POST.get('password', '').strip()
         role = request.POST.get('role', 'citizen')
 
@@ -112,6 +113,7 @@ def signup_view(request):
         profile = user.profile
         profile.full_name = full_name
         profile.phone = phone
+        profile.address = address
         # Handle avatar upload during signup
         avatar_file = request.FILES.get('avatar')
         if avatar_file:
@@ -124,9 +126,10 @@ def signup_view(request):
             profile.specialization = request.POST.get('specialization', '')
             profile.experience_years = int(request.POST.get('experience_years', 0) or 0)
             operating_region = request.POST.get('operating_region', '').strip()
-            # Store operating region in both address and city for compatibility (admin expects either)
-            profile.address = operating_region
+            # Store operating region in both address and city for compatibility (admin expects either).
+            # Fall back to generic address field when no operating region is given.
             if operating_region:
+                profile.address = operating_region
                 profile.city = operating_region
             # Detectives skip citizen ID verification
             profile.verification_status = 'APPROVED'
@@ -581,8 +584,7 @@ def profile_update(request):
         profile.phone = phone
 
         address = request.POST.get('address', '').strip()
-        if address:
-            profile.address = address
+        profile.address = address
 
         city = request.POST.get('city', '').strip()
         if city:

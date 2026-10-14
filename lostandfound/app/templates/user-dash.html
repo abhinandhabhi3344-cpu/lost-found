@@ -462,6 +462,10 @@
                                 <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Phone Number</label>
                                 <input type="tel" name="phone" value="{{ user_profile.phone }}" required minlength="10" maxlength="10" pattern="[0-9]{10}" title="Enter exactly 10 digits" inputmode="numeric" data-validate="phone" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
                             </div>
+                            <div>
+                                <label style="display: block; font-size: 0.65rem; font-weight: 600; color: var(--stone-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Address</label>
+                                <input type="text" name="address" value="{{ user_profile.address }}" maxlength="255" class="neu-input" style="width: 100%; padding: 0.65rem 0.85rem;">
+                            </div>
                             <button type="submit" class="neu-button-dark" style="margin-top: 0.5rem; align-self: flex-start;">Save Changes</button>
                         </form>
                     </div>
