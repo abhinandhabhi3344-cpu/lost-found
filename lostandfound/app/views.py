@@ -362,10 +362,18 @@ def case_create(request):
             reward=reward,
         )
 
-        # Handle image upload
+        # Handle image upload (precompute + store AI embedding for fast search)
         image = request.FILES.get('image')
         if image:
-            CaseImage.objects.create(case=case, image=image, is_primary=True)
+            c_img = CaseImage.objects.create(case=case, image=image, is_primary=True)
+            try:
+                from .ai_engine import compute_stored_embedding
+                emb = compute_stored_embedding(c_img.image.path)
+                if emb:
+                    c_img.clip_embedding = emb
+                    c_img.save(update_fields=['clip_embedding'])
+            except Exception:
+                pass
 
         Notification.objects.create(
             user=request.user,
@@ -417,7 +425,15 @@ def case_edit(request, pk):
         image = request.FILES.get('image')
         if image:
             case.images.filter(is_primary=True).update(is_primary=False)
-            CaseImage.objects.create(case=case, image=image, is_primary=True)
+            c_img = CaseImage.objects.create(case=case, image=image, is_primary=True)
+            try:
+                from .ai_engine import compute_stored_embedding
+                emb = compute_stored_embedding(c_img.image.path)
+                if emb:
+                    c_img.clip_embedding = emb
+                    c_img.save(update_fields=['clip_embedding'])
+            except Exception:
+                pass
 
         messages.success(request, 'Case updated successfully!')
         return redirect('user_dashboard')

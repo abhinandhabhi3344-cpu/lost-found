@@ -817,9 +817,7 @@
                                 <td style="display: flex; gap: 0.3rem; align-items: center;">
                                     <a href="{% url 'case_detail' pk=c.pk %}" class="neu-button" style="padding: 0.3rem 0.5rem; font-size: 0.6rem;">Inspect</a>
                                     
-                                    {% if c.status != 'CLOSED' and c.status != 'FOUND' %}
-                                    <span style="font-size: 0.65rem; color: var(--stone-muted); font-weight: 600; padding: 0.2rem 0.4rem;" title="Cases close only via Solve Verification requests sent by the user (see panel below).">Close via Solve Verification ↓</span>
-                                    {% else %}
+                                    {% if c.status == 'CLOSED' or c.status == 'FOUND' %}
                                     <span style="font-size: 0.65rem; color: var(--emerald-accent); font-weight: 700; padding: 0.2rem 0.4rem;"><i class="fas fa-circle-check"></i> Solved</span>
                                     {% endif %}
 

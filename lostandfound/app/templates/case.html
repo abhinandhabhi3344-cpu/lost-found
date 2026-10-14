@@ -190,7 +190,7 @@
                 <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--stone-muted);">GLOBAL DATABASE</span>
                 <h1 class="page-title font-display">CASES DIRECTORY &amp; AI MATCH</h1>
                 <p style="font-size: 0.85rem; color: var(--stone-muted); font-weight: 300; max-width: 42rem; line-height: 1.5;">
-                    Browse active missing persons, lost pets, and community found reports. Pick a category (Pet / Person / Item), then upload photo(s) — AI compares only within that category (75% threshold).
+                    Browse active missing persons, lost pets, and community found reports. Pick a category (Pet / Person / Item), then upload photo(s) — AI compares only within that category (90% threshold).
                 </p>
             </div>
 
@@ -219,7 +219,7 @@
                         <button type="button" onclick="document.getElementById('ai-file-input').click();" class="neu-button-dark" style="padding: 0.65rem 1rem; font-size: 0.7rem; white-space: nowrap;"><i class="fas fa-upload"></i> Choose Photo</button>
                     </div>
                     <span style="font-size: 0.65rem; color: var(--emerald-accent); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; background: #d1fae5; padding: 0.2rem 0.6rem; border-radius: 9999px; margin-top: 0.25rem;">
-                        <i class="fas fa-compass"></i> Category-filtered CLIP &amp; FAISS search (75% threshold)
+                        <i class="fas fa-compass"></i> Category-filtered CLIP &amp; FAISS search (90% threshold)
                     </span>
                 </div>
 
@@ -579,7 +579,7 @@
                 if (!data.results || data.results.length === 0) {
                     // ZERO matches above the similarity threshold within this category
                     const catLabel = data.category || category;
-                    aiStatusMsg.innerHTML = `<i class="fas fa-circle-xmark" style="font-size: 1rem; color: var(--red-accent);"></i> <strong>NO ${catLabel} MATCHES FOUND:</strong> Uploaded photo does not match any ${catLabel} case with &ge; 75% similarity. Cross-category cases (e.g. necklace vs dog) are never compared.`;
+                    aiStatusMsg.innerHTML = `<i class="fas fa-circle-xmark" style="font-size: 1rem; color: var(--red-accent);"></i> <strong>NO ${catLabel} MATCHES FOUND:</strong> Uploaded photo does not match any ${catLabel} case with &ge; 90% similarity. Cross-category cases (e.g. necklace vs dog) are never compared.`;
 
                     cards.forEach(card => {
                         card.style.display = 'none';
@@ -591,16 +591,16 @@
                     emptyNotice.style.cssText = 'grid-column: 1 / -1; text-align: center; padding: 3rem;';
                     emptyNotice.innerHTML = `
                         <div style="font-size: 2.25rem; color: var(--amber-accent); margin-bottom: 0.5rem;"><i class="fas fa-image"></i></div>
-                        <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700;">No ${catLabel} Matches Found (75% Threshold)</h3>
+                        <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700;">No ${catLabel} Matches Found (90% Threshold)</h3>
                         <p style="font-size: 0.8rem; color: var(--stone-muted); margin-top: 0.5rem; max-width: 32rem; margin-left: auto; margin-right: auto; line-height: 1.5;">
-                            The uploaded image does not match any ${catLabel} case with 75%+ similarity. Only ${catLabel} cases were compared — try a clearer photo or check you picked the right category.
+                            The uploaded image does not match any ${catLabel} case with 90%+ similarity. Only ${catLabel} cases were compared — try a clearer photo or check you picked the right category.
                         </p>
                     `;
                     container.appendChild(emptyNotice);
                     return;
                 }
 
-                // MATCHES FOUND within the selected category (ranked; 80%+ = high match)
+                // MATCHES FOUND within the selected category (ranked; 95%+ = high match)
                 const resultMap = {};
                 let topScore = 0;
                 data.results.forEach(r => {
@@ -608,7 +608,7 @@
                     if (r.match_score > topScore) topScore = r.match_score;
                 });
 
-                aiStatusMsg.innerHTML = `<i class="fas fa-circle-check" style="font-size: 1rem; color: var(--emerald-accent);"></i> <strong>${data.results.length} ${data.category || category} MATCH(ES) FOUND:</strong> Top match <strong>${topScore}% similar</strong> (75% threshold, same category only).`;
+                aiStatusMsg.innerHTML = `<i class="fas fa-circle-check" style="font-size: 1rem; color: var(--emerald-accent);"></i> <strong>${data.results.length} ${data.category || category} MATCH(ES) FOUND:</strong> Top match <strong>${topScore}% similar</strong> (90% threshold, same category only).`;
 
                 cards.forEach(card => {
                     const caseId = card.getAttribute('data-case-id');
