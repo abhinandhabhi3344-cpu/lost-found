@@ -9,11 +9,16 @@ clip_processor = None
 faiss_module = None
 
 # Similarity contract (percentages shown in the UI):
-#   - min_threshold (default 60.0): minimum score for a case to be returned.
-#   - HIGH_MATCH_THRESHOLD (80.0): score at/above which a match is "high".
-# Cosine similarity maps directly to percent (0.78 -> 78.0%).
-DEFAULT_MIN_THRESHOLD = 60.0
-HIGH_MATCH_THRESHOLD = 80.0
+#   - min_threshold (default 90.0): minimum score for a case to be returned.
+#     Only 90%+ matches are shown, so loose cross-subject pairs
+#     (e.g. black dog vs cream dog at ~88%) are hidden.
+#   - HIGH_MATCH_THRESHOLD (95.0): score at/above which a match is "high".
+# Cosine similarity maps directly to percent (0.92 -> 92.0%).
+# NOTE: CLIP embeddings live in a narrow cone, so even unrelated photos
+# score ~65-80%. Category gating (PET vs ITEM etc.) plus the 90 threshold
+# together keep unrelated cases out of the results.
+DEFAULT_MIN_THRESHOLD = 90.0
+HIGH_MATCH_THRESHOLD = 95.0
 
 # Geometric test-time augmentations used to match the SAME subject
 # photographed from a different angle / framing / orientation.
@@ -267,6 +272,41 @@ def get_image_embedding(image_input):
         return None
 
 
+def compute_stored_embedding(image_path):
+    """
+    Single 512-dim L2-normalized embedding (original framing, no TTA)
+    for persisting on CaseImage.clip_embedding at upload time.
+    Using the plain framing (not augmented variants) keeps one canonical
+    vector per photo; search still augments the QUERY side, so the same
+    subject photographed from a different angle still matches.
+    Returns a plain python list, or None on failure.
+    """
+    try:
+        vec = get_image_embedding(image_path)
+        if vec is None:
+            return None
+        return [float(x) for x in np.asarray(vec, dtype=np.float32).ravel()]
+    except Exception:
+        return None
+
+
+def _stored_vector(c_img):
+    """Stored CaseImage.clip_embedding as a normalized row matrix, or None."""
+    try:
+        emb = getattr(c_img, 'clip_embedding', None)
+        if not emb:
+            return None
+        vec = np.asarray(emb, dtype=np.float32).ravel()
+        if vec.size == 0:
+            return None
+        norm = float(np.linalg.norm(vec))
+        if norm <= 0:
+            return None
+        return (vec / norm).reshape(1, -1).astype(np.float32)
+    except Exception:
+        return None
+
+
 def _max_cosine(query_mat, db_mat):
     """Max cosine over all query-variant x db-variant pairs (exact)."""
     if HAS_FAISS and faiss_module is not None:
@@ -280,9 +320,14 @@ def _max_cosine(query_mat, db_mat):
     return float(np.max(np.dot(query_mat, db_mat.T)))
 
 
-def search_cases_with_ai(query_image_files, all_cases, min_threshold=DEFAULT_MIN_THRESHOLD):
+def search_cases_with_ai(query_image_files, all_cases, min_threshold=DEFAULT_MIN_THRESHOLD, category=None):
     """
     Queries database cases against uploaded search image(s).
+
+    Category gating: when `category` (PET/PERSON/ITEM) is given, only cases
+    of that same category are compared. A dog photo searched as PET will
+    therefore never match a necklace (ITEM) case, no matter how high the
+    raw visual cosine is.
 
     Angle handling: every image is expanded into geometric variants
     (mirror / rotations / tighter crop) on BOTH the query and database
@@ -294,6 +339,25 @@ def search_cases_with_ai(query_image_files, all_cases, min_threshold=DEFAULT_MIN
     """
     if not query_image_files:
         return []
+
+    # 0. Category gate — never compare across types (PET vs ITEM etc.)
+    if category:
+        cat = str(category).strip().upper()
+        if cat in ('PET', 'PERSON', 'ITEM'):
+            try:
+                if hasattr(all_cases, 'filter'):
+                    all_cases = all_cases.filter(category=cat)
+                else:
+                    all_cases = [c for c in list(all_cases) if str(getattr(c, 'category', '')).upper() == cat]
+            except Exception:
+                pass
+            if all_cases is None:
+                return []
+            try:
+                if len(all_cases) == 0:
+                    return []
+            except Exception:
+                pass
 
     # 1. Variant matrices for the query image(s)
     query_mats = []
@@ -319,17 +383,23 @@ def search_cases_with_ai(query_image_files, all_cases, min_threshold=DEFAULT_MIN
             continue
         best_sim = 0.0
         for c_img in case_imgs:
-            try:
-                if not c_img.image:
-                    continue
-                img_path = c_img.image.path
-            except Exception:
-                continue
-            if not os.path.exists(img_path):
-                continue
-            db_mat = _variant_matrix_for_path(img_path)
+            # Fast path: precomputed embedding stored at upload time.
+            # Query side still uses augmented variants, so angle changes
+            # on the query photo are tolerated; DB side is one vector,
+            # which also removes variant max-pooling inflation.
+            db_mat = _stored_vector(c_img)
             if db_mat is None:
-                continue
+                try:
+                    if not c_img.image:
+                        continue
+                    img_path = c_img.image.path
+                except Exception:
+                    continue
+                if not os.path.exists(img_path):
+                    continue
+                db_mat = _variant_matrix_for_path(img_path)
+                if db_mat is None:
+                    continue
             sim = _max_cosine(query_matrix, db_mat)
             if sim > best_sim:
                 best_sim = sim

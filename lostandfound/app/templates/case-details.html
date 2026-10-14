@@ -168,12 +168,10 @@
                 </div>
 
                 {% if user.is_authenticated %}
-                    {% if case.owner != user %}
+                    {% if case.owner != user and not user.is_staff and not user.is_superuser %}
                     <button onclick="openModal('modal-report-sighting')" class="neu-button-dark" style="padding: 0.9rem 1.5rem; font-size: 0.8rem;">
                         <i class="fas fa-eye"></i> REPORT A SIGHTING
                     </button>
-                    {% else %}
-                    <span style="font-size:0.7rem; color:var(--stone-muted); font-weight:600; padding:0.9rem 1rem; border:1px dashed var(--stone-border); border-radius:8px; background:var(--stone-light);">You posted this case — sightings are for other users</span>
                     {% endif %}
                 {% else %}
                 <button onclick="openModal('modal-login')" class="neu-button-dark" style="padding: 0.9rem 1.5rem; font-size: 0.8rem;">

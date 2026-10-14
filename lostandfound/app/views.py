@@ -76,6 +76,7 @@ def signup_view(request):
         full_name = request.POST.get('full_name', '').strip()
         email = request.POST.get('email', '').strip()
         phone = request.POST.get('phone', '').strip()
+        address = request.POST.get('address', '').strip()
         password = request.POST.get('password', '').strip()
         role = request.POST.get('role', 'citizen')
 
@@ -112,6 +113,7 @@ def signup_view(request):
         profile = user.profile
         profile.full_name = full_name
         profile.phone = phone
+        profile.address = address
         # Handle avatar upload during signup
         avatar_file = request.FILES.get('avatar')
         if avatar_file:
@@ -124,9 +126,10 @@ def signup_view(request):
             profile.specialization = request.POST.get('specialization', '')
             profile.experience_years = int(request.POST.get('experience_years', 0) or 0)
             operating_region = request.POST.get('operating_region', '').strip()
-            # Store operating region in both address and city for compatibility (admin expects either)
-            profile.address = operating_region
+            # Store operating region in both address and city for compatibility (admin expects either).
+            # Fall back to generic address field when no operating region is given.
             if operating_region:
+                profile.address = operating_region
                 profile.city = operating_region
             # Detectives skip citizen ID verification
             profile.verification_status = 'APPROVED'
@@ -359,10 +362,18 @@ def case_create(request):
             reward=reward,
         )
 
-        # Handle image upload
+        # Handle image upload (precompute + store AI embedding for fast search)
         image = request.FILES.get('image')
         if image:
-            CaseImage.objects.create(case=case, image=image, is_primary=True)
+            c_img = CaseImage.objects.create(case=case, image=image, is_primary=True)
+            try:
+                from .ai_engine import compute_stored_embedding
+                emb = compute_stored_embedding(c_img.image.path)
+                if emb:
+                    c_img.clip_embedding = emb
+                    c_img.save(update_fields=['clip_embedding'])
+            except Exception:
+                pass
 
         Notification.objects.create(
             user=request.user,
@@ -414,7 +425,15 @@ def case_edit(request, pk):
         image = request.FILES.get('image')
         if image:
             case.images.filter(is_primary=True).update(is_primary=False)
-            CaseImage.objects.create(case=case, image=image, is_primary=True)
+            c_img = CaseImage.objects.create(case=case, image=image, is_primary=True)
+            try:
+                from .ai_engine import compute_stored_embedding
+                emb = compute_stored_embedding(c_img.image.path)
+                if emb:
+                    c_img.clip_embedding = emb
+                    c_img.save(update_fields=['clip_embedding'])
+            except Exception:
+                pass
 
         messages.success(request, 'Case updated successfully!')
         return redirect('user_dashboard')
@@ -443,22 +462,12 @@ def case_delete(request, pk):
 @require_POST
 def case_mark_resolved(request, pk):
     case = get_object_or_404(Case, pk=pk)
-    # Staff can close directly (they ARE the verifier)
+    # Admins/staff cannot close cases on their own — closure happens ONLY
+    # when the case owner sends a solve request and admin approves it in
+    # Solve Verification Requests (admin_review_solve_request).
     if request.user.is_staff:
-        if case.owner != request.user and not request.user.is_staff:
-            messages.error(request, 'Permission denied.')
-            return redirect('case_detail', pk=pk)
-        case.status = 'CLOSED'
-        case.save()
-        CaseSolveRequest.objects.filter(case=case, status='PENDING').update(status='APPROVED', reviewed_at=timezone.now())
-        Notification.objects.create(
-            user=case.owner,
-            case=case,
-            title='Case Resolved',
-            message=f'Your case "{case.title}" has been marked as solved and closed.'
-        )
-        messages.success(request, 'Case marked as solved!')
-        return redirect('case_detail', pk=pk)
+        messages.error(request, 'Cases can only be closed via the owner solve-request flow. Please review it in Solve Verification Requests.')
+        return redirect('admin_dashboard')
     # Owner flow: send to admin for verification, do NOT close yet
     if case.owner != request.user:
         messages.error(request, 'Permission denied.')
@@ -581,8 +590,7 @@ def profile_update(request):
         profile.phone = phone
 
         address = request.POST.get('address', '').strip()
-        if address:
-            profile.address = address
+        profile.address = address
 
         city = request.POST.get('city', '').strip()
         if city:
@@ -1261,27 +1269,6 @@ def admin_delete_case(request, pk):
 
 @login_required
 @require_POST
-def admin_mark_case_solved(request, pk):
-    if not request.user.is_staff:
-        messages.error(request, 'Access denied.')
-        return redirect('home')
-
-    case = get_object_or_404(Case, pk=pk)
-    case.status = 'CLOSED'
-    case.save()
-    CaseSolveRequest.objects.filter(case=case, status='PENDING').update(status='APPROVED', reviewed_at=timezone.now())
-    Notification.objects.create(
-        user=case.owner,
-        case=case,
-        title='Case Solved',
-        message=f'Admin verified and closed your case "{case.title}" ({case.case_number}) as solved.'
-    )
-    messages.success(request, f'Case {case.case_number} marked as solved.')
-    return redirect('admin_dashboard')
-
-
-@login_required
-@require_POST
 def admin_review_solve_request(request):
     if not request.user.is_staff:
         messages.error(request, 'Access denied.')
@@ -1455,9 +1442,15 @@ def ai_vector_search_api(request):
     if not files:
         return JsonResponse({'success': False, 'error': 'No query image file uploaded.'}, status=400)
 
+    # Category is REQUIRED — user must tell us what they are searching for
+    # (PET / PERSON / ITEM) so a dog photo never matches a necklace case.
+    category = request.POST.get('category', '').strip().upper()
+    if category not in ['PET', 'PERSON', 'ITEM']:
+        return JsonResponse({'success': False, 'error': 'Please select a category (Pet / Person / Item) for AI search.'}, status=400)
+
     try:
-        cases = Case.objects.select_related('owner').prefetch_related('images').all()
-        results = search_cases_with_ai(files, cases)
+        cases = Case.objects.select_related('owner').prefetch_related('images').filter(category=category)
+        results = search_cases_with_ai(files, cases, category=category)
 
         data = []
         for r in results:
@@ -1465,12 +1458,14 @@ def ai_vector_search_api(request):
                 'case_id': r['case'].pk,
                 'case_number': r['case'].case_number,
                 'title': r['case'].title,
+                'category': r['case'].category,
                 'match_score': r['match_score'],
                 'is_high_match': r['is_high_match'],
             })
 
         return JsonResponse({
             'success': True,
+            'category': category,
             'total_analyzed': len(results),
             'results': data
         })
