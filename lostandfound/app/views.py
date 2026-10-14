@@ -1449,16 +1449,29 @@ def ai_vector_search_api(request):
         return JsonResponse({'success': False, 'error': 'Please select a category (Pet / Person / Item) for AI search.'}, status=400)
 
     try:
-        cases = Case.objects.select_related('owner').prefetch_related('images').filter(category=category)
+        cases = Case.objects.select_related('owner', 'assigned_detective').prefetch_related('images').filter(category=category)
         results = search_cases_with_ai(files, cases, category=category)
 
         data = []
         for r in results:
+            c = r['case']
+            primary_img = c.images.first()
+            img_url = primary_img.image.url if (primary_img and primary_img.image) else 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=600'
             data.append({
-                'case_id': r['case'].pk,
-                'case_number': r['case'].case_number,
-                'title': r['case'].title,
-                'category': r['case'].category,
+                'case_id': c.pk,
+                'case_number': c.case_number,
+                'title': c.title,
+                'category': c.category,
+                'category_display': c.get_category_display(),
+                'case_type': c.case_type,
+                'case_type_display': 'URGENT LOST' if c.case_type == 'LOST' else 'FOUND',
+                'location': c.location or '',
+                'reward': float(c.reward) if c.reward else 0,
+                'description': c.description or '',
+                'status_display': c.get_status_display(),
+                'has_detective': bool(c.assigned_detective_id),
+                'image_url': img_url,
+                'detail_url': f'/case/{c.pk}/',
                 'match_score': r['match_score'],
                 'is_high_match': r['is_high_match'],
             })

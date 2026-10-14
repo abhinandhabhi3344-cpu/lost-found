@@ -190,7 +190,7 @@
                 <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--stone-muted);">GLOBAL DATABASE</span>
                 <h1 class="page-title font-display">CASES DIRECTORY &amp; AI MATCH</h1>
                 <p style="font-size: 0.85rem; color: var(--stone-muted); font-weight: 300; max-width: 42rem; line-height: 1.5;">
-                    Browse active missing persons, lost pets, and community found reports. Pick a category (Pet / Person / Item), then upload photo(s) — AI compares only within that category (90% threshold).
+                    Browse active missing persons, lost pets, and community found reports. Pick a category, then upload a photo — AI matches visually within that category using CLIP vector embeddings.
                 </p>
             </div>
 
@@ -206,7 +206,7 @@
                     <div style="cursor: pointer;" onclick="document.getElementById('ai-file-input').click();">
                         <h4 class="font-display" style="font-size: 0.95rem; font-weight: 700;">RUN AI VISUAL VECTOR SEARCH</h4>
                         <p style="font-size: 0.75rem; color: var(--stone-muted); margin-top: 0.1rem;">
-                            First pick what you are searching for, then click here to choose photo(s) — matches are shown only within that category.
+                            Pick what you are searching for, then select photo(s) to find matching cases across our database.
                         </p>
                     </div>
                     <div style="display: flex; gap: 0.5rem; width: 100%; margin-top: 0.5rem;">
@@ -219,7 +219,7 @@
                         <button type="button" onclick="document.getElementById('ai-file-input').click();" class="neu-button-dark" style="padding: 0.65rem 1rem; font-size: 0.7rem; white-space: nowrap;"><i class="fas fa-upload"></i> Choose Photo</button>
                     </div>
                     <span style="font-size: 0.65rem; color: var(--emerald-accent); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; background: #d1fae5; padding: 0.2rem 0.6rem; border-radius: 9999px; margin-top: 0.25rem;">
-                        <i class="fas fa-compass"></i> Category-filtered CLIP &amp; FAISS search (90% threshold)
+                        <i class="fas fa-compass"></i> Multi-modal CLIP &amp; FAISS vector search
                     </span>
                 </div>
 
@@ -519,12 +519,16 @@
             document.querySelectorAll('.modal-body').forEach(b => b.classList.add('hidden'));
         }
 
+        function escapeCaseHtml(text) {
+            if (!text) return '';
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return String(text).replace(/[&<>"']/g, m => map[m]);
+        }
+
         async function handleAiImageUpload(event) {
             const files = event.target.files;
             if (!files || files.length === 0) return;
 
-            // Category is REQUIRED — a dog photo searched as PET must never
-            // match a necklace (ITEM) case.
             const catSelect = document.getElementById('ai-category');
             const category = catSelect ? catSelect.value : '';
             if (!category || !['PET', 'PERSON', 'ITEM'].includes(category)) {
@@ -540,7 +544,7 @@
 
             dropzoneContent.style.display = 'none';
             dropzoneLoading.style.display = 'flex';
-            loadingText.textContent = `Comparing ${files.length} photo(s) against ${category} cases only...`;
+            loadingText.textContent = `Comparing photo against ${category} cases...`;
 
             const formData = new FormData();
             for (let i = 0; i < files.length; i++) {
@@ -555,6 +559,7 @@
                 });
 
                 const data = await response.json();
+                console.log('AI Vector Search result:', data);
 
                 dropzoneLoading.style.display = 'none';
                 dropzoneContent.style.display = 'flex';
@@ -565,24 +570,29 @@
                     return;
                 }
 
-                // Remove existing empty state message if any
-                const existingEmptyMsg = document.getElementById('ai-empty-msg');
-                if (existingEmptyMsg) existingEmptyMsg.remove();
-
                 const container = document.getElementById('cases-container');
-                const cards = Array.from(container.querySelectorAll('.card-box[data-case-id]'));
+                const cards = Array.from(container.querySelectorAll('.card-box[data-case-id]:not([data-dynamic="true"])'));
                 const aiBanner = document.getElementById('ai-banner');
                 const aiStatusMsg = document.getElementById('ai-status-msg');
+                const paginationBar = document.querySelector('.pagination-bar');
 
-                aiBanner.classList.add('active');
+                if (paginationBar) paginationBar.style.display = 'none';
+                if (aiBanner) aiBanner.classList.add('active');
+
+                // Remove existing dynamic cards and previous empty notice
+                container.querySelectorAll('.card-box[data-dynamic="true"]').forEach(el => el.remove());
+                const oldEmpty = document.getElementById('ai-empty-msg');
+                if (oldEmpty) oldEmpty.remove();
 
                 if (!data.results || data.results.length === 0) {
-                    // ZERO matches above the similarity threshold within this category
                     const catLabel = data.category || category;
-                    aiStatusMsg.innerHTML = `<i class="fas fa-circle-xmark" style="font-size: 1rem; color: var(--red-accent);"></i> <strong>NO ${catLabel} MATCHES FOUND:</strong> Uploaded photo does not match any ${catLabel} case with &ge; 90% similarity. Cross-category cases (e.g. necklace vs dog) are never compared.`;
+                    if (aiStatusMsg) {
+                        aiStatusMsg.innerHTML = `<i class="fas fa-circle-xmark" style="font-size: 1rem; color: var(--red-accent);"></i> <strong>NO ${catLabel} MATCHES FOUND:</strong> Uploaded photo does not match any ${catLabel} case with sufficient similarity.`;
+                    }
 
                     cards.forEach(card => {
                         card.style.display = 'none';
+                        card.removeAttribute('data-ai-score');
                     });
 
                     const emptyNotice = document.createElement('div');
@@ -591,93 +601,152 @@
                     emptyNotice.style.cssText = 'grid-column: 1 / -1; text-align: center; padding: 3rem;';
                     emptyNotice.innerHTML = `
                         <div style="font-size: 2.25rem; color: var(--amber-accent); margin-bottom: 0.5rem;"><i class="fas fa-image"></i></div>
-                        <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700;">No ${catLabel} Matches Found (90% Threshold)</h3>
+                        <h3 class="font-display" style="font-size: 1.25rem; font-weight: 700;">No ${catLabel} Matches Found</h3>
                         <p style="font-size: 0.8rem; color: var(--stone-muted); margin-top: 0.5rem; max-width: 32rem; margin-left: auto; margin-right: auto; line-height: 1.5;">
-                            The uploaded image does not match any ${catLabel} case with 90%+ similarity. Only ${catLabel} cases were compared — try a clearer photo or check you picked the right category.
+                            The uploaded photo did not match any active ${catLabel} cases in our database. Try another photo or verify you selected the correct category.
                         </p>
+                        <button onclick="clearAiSearch()" class="neu-button" style="margin-top: 1rem; padding: 0.5rem 1rem; font-size: 0.75rem;">Reset Filter</button>
                     `;
                     container.appendChild(emptyNotice);
                     return;
                 }
 
-                // MATCHES FOUND within the selected category (ranked; 95%+ = high match)
-                const resultMap = {};
+                // MATCHES FOUND: rank and display
                 let topScore = 0;
                 data.results.forEach(r => {
-                    resultMap[r.case_id] = r;
                     if (r.match_score > topScore) topScore = r.match_score;
                 });
 
-                aiStatusMsg.innerHTML = `<i class="fas fa-circle-check" style="font-size: 1rem; color: var(--emerald-accent);"></i> <strong>${data.results.length} ${data.category || category} MATCH(ES) FOUND:</strong> Top match <strong>${topScore}% similar</strong> (90% threshold, same category only).`;
+                if (aiStatusMsg) {
+                    aiStatusMsg.innerHTML = `<i class="fas fa-circle-check" style="font-size: 1rem; color: var(--emerald-accent);"></i> <strong>${data.results.length} ${data.category || category} MATCH(ES) FOUND:</strong> Top match <strong>${topScore}% similar</strong> (ranked by visual feature similarity).`;
+                }
 
+                // Hide all original cards first
                 cards.forEach(card => {
-                    const caseId = card.getAttribute('data-case-id');
-                    const matchData = resultMap[caseId];
-                    const badgeCat = document.getElementById(`badge-cat-${caseId}`);
+                    card.style.display = 'none';
+                    card.removeAttribute('data-ai-score');
+                });
 
-                    if (matchData && badgeCat) {
-                        const score = matchData.match_score;
-                        card.setAttribute('data-ai-score', score);
-                        card.style.display = '';
-
-                        badgeCat.style.backgroundColor = 'var(--emerald-accent)';
-                        badgeCat.style.color = '#ffffff';
-                        badgeCat.innerHTML = `<i class="fas fa-compass"></i> ${score}% SIMILARITY FOUND`;
+                const visibleCards = [];
+                data.results.forEach(r => {
+                    const existingCard = container.querySelector(`.card-box[data-case-id="${r.case_id}"]:not([data-dynamic="true"])`);
+                    if (existingCard) {
+                        existingCard.setAttribute('data-ai-score', r.match_score);
+                        existingCard.style.display = '';
+                        const badgeCat = document.getElementById(`badge-cat-${r.case_id}`);
+                        if (badgeCat) {
+                            badgeCat.style.backgroundColor = 'var(--emerald-accent)';
+                            badgeCat.style.color = '#ffffff';
+                            badgeCat.innerHTML = `<i class="fas fa-compass"></i> ${r.match_score}% SIMILARITY`;
+                        }
+                        visibleCards.push(existingCard);
                     } else {
-                        // Hide non-matching cases
-                        card.style.display = 'none';
-                        card.removeAttribute('data-ai-score');
+                        // Dynamically render card for cases from other pages
+                        const isLost = r.case_type === 'LOST';
+                        const typeBadge = isLost 
+                            ? '<span class="badge-tag bg-red">URGENT LOST</span>' 
+                            : '<span class="badge-tag bg-emerald">FOUND</span>';
+                        const rewardBadge = r.reward > 0 
+                            ? `<span class="reward-pill">₹${Math.round(r.reward).toLocaleString()} Reward</span>` 
+                            : '';
+                        const detectiveBadge = r.has_detective 
+                            ? '<i class="fas fa-id-badge"></i> Det. Assigned' 
+                            : `<i class="fas fa-bell"></i> ${escapeCaseHtml(r.status_display)}`;
+
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = `
+                            <div class="card-box" data-case-id="${r.case_id}" data-dynamic="true" data-ai-score="${r.match_score}">
+                                <div>
+                                    <div class="img-container">
+                                        <img src="${escapeCaseHtml(r.image_url)}" alt="${escapeCaseHtml(r.title)}">
+                                        ${typeBadge}
+                                        <span class="badge-cat" id="badge-cat-${r.case_id}" data-original-text="${escapeCaseHtml(r.category_display)}" style="background-color: var(--emerald-accent); color: #ffffff;">
+                                            <i class="fas fa-compass"></i> ${r.match_score}% SIMILARITY
+                                        </span>
+                                        ${rewardBadge}
+                                    </div>
+                                    <div style="margin-top: 0.85rem;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.65rem; color: var(--stone-muted);">
+                                            <span><i class="fas fa-compass"></i> ${escapeCaseHtml(r.location).toUpperCase()}</span>
+                                            <span>MATCHED CASE</span>
+                                        </div>
+                                        <h3 class="font-display" style="font-size: 0.95rem; font-weight: 700; margin-top: 0.35rem;">${escapeCaseHtml(r.title)}</h3>
+                                        <p style="font-size: 0.75rem; color: var(--stone-muted); font-weight: 300; margin-top: 0.35rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                            ${escapeCaseHtml(r.description)}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="border-t-line" style="margin-top: 1rem; padding-top: 0.6rem; display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 0.65rem; font-weight: 600; color: var(--amber-accent);">
+                                        ${detectiveBadge}
+                                    </span>
+                                    <a href="${escapeCaseHtml(r.detail_url)}" class="neu-button" style="padding: 0.4rem 0.75rem; font-size: 0.65rem;">View Details ↗</a>
+                                </div>
+                            </div>
+                        `.trim();
+                        const newCard = tempDiv.firstChild;
+                        container.appendChild(newCard);
+                        visibleCards.push(newCard);
                     }
                 });
 
                 // Sort DOM cards descending by score
-                cards.sort((a, b) => {
+                visibleCards.sort((a, b) => {
                     const scoreA = parseFloat(a.getAttribute('data-ai-score') || 0);
                     const scoreB = parseFloat(b.getAttribute('data-ai-score') || 0);
                     return scoreB - scoreA;
                 });
 
-                cards.forEach(card => container.appendChild(card));
+                visibleCards.forEach(card => container.appendChild(card));
 
             } catch (err) {
+                console.error('AI Vector Search error:', err);
                 dropzoneLoading.style.display = 'none';
                 dropzoneContent.style.display = 'flex';
-                alert('AI Vector Search request failed. Please try again.');
+                alert('AI Vector Search request failed: ' + err.message);
             }
         }
 
         function clearAiSearch() {
             const aiBanner = document.getElementById('ai-banner');
-            aiBanner.classList.remove('active');
-
-            const existingEmptyMsg = document.getElementById('ai-empty-msg');
-            if (existingEmptyMsg) existingEmptyMsg.remove();
+            if (aiBanner) aiBanner.classList.remove('active');
 
             const container = document.getElementById('cases-container');
-            const cards = Array.from(container.querySelectorAll('.card-box[data-case-id]'));
+            if (container) {
+                // Remove dynamically added cards
+                container.querySelectorAll('.card-box[data-dynamic="true"]').forEach(el => el.remove());
+                const oldEmpty = document.getElementById('ai-empty-msg');
+                if (oldEmpty) oldEmpty.remove();
 
-            cards.forEach(card => {
-                card.style.display = '';
-                const caseId = card.getAttribute('data-case-id');
-                const badgeCat = document.getElementById(`badge-cat-${caseId}`);
-                if (badgeCat) {
-                    const origText = badgeCat.getAttribute('data-original-text');
-                    badgeCat.style.backgroundColor = 'rgba(26, 26, 26, 0.85)';
-                    badgeCat.style.color = '#ffffff';
-                    badgeCat.innerHTML = `<i class="fas fa-tag"></i> ${origText}`;
-                }
-                card.removeAttribute('data-ai-score');
-            });
+                const cards = Array.from(container.querySelectorAll('.card-box[data-case-id]'));
+                cards.forEach(card => {
+                    card.style.display = '';
+                    const caseId = card.getAttribute('data-case-id');
+                    const badgeCat = document.getElementById(`badge-cat-${caseId}`);
+                    if (badgeCat) {
+                        const origText = badgeCat.getAttribute('data-original-text');
+                        badgeCat.style.backgroundColor = 'rgba(26, 26, 26, 0.85)';
+                        badgeCat.style.color = '#ffffff';
+                        badgeCat.innerHTML = `<i class="fas fa-tag"></i> ${origText}`;
+                    }
+                    card.removeAttribute('data-ai-score');
+                });
 
-            // Re-sort by original order
-            cards.sort((a, b) => {
-                const orderA = parseInt(a.getAttribute('data-order') || 0);
-                const orderB = parseInt(b.getAttribute('data-order') || 0);
-                return orderA - orderB;
-            });
+                // Re-sort by original order
+                cards.sort((a, b) => {
+                    const orderA = parseInt(a.getAttribute('data-order') || 0);
+                    const orderB = parseInt(b.getAttribute('data-order') || 0);
+                    return orderA - orderB;
+                });
 
-            cards.forEach(card => container.appendChild(card));
-            const inp=document.getElementById('ai-file-input'); if(inp) inp.value='';
+                cards.forEach(card => container.appendChild(card));
+            }
+
+            const paginationBar = document.querySelector('.pagination-bar');
+            if (paginationBar) paginationBar.style.display = '';
+
+            const inp = document.getElementById('ai-file-input');
+            if (inp) inp.value = '';
         }
         // Toggle detective extra fields on case page (+ required only for detective, never citizen)
         function toggleDetectiveFieldsCase(val){
